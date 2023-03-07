@@ -1,0 +1,6 @@
+[submodule "pybind11"]
+	path = csrc/pybind11
+	url = https://github.com/pybind/pybind11.git
+[submodule "vrs"]
+	path = csrc/vrs
+	url = https://github.com/facebookresearch/vrs.git
