@@ -51,10 +51,23 @@ jobs:
           fi
           python -m pip install -U pip
           python -m pip install numpy typing dataclasses pytest parameterized Pillow
+          python -m pip install cibuildwheel
+
+      - name: Build wheels for CPython
+        run: |
+          python -m cibuildwheel --output-dir dist
+        env:
+          CIBW_ARCHS_LINUX: x86_64
+          # apple M1 image is not supported yet in Github Action: https://github.com/actions/runner-images/issues/2187
+          # We need to manually build this locally until this will be supported.
+          CIBW_ARCHS_MACOS: x86_64 # "x86_64 arm64"
+          CIBW_BUILD: "cp37-*64 cp38-*64 cp39-*64 cp310-*64 cp311-*64"
+          CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
+          CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
+          CIBW_SKIP: "*-manylinux_i686 *musllinux*"
 
       - name: Build and Test Python
         shell: bash
         run: |
-          rm -rf csrc/vrs/pyvrs
           pip install -e .
           python -m pytest test
