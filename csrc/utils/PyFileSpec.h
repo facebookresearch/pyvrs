@@ -21,15 +21,28 @@
 #include <pybind11/pybind11.h>
 
 #include <vrs/FileHandler.h>
+#include <vrs/RecordFileReader.h>
+#include <vrs/helpers/Strings.h>
 #include <vrs/os/Platform.h>
+
+#include "../VrsBindings.h"
 
 namespace pyvrs {
 namespace py = pybind11;
 
 class OssPyFileSpec {
  public:
+  OssPyFileSpec() {}
   explicit OssPyFileSpec(const std::string& path) {
+    initVrsBindings();
+    /// Using fromPathJsonUri to parse path regardless if the file is vrs file or not.
     if (spec_.fromPathJsonUri(path)) {
+      throw py::value_error("Invalid path: " + path);
+    }
+    /// For vrs file, we want to use RecordFileReader::vrsFilePathToFileSpec to do vrs specific
+    /// parsing.
+    if (vrs::helpers::endsWith(spec_.chunks.front(), ".vrs") &&
+        vrs::RecordFileReader::vrsFilePathToFileSpec(path, spec_) != 0) {
       throw py::value_error("Invalid path: " + path);
     }
   }
