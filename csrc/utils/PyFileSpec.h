@@ -19,6 +19,7 @@
 #include <Python.h>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <vrs/FileHandler.h>
 #include <vrs/RecordFileReader.h>
@@ -49,6 +50,26 @@ class OssPyFileSpec {
 
   std::string getEasyPath() const {
     return spec_.getEasyPath();
+  }
+
+  const std::string& getFileHandlerName() const {
+    return spec_.fileHandlerName;
+  }
+
+  const std::vector<std::string>& getChunks() const {
+    return spec_.chunks;
+  }
+
+  const std::vector<int64_t>& getChunkSizes() const {
+    return spec_.chunkSizes;
+  }
+
+  const std::string& getFileName() const {
+    return spec_.fileName;
+  }
+
+  const std::string& getUri() const {
+    return spec_.uri;
   }
 
   const vrs::FileSpec& getSpec() const {
