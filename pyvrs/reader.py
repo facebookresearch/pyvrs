@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Mapping, Optional, Set, Union
 from . import (
     AsyncMultiReader,
     AsyncReader,
+    FileSpec,
     ImageConversion,
     MultiReader,
     Reader,
@@ -59,7 +60,13 @@ __all__ = [
 
 
 PathType = Union[
-    Path, str, List[Path], List[str], Dict[str, Union[int, str, List[str]]]
+    Path,
+    str,
+    List[Path],
+    List[str],
+    Dict[str, Union[int, str, List[str]]],
+    FileSpec,
+    List[FileSpec],
 ]
 
 
@@ -182,19 +189,40 @@ class VRSReader(BaseVRSReader, ABC):
         auto_read_configuration_records: bool,
         multi_path: bool,
     ):
-        if multi_path:
-            if isinstance(path, List):
-                path = [str(p) for p in path]
-            else:
-                path = [str(path)]
-        else:
-            if isinstance(path, List):
-                path = json.dumps({"chunks": path})
-            elif isinstance(path, Dict):
-                path = json.dumps(path)
+        file_spec = self._path_to_file_spec(path, multi_path)
         reader_cls = self._get_reader_class(multi_path=multi_path)
         self._reader = reader_cls(auto_read_configuration_records)
-        self._open_files(multi_path, path)
+        self._open_files(multi_path, file_spec)
+
+    def _path_to_file_spec(
+        self, path: PathType, multi_path: bool
+    ) -> Union[FileSpec, List[FileSpec]]:
+        if multi_path:
+            specs: List[FileSpec] = []
+            if isinstance(path, List):
+                for p in path:
+                    if isinstance(p, FileSpec):
+                        specs.append(p)
+                    else:
+                        specs.append(FileSpec(str(p)))
+            elif isinstance(path, FileSpec):
+                specs.append(path)
+            elif isinstance(path, Dict):
+                specs.append(FileSpec(json.dumps(path)))
+            else:
+                specs.append(FileSpec(str(path)))
+            return specs
+        else:
+            if isinstance(path, List):
+                assert len(path) > 0 and (
+                    isinstance(path[0], str) or isinstance(path[0], Path)
+                )
+                return FileSpec(json.dumps({"chunks": path}))
+            elif isinstance(path, Dict):
+                return FileSpec(json.dumps(path))
+            elif isinstance(path, str) or isinstance(path, Path):
+                return FileSpec(str(path))
+            return path
 
     def close(self):
         """explicitly close the VRS reader without waiting for Python grabage collection."""
@@ -628,9 +656,13 @@ class VRSReader(BaseVRSReader, ABC):
     def _get_reader_class(self, multi_path: bool):
         raise NotImplementedError()
 
-    @abstractmethod
-    def _open_files(self, multi_path: bool, path: PathType):
-        raise NotImplementedError()
+    def _open_files(self, multi_path: bool, specs: Union[FileSpec, List[FileSpec]]):
+        # self._path is used only in __str__ method, we use get_easy_path because it provides a good enough summry of the file.
+        if multi_path:
+            self._path = specs[0].get_easy_path()
+        else:
+            self._path = specs.get_easy_path()
+        self._reader.open(specs)
 
     @abstractmethod
     def filtered_by_fields(
@@ -673,13 +705,6 @@ class SyncVRSReader(VRSReader):
             return MultiReader
         else:
             return Reader
-
-    def _open_files(self, multi_path: bool, path: PathType):
-        if multi_path:
-            self._reader.open(path)
-        else:
-            self._reader.open(str(path))
-        self._path = str(path)
 
     def __repr__(self) -> str:
         return (
@@ -739,13 +764,6 @@ class SyncVRSReader(VRSReader):
 
 
 class AsyncVRSReader(VRSReader):
-    def _open_files(self, multi_path: bool, path: PathType):
-        if multi_path:
-            self._reader.open(path)
-        else:
-            self._reader.open(str(path))
-        self._path = str(path)
-
     def _get_reader_class(self, multi_path: bool):
         if multi_path:
             return AsyncMultiReader
