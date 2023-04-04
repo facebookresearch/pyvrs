@@ -36,7 +36,7 @@ class OssPyFileSpec {
   OssPyFileSpec() {}
   explicit OssPyFileSpec(const std::string& path) {
     initVrsBindings();
-    if (vrs::RecordFileReader::vrsFilePathToFileSpec(path, spec_) != 0) {
+    if (vrs::RecordFileReader::vrsFilePathToFileSpec(path, spec_, true) != 0) {
       throw py::value_error("Invalid path: " + path);
     }
   }
