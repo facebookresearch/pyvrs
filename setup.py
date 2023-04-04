@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -82,9 +83,18 @@ class CMakeBuild(build_ext):
         ]
         build_args = ["--target", os.path.basename(ext.name)]
 
+        if "CMAKE_ARGS" in os.environ:
+            cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
+
         # Default to Ninja
         if "CMAKE_GENERATOR" not in os.environ:
             cmake_args += ["-GNinja"]
+
+        if sys.platform.startswith("darwin"):
+            # Cross-compile support for macOS - respect ARCHFLAGS if set
+            archs = re.findall(r"-arch (\S+)", os.environ.get("ARCHFLAGS", ""))
+            if archs:
+                cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
 
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
