@@ -187,6 +187,26 @@ inline PyObject* pyObject<Matrix3Df>(const Matrix3Df& p) {
 }
 
 template <>
+inline PyObject* pyObject<Matrix2Dd>(const Matrix2Dd& p) {
+  return Py_BuildValue("((d,d),(d,d))", p[0][0], p[0][1], p[1][0], p[1][1]);
+}
+
+template <>
+inline PyObject* pyObject<Matrix2Di>(const Matrix2Di& p) {
+  return Py_BuildValue("((i,i),(i,i))", p[0][0], p[0][1], p[1][0], p[1][1]);
+}
+
+template <>
+inline PyObject* pyObject<Matrix2Df>(const Matrix2Df& p) {
+  return Py_BuildValue(
+      "((d,d),(d,d))",
+      static_cast<double>(p[0][0]),
+      static_cast<double>(p[0][1]),
+      static_cast<double>(p[1][0]),
+      static_cast<double>(p[1][1]));
+}
+
+template <>
 inline PyObject* pyObject<Matrix3Dd>(const Matrix3Dd& p) {
   return Py_BuildValue(
       "((d,d,d),(d,d,d),(d,d,d))",
