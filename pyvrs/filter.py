@@ -98,10 +98,10 @@ class FilteredVRSReader(BaseVRSReader, ABC):
     @property
     def stream_tags(self) -> Mapping[str, Mapping[str, Any]]:
         """
-        Return a dict of all file tags present in this VRS file.
+        Return a dict of all per-stream tags present in this VRS file.
 
         Returns:
-            Dictionary of all file tags: {<tag>: <value>}
+            Dictionary of all per-stream tags: {<stream_id>: {<tag>: <value>}}
         """
         return self._reader.stream_tags
 
