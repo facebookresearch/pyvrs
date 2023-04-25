@@ -69,6 +69,10 @@ class OssPyFileSpec {
     return spec_;
   }
 
+  const std::string toJson() const {
+    return spec_.toJson();
+  }
+
  protected:
   vrs::FileSpec spec_;
 };

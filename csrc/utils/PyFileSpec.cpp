@@ -34,7 +34,8 @@ void pybind_filespec(py::module& m) {
       .def("get_chunks", &PyFileSpec::getChunks)
       .def("get_chunk_sizes", &PyFileSpec::getChunkSizes)
       .def("get_filename", &PyFileSpec::getFileName)
-      .def("get_uri", &PyFileSpec::getUri);
+      .def("get_uri", &PyFileSpec::getUri)
+      .def("__str__", &PyFileSpec::toJson);
 }
 #endif
 } // namespace pyvrs
