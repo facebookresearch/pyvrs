@@ -28,6 +28,7 @@ namespace py = pybind11;
 #if IS_VRS_OSS_CODE()
 void pybind_filespec(py::module& m) {
   py::class_<PyFileSpec>(m, "FileSpec")
+      .def(py::init<>())
       .def(py::init<const std::string&>())
       .def("get_easy_path", &PyFileSpec::getEasyPath)
       .def("get_filehandler_name", &PyFileSpec::getFileHandlerName)
