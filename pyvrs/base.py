@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Mapping, Optional, Set, Union
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Set, Union
 
 from . import ImageConversion, RecordType
 
@@ -58,6 +58,12 @@ class BaseVRSReader(ABC):
     @abstractmethod
     def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
         raise NotImplementedError()
+
+    def __iter__(self) -> Iterator[VRSRecord]:
+        for i in range(self.n_records):
+            next_item = self[i]
+            assert isinstance(next_item, VRSRecord)
+            yield next_item
 
     @abstractmethod
     def __len__(self) -> int:

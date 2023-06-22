@@ -16,7 +16,7 @@
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Set, Union
+from typing import Any, AsyncIterable, Dict, List, Mapping, Optional, Set, Union
 
 from . import (
     AsyncMultiReader,
@@ -763,7 +763,7 @@ class SyncVRSReader(VRSReader):
         return SyncFilteredVRSReader(self, record_filter)
 
 
-class AsyncVRSReader(VRSReader):
+class AsyncVRSReader(VRSReader, AsyncIterable[VRSRecord]):
     def _get_reader_class(self, multi_path: bool):
         if multi_path:
             return AsyncMultiReader
