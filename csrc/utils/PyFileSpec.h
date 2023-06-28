@@ -18,6 +18,8 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include <fmt/format.h>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -87,3 +89,16 @@ using PyFileSpec = pyvrs::OssPyFileSpec;
 #include "PyFileSpec_fb.h"
 using PyFileSpec = pyvrs::FbPyFileSpec;
 #endif
+
+template <>
+struct fmt::formatter<vrs::FileSpec> {
+  template <typename ParseContext>
+  constexpr auto parse(ParseContext& ctx) const -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  template <typename FormatContext>
+  auto format(const vrs::FileSpec& spec, FormatContext& ctx) const {
+    return fmt::format_to(ctx.out(), "{}", spec.getEasyPath());
+  }
+};

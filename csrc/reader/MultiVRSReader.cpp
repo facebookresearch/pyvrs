@@ -279,21 +279,9 @@ void OssMultiVRSReader::open(const std::vector<FileSpec>& specs) {
   nextRecordIndex_ = 0;
   int status = reader_.open(specs);
   if (status != 0) {
-    stringstream ss;
-    const std::unique_ptr<FileHandler> fileHandler = reader_.getFileHandler();
-    const std::string fileHandlerName =
-        fileHandler == nullptr ? "none" : fileHandler->getFileHandlerName();
-    ss << "Could not open \"";
-    for (size_t i = 0; i < specs.size(); i++) {
-      if (i != 0) {
-        ss << ", ";
-      }
-      ss << specs[i].getEasyPath();
-    }
-    ss << "\" using fileHandler \"" << fileHandlerName
-       << "\" : " << errorCodeToMessageWithCode(status);
     close();
-    throw std::runtime_error(ss.str());
+    throw std::runtime_error(fmt::format(
+        "Could not open '{}': {}", fmt::join(specs, ", "), errorCodeToMessageWithCode(status)));
   }
   if (autoReadConfigurationRecord_) {
     for (const auto& streamId : reader_.getStreams()) {

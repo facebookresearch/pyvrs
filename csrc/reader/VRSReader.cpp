@@ -83,11 +83,8 @@ void OssVRSReader::open(const FileSpec& spec) {
   nextRecordIndex_ = 0;
   int status = reader_.openFile(spec);
   if (status != 0) {
-    stringstream ss;
-    ss << "Could not open \"" << spec.getEasyPath() << "\" using \""
-       << reader_.getFileHandler()->getFileHandlerName()
-       << "\" : " << errorCodeToMessageWithCode(status);
-    throw runtime_error(ss.str());
+    throw runtime_error(
+        fmt::format("Could not open '{}': {}", spec, errorCodeToMessageWithCode(status)));
   }
   if (autoReadConfigurationRecord_) {
     for (const auto& streamId : reader_.getStreams()) {
