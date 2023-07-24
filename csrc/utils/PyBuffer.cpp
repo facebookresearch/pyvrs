@@ -178,11 +178,11 @@ void ImageBuffer::initBytesFromPyBuffer(const py::buffer& b) {
 py::buffer_info bufferInfoFromVector(vector<uint8_t>& vec) {
   return py::buffer_info(
       vec.data(), // Pointer to buffer
-      static_cast<ssize_t>(sizeof(uint8_t)), // Size of one scalar
+      static_cast<py::ssize_t>(sizeof(uint8_t)), // Size of one scalar
       py::format_descriptor<uint8_t>::format(), // Python struct-style format descriptor
       1, // Number of dimensions
-      {static_cast<ssize_t>(vec.size())}, // Buffer dimensions
-      {static_cast<ssize_t>(sizeof(uint8_t))}); // Strides (in bytes) for each index
+      {static_cast<py::ssize_t>(vec.size())}, // Buffer dimensions
+      {static_cast<py::ssize_t>(sizeof(uint8_t))}); // Strides (in bytes) for each index
 }
 
 ImageBuffer ImageBuffer::jxlCompress(float quality, bool percentNotDistance) const {
@@ -278,9 +278,9 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
 
     return py::buffer_info(
         block.bytes.data(), // Pointer to buffer
-        static_cast<ssize_t>(bytesPerPixel / channelCount), // Size of one scalar
+        static_cast<py::ssize_t>(bytesPerPixel / channelCount), // Size of one scalar
         pixelFormat, // Python struct-style format descriptor
-        static_cast<ssize_t>(shapes.size()), // Number of dimensions
+        static_cast<py::ssize_t>(shapes.size()), // Number of dimensions
         shapes, // Buffer dimensions
         stridesInBytes); // Strides (in bytes)
   }
@@ -411,13 +411,13 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
     }
     return py::buffer_info(
         block.bytes.data(), // Pointer to buffer
-        static_cast<ssize_t>(audioSampleByteSize), // Size of one scalar
+        static_cast<py::ssize_t>(audioSampleByteSize), // Size of one scalar
         sampleFormat, // Python struct-style format descriptor
         2, // Number of dimensions
-        {static_cast<ssize_t>(audioSampleCount),
-         static_cast<ssize_t>(channelCount)}, // Buffer dimensions
-        {static_cast<ssize_t>(audioSampleStride),
-         static_cast<ssize_t>(audioSampleByteSize)}); // Strides (in bytes)
+        {static_cast<py::ssize_t>(audioSampleCount),
+         static_cast<py::ssize_t>(channelCount)}, // Buffer dimensions
+        {static_cast<py::ssize_t>(audioSampleStride),
+         static_cast<py::ssize_t>(audioSampleByteSize)}); // Strides (in bytes)
   }
   // unstructured array: just return the buffer as a simple one dimension byte array
   return bufferInfoFromVector(block.bytes);
@@ -523,9 +523,9 @@ py::buffer_info convertImageBlockBuffer(ImageBuffer& block) {
 
     return py::buffer_info(
         block.bytes.data(), // Pointer to buffer
-        static_cast<ssize_t>(bytesPerPixel / channelCount), // Size of one scalar
+        static_cast<py::ssize_t>(bytesPerPixel / channelCount), // Size of one scalar
         pixelFormat, // Python struct-style format descriptor
-        static_cast<ssize_t>(shapes.size()), // Number of dimensions
+        static_cast<py::ssize_t>(shapes.size()), // Number of dimensions
         shapes, // Buffer dimensions
         stridesInBytes); // Strides (in bytes)
   } else {
@@ -628,17 +628,17 @@ void pybind_buffer(py::module& m) {
   py::class_<pyvrs::BinaryBuffer>(m, "BinaryBuffer", py::buffer_protocol())
       .def_buffer([](pyvrs::BinaryBuffer& b) -> py::buffer_info {
         size_t size = b.shape.size();
-        vector<ssize_t> shape, strides;
+        vector<py::ssize_t> shape, strides;
         shape.resize(size);
         strides.resize(size);
         shape[size - 1] = b.shape.back();
-        strides[size - 1] = static_cast<ssize_t>(b.itemsize);
+        strides[size - 1] = static_cast<py::ssize_t>(b.itemsize);
         for (int i = size - 2; i >= 0; i--) {
           shape[i] = b.shape[i];
           strides[i] = strides[i + 1] * b.shape[i + 1];
         }
         return py::buffer_info(
-            b.data, static_cast<ssize_t>(b.itemsize), b.format, size, shape, strides);
+            b.data, static_cast<py::ssize_t>(b.itemsize), b.format, size, shape, strides);
       });
 }
 #endif
