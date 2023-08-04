@@ -14,6 +14,22 @@
 
 cmake_minimum_required(VERSION 3.16)
 
+set(VRS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/csrc/vrs")
+set(OSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/csrc/vrs")
+
+# To customize where external dependencies are stored
+if ("${EXTERNAL_DEPENDENCIES_DIR}" STREQUAL "")
+  set(EXTERNAL_DEPENDENCIES_DIR "${CMAKE_BINARY_DIR}/external")
+endif()
+file(MAKE_DIRECTORY "${EXTERNAL_DEPENDENCIES_DIR}")
+message(STATUS "External dependencies at ${EXTERNAL_DEPENDENCIES_DIR}")
+
+# Initialize key cmake settings before the project is configured
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(${CMAKE_MODULE_PATH}/Platform.cmake)
+include(${CMAKE_MODULE_PATH}/Compiler.cmake)
+include(${CMAKE_MODULE_PATH}/Options.cmake)
+
 # --- Version numbers for generated libraries ---
 file(READ "version.txt" VRS_DEFAULT_VERSION)
 # Strip trailing newline
@@ -31,13 +47,6 @@ project(vrsbindings
 message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}")
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-set(VRS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/csrc/vrs")
-set(OSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/csrc/vrs")
-
-include(${CMAKE_MODULE_PATH}/Platform.cmake)
-include(${CMAKE_MODULE_PATH}/Compiler.cmake)
-include(${CMAKE_MODULE_PATH}/Options.cmake)
 # If available, use ccache
 include(${CMAKE_MODULE_PATH}/CCache.cmake)
 # Library setup

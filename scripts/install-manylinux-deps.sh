@@ -13,17 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yum install -y ninja-build cmake ccache gtest-devel \
+yum install -y cmake git ninja-build gtest-devel \
     lz4-devel libzstd-devel xxhash-devel libpng-devel
 
-# fmt-devel cereal-devel
 cd /tmp && git clone https://github.com/fmtlib/fmt.git -b 8.1.1 \
     && cd fmt \
     && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DFMT_TEST=OFF .;make -j4 install; rm -rf /tmp/fmt;
-
-cd /tmp && git clone https://github.com/USCiLab/cereal.git -b v1.3.2 \
-    && cd cereal \
-    && cmake -DSKIP_PORTABILITY_TEST=1 -DJUST_INSTALL_CEREAL=ON .;make -j4 install; rm -rf /tmp/cereal;
 
 cd /tmp && git clone https://github.com/libjpeg-turbo/libjpeg-turbo.git -b 2.1.4 \
     && cd libjpeg-turbo \
