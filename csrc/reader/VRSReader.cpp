@@ -880,6 +880,14 @@ string OssVRSReader::getStreamIdForIndex(int recordIndex) {
   return record.streamId.getNumericName();
 }
 
+string OssVRSReader::getSerialNumberForStream(const string& streamId) const {
+  return reader_.getSerialNumber(StreamId::fromNumericName(streamId));
+}
+
+string OssVRSReader::getStreamForSerialNumber(const string& streamSerialNumber) const {
+  return reader_.getStreamForSerialNumber(streamSerialNumber).getNumericName();
+}
+
 int32_t OssVRSReader::getRecordIndexByTime(const string& streamId, double timestamp) {
   StreamId id = getStreamId(streamId);
   auto record = reader_.getRecordByTime(id, timestamp);

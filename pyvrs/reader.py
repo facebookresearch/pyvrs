@@ -370,6 +370,27 @@ class VRSReader(BaseVRSReader, ABC):
             RecordableTypeId(recordable_type_id), flavor, index_number
         )
 
+    def get_serial_number_for_stream(self, stream_id: str) -> str:
+        """Get a stream's serial number.
+
+        When streams are created, they are assigned a unique serial number by their Recordable object.
+        That serial number is universally unique and it will be preserved during file copies, file
+        processing, and other manipulations that preserve stream tags. id for a specific recordable
+        type id (device type), flavor and index number.
+
+        Args:
+            stream_id: stream_id you are interested in.
+        """
+        return self._reader.get_serial_number_for_stream(stream_id)
+
+    def get_stream_for_serial_number(self, serial_number: str) -> str:
+        """Find the stream with the specified stream serial number.
+
+        Args:
+            serial_number: Serial number you are interested in
+        """
+        return self._reader.get_stream_for_serial_number(serial_number)
+
     def get_stream_info(self, stream_id: str) -> Dict[str, str]:
         """
         Get details about a stream.

@@ -393,6 +393,22 @@ class OssVRSReader : public vrs::utils::VideoRecordFormatStreamPlayer {
   /// @return StreamId in the form of a string corresponding to the given recordIndex.
   string getStreamIdForIndex(int recordIndex);
 
+  /// Get a stream's serial number.
+  /// When streams are created, they are assigned a unique serial number by their Recordable object.
+  /// That serial number is universally unique and it will be preserved during file copies, file
+  /// processing, and other manipulations that preserve stream tags.
+  /// @param streamId: StreamId of the record stream to consider.
+  /// @return The stream's serial number, or the empty string if the stream ID is not
+  /// valid. When opening files created before stream serial numbers were introduced,
+  /// RecordFileReader automatically generates a stable serial number for every stream based on the
+  /// file tags, the stream's tags (both user and VRS internal tags), and the stream type and
+  /// sequence number. This serial number is stable and preserved during copy and filtering
+  /// operations that preserve stream tags.
+  string getSerialNumberForStream(const string& streamId) const;
+
+  /// Find the stream with the specified stream serial number.
+  string getStreamForSerialNumber(const string& streamSerialNumber) const;
+
   /// Get the index based on streamId and timestamp, lower_bound is used for searching record.
   /// @param streamId: Stream ID you are interested in.
   /// @param timestamp: A timestamp

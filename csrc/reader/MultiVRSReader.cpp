@@ -844,6 +844,14 @@ string OssMultiVRSReader::getStreamIdForIndex(int recordIndex) {
   return getUniqueStreamIdForRecordIndex(static_cast<uint32_t>(recordIndex)).getNumericName();
 }
 
+string OssMultiVRSReader::getSerialNumberForStream(const string& streamId) const {
+  return reader_.getSerialNumber(UniqueStreamId::fromNumericName(streamId));
+}
+
+string OssMultiVRSReader::getStreamForSerialNumber(const string& streamSerialNumber) const {
+  return reader_.getStreamForSerialNumber(streamSerialNumber).getNumericName();
+}
+
 int32_t OssMultiVRSReader::getRecordIndexByTime(const string& streamId, double timestamp) {
   StreamId id = getStreamId(streamId);
   auto record = reader_.getRecordByTime(id, timestamp);
