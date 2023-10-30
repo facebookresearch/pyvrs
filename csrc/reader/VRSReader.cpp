@@ -989,11 +989,9 @@ void OssVRSReader::initRecordSummaries() {
   }
 
   const vector<IndexRecord::RecordInfo>& index = reader_.getIndex();
-  int32_t recordIndex = 0;
   for (const auto& record : index) {
     recordCountsByTypeAndStreamId[record.streamId][static_cast<int>(record.recordType)]++;
     countsByRecordType[static_cast<int>(record.recordType)]++;
-    recordIndex++;
   }
 
   for (int i = 0; i < recordTypeSize; i++) {
