@@ -298,14 +298,8 @@ bool OssVRSReader::setBlock(
         record.reader->read(data);
         block.structuredArray = false;
       } else {
-        shared_ptr<utils::PixelFrame> frame;
-        bool frameValid;
-        if (contentBlock.image().getImageFormat() == ImageFormat::VIDEO) {
-          frame = make_shared<utils::PixelFrame>(contentBlock.image());
-          frameValid = (tryToDecodeFrame(*frame, record, contentBlock) == 0);
-        } else {
-          frameValid = utils::PixelFrame::readFrame(frame, record.reader, contentBlock);
-        }
+        shared_ptr<utils::PixelFrame> frame = make_shared<utils::PixelFrame>(contentBlock.image());
+        bool frameValid = readFrame(*frame, record, contentBlock);
         if (XR_VERIFY(frameValid)) {
           block.structuredArray = true;
           // the image was read & maybe decompressed. Does it need to be converted, too?
