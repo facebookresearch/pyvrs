@@ -19,9 +19,7 @@
 #include <Python.h>
 
 namespace pyvrs {
-/// Initialize the VRS Python binding
+/// Initialize the VRS Python bindings.
+/// This function only performs initialization once, upon its first call.
 void initVrsBindings(const char* clientName = nullptr);
-
-/// Uninitialize the VRS Python binding
-void uninitVrsBindings();
 } // namespace pyvrs

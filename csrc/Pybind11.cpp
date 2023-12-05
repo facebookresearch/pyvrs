@@ -56,10 +56,6 @@ PYBIND11_MODULE(PYBIND_MODULE_NAME, m) {
   pyvrs::pybind_fbinternal(m);
 #endif
 
-  // We want to call pyvrs::uninitVrsBindings to clean up when this module becomes no longer needed.
-  auto atexit = py::module_::import("atexit");
-  atexit.attr("register")(py::cpp_function([]() { pyvrs::uninitVrsBindings(); }));
-
 #ifdef VERSION_INFO
   m.attr("__version__") = VERSION_INFO;
 #else

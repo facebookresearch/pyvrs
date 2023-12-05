@@ -22,8 +22,6 @@ namespace pyvrs {
 
 #if IS_VRS_OSS_CODE()
 void initVrsBindings(const char* clientName) {}
-
-void uninitVrsBindings() {}
 #endif
 
 } // namespace pyvrs
