@@ -210,8 +210,7 @@ bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::setBlock(
         record.reader->read(data);
         block.structuredArray = false;
       } else {
-        std::shared_ptr<utils::PixelFrame> frame =
-            make_shared<utils::PixelFrame>(contentBlock.image());
+        std::shared_ptr<utils::PixelFrame> frame = make_shared<utils::PixelFrame>();
         bool frameValid = readFrame(*frame, record, contentBlock);
         if (XR_VERIFY(frameValid)) {
           block.structuredArray = true;

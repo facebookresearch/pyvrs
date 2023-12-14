@@ -298,7 +298,7 @@ bool OssVRSReader::setBlock(
         record.reader->read(data);
         block.structuredArray = false;
       } else {
-        shared_ptr<utils::PixelFrame> frame = make_shared<utils::PixelFrame>(contentBlock.image());
+        shared_ptr<utils::PixelFrame> frame = make_shared<utils::PixelFrame>();
         bool frameValid = readFrame(*frame, record, contentBlock);
         if (XR_VERIFY(frameValid)) {
           block.structuredArray = true;
