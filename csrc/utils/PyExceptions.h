@@ -72,11 +72,13 @@ class StreamNotFoundError : public std::exception {
  public:
   explicit StreamNotFoundError(
       vrs::RecordableTypeId recordableTypeId,
+      const std::set<vrs::StreamId>& availableStreamIds)
+      : StreamNotFoundError(vrs::toString(recordableTypeId), availableStreamIds) {}
+  explicit StreamNotFoundError(
+      const std::string& streamId,
       const std::set<vrs::StreamId>& availableStreamIds) {
     std::stringstream ss;
-    ss << fmt::format(
-        "Matching stream not found for ID {0}. Available streams are:\n",
-        vrs::toString(recordableTypeId));
+    ss << fmt::format("No matching stream for {0}. Available streams are:\n", streamId);
     for (auto it : availableStreamIds) {
       ss << it.getName() << "\n";
     }

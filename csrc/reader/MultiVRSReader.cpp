@@ -804,7 +804,10 @@ std::vector<int32_t> OssMultiVRSReader::regenerateEnabledIndices(
   }
 
   for (const auto& streamId : streamIds) {
-    const StreamId id = StreamId::fromNumericName(streamId);
+    const StreamId id = reader_.getStreamForName(streamId);
+    if (!id.isValid()) {
+      throw StreamNotFoundError(streamId, reader_.getStreams());
+    }
     streamIdSet.insert(id);
   }
 
@@ -839,7 +842,11 @@ string OssMultiVRSReader::getStreamIdForIndex(int recordIndex) {
 }
 
 string OssMultiVRSReader::getSerialNumberForStream(const string& streamId) const {
-  return reader_.getSerialNumber(UniqueStreamId::fromNumericName(streamId));
+  const StreamId id = reader_.getStreamForName(streamId);
+  if (!id.isValid()) {
+    throw StreamNotFoundError(streamId, reader_.getStreams());
+  }
+  return reader_.getSerialNumber(id);
 }
 
 string OssMultiVRSReader::getStreamForSerialNumber(const string& streamSerialNumber) const {
@@ -1031,16 +1038,12 @@ void OssMultiVRSReader::initRecordSummaries() {
 }
 
 StreamId OssMultiVRSReader::getStreamId(const string& streamId) {
-  // Quick parsing of "NNN-DDD", two uint numbers separated by a '-'.
-  const StreamId id = StreamId::fromNumericName(streamId);
-  const auto& recordables = reader_.getStreams();
-  if (id.getTypeId() == RecordableTypeId::Undefined) {
-    throw py::value_error("Invalid stream ID: " + streamId);
+  // "NNN-DDD" or "NNN+DDD", two uint numbers separated by a '-' or '+'.
+  const StreamId id = reader_.getStreamForName(streamId);
+  if (!id.isValid()) {
+    throw StreamNotFoundError(streamId, reader_.getStreams());
   }
-  if (recordables.find(id) != recordables.end()) {
-    return id;
-  }
-  throw StreamNotFoundError(id.getTypeId(), recordables);
+  return id;
 }
 
 PyObject* OssMultiVRSReader::getRecordInfo(
