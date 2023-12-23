@@ -69,18 +69,15 @@ const constexpr char* kContentBlockBufferSizeKey = "buffer_size";
 
 namespace pyvrs {
 
-ImageBuffer jxlCompress(
-    const ImageContentBlockSpec& spec,
-    const vector<uint8_t>& bytes,
-    float quality,
-    bool percentNotDistance = true) {
+ImageBuffer
+jxlCompress(const ImageContentBlockSpec& spec, const vector<uint8_t>& bytes, float quality) {
   if (!XR_VERIFY(spec.getImageFormat() == ImageFormat::RAW)) {
     // jxlCompression is only supported for ImageFormat::RAW.
     throw py::value_error(
         "Image format not supported for JXL compression: " + spec.getImageFormatAsString());
   }
   vector<uint8_t> outBuffer;
-  if (!utils::PixelFrame::jxlCompress(spec, bytes, outBuffer, quality, percentNotDistance)) {
+  if (!utils::PixelFrame::jxlCompress(spec, bytes, outBuffer, quality)) {
     // jxlCompression was unsuccessful. Throw an error.
     throw std::runtime_error("JXL compression unsuccessful.");
   }
@@ -185,8 +182,8 @@ py::buffer_info bufferInfoFromVector(vector<uint8_t>& vec) {
       {static_cast<py::ssize_t>(sizeof(uint8_t))}); // Strides (in bytes) for each index
 }
 
-ImageBuffer ImageBuffer::jxlCompress(float quality, bool percentNotDistance) const {
-  return pyvrs::jxlCompress(spec.getImageContentBlockSpec(), bytes, quality, percentNotDistance);
+ImageBuffer ImageBuffer::jxlCompress(float quality) const {
+  return pyvrs::jxlCompress(spec.getImageContentBlockSpec(), bytes, quality);
 }
 
 ImageBuffer ImageBuffer::jpgCompress(uint32_t quality) const {
@@ -423,8 +420,8 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
   return bufferInfoFromVector(block.bytes);
 }
 
-ImageBuffer ContentBlockBuffer::jxlCompress(float quality, bool percentNotDistance) const {
-  return pyvrs::jxlCompress(spec.image(), bytes, quality, percentNotDistance);
+ImageBuffer ContentBlockBuffer::jxlCompress(float quality) const {
+  return pyvrs::jxlCompress(spec.image(), bytes, quality);
 }
 
 ImageBuffer ContentBlockBuffer::jpgCompress(uint32_t quality) const {

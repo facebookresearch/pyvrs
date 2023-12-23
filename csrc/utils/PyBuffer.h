@@ -229,7 +229,7 @@ struct ImageBuffer {
   }
   void initBytesFromPyBuffer(const py::buffer& b);
 
-  ImageBuffer jxlCompress(float quality, bool percentNotDistance = true) const;
+  ImageBuffer jxlCompress(float quality) const;
   ImageBuffer jpgCompress(uint32_t quality) const;
   ImageBuffer decompress() const;
 
@@ -243,7 +243,7 @@ struct ImageBuffer {
 struct ContentBlockBuffer {
   explicit ContentBlockBuffer(const ContentBlock& block)
       : spec{block}, structuredArray{false}, bytesAdjusted{false} {}
-  ImageBuffer jxlCompress(float quality, bool percentNotDistance = true) const;
+  ImageBuffer jxlCompress(float quality) const;
   ImageBuffer jpgCompress(uint32_t quality) const;
   ImageBuffer decompress() const;
 
