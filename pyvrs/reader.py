@@ -483,6 +483,30 @@ class VRSReader(BaseVRSReader, ABC):
             RecordableTypeId(recordable_type_id), conversion
         )
 
+    def skip_trailing_blocks(
+        self,
+        recordable_type_id: int,
+        record_type: RecordType,
+        first_trailing_content_block_index: int,
+    ) -> None:
+        """
+        Skip trailing record content blocks, probably to avoid reading/decoding images.
+
+        Args:
+            recordable_type_id: The recordable_type_id of the streams you want to affect.
+            record_type: The type of record you want to affect (probably RecordType.DATA).
+            first_trailing_content_block_index: The cutoff limit. 1, to skip after the firt, and 0
+            to disable skipping.
+
+        Returns:
+            None
+        """
+        return self._reader.skip_trailing_blocks(
+            RecordableTypeId(recordable_type_id),
+            record_type,
+            first_trailing_content_block_index,
+        )
+
     def might_contain_images(self, stream_id: str) -> bool:
         """
         Check if the given stream_id contains an image data.
