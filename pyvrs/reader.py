@@ -495,7 +495,7 @@ class VRSReader(BaseVRSReader, ABC):
         Args:
             recordable_type_id: The recordable_type_id of the streams you want to affect.
             record_type: The type of record you want to affect (probably RecordType.DATA).
-            first_trailing_content_block_index: The cutoff limit. 1, to skip after the firt, and 0
+            first_trailing_content_block_index: The cutoff limit. 1, to skip after the first, and 0
             to disable skipping.
 
         Returns:
