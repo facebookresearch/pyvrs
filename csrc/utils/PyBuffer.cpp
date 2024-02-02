@@ -59,7 +59,8 @@ const constexpr char* kImageSpecKeyFrameIndexKey = "key_frame_index";
 
 const constexpr char* kAudioSpecSampleCountKey = "sample_count";
 const constexpr char* kAudioSpecSampleFormatKey = "sample_format";
-const constexpr char* kAudioSpecSampleBlockStrideKey = "sample_block_stride";
+const constexpr char* kAudioSpecSampleBlockStrideKey = "sample_block_stride"; // deprecated
+const constexpr char* kAudioSpecSampleFrameStrideKey = "sample_frame_stride";
 const constexpr char* kAudioSpecChannelCountKey = "channel_count";
 const constexpr char* kAudioSpecSampleRateKey = "sample_rate";
 const constexpr char* kAudioSpecBufferSizeKey = "buffer_size";
@@ -137,7 +138,8 @@ void PyAudioContentBlockSpec::initAttributesMap() {
   if (attributesMap.empty()) {
     attributesMap[kAudioSpecSampleCountKey] = PYWRAP(getSampleCount());
     attributesMap[kAudioSpecSampleFormatKey] = PYWRAP(getSampleFormatAsString());
-    attributesMap[kAudioSpecSampleBlockStrideKey] = PYWRAP(getSampleBlockStride());
+    attributesMap[kAudioSpecSampleBlockStrideKey] = PYWRAP(getSampleFrameStride()); // deprecated
+    attributesMap[kAudioSpecSampleFrameStrideKey] = PYWRAP(getSampleFrameStride());
     attributesMap[kAudioSpecChannelCountKey] = PYWRAP(getChannelCount());
     attributesMap[kAudioSpecSampleRateKey] = PYWRAP(getSampleRate());
     attributesMap[kAudioSpecBufferSizeKey] = PYWRAP(getBlockSize());
@@ -284,7 +286,7 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
   if (block.structuredArray && block.spec.getContentType() == vrs::ContentType::AUDIO) {
     const vrs::AudioContentBlockSpec& audioSpec = block.spec.audio();
     std::string sampleFormat;
-    uint32_t audioSampleStride = audioSpec.getSampleBlockStride();
+    uint32_t audioSampleStride = audioSpec.getSampleFrameStride();
     uint32_t audioSampleCount = audioSpec.getSampleCount();
     uint32_t channelCount = audioSpec.getChannelCount();
     uint32_t audioSampleByteSize = audioSpec.getBytesPerSample();
@@ -571,7 +573,10 @@ void pybind_buffer(py::module& m) {
           .def_property_readonly(
               kAudioSpecSampleFormatKey, &PyAudioContentBlockSpec::getSampleFormat)
           .def_property_readonly(
-              kAudioSpecSampleBlockStrideKey, &PyAudioContentBlockSpec::getSampleBlockStride)
+              kAudioSpecSampleBlockStrideKey,
+              &PyAudioContentBlockSpec::getSampleFrameStride) // deprecated
+          .def_property_readonly(
+              kAudioSpecSampleFrameStrideKey, &PyAudioContentBlockSpec::getSampleFrameStride)
           .def_property_readonly(
               kAudioSpecChannelCountKey, &PyAudioContentBlockSpec::getChannelCount)
           .def_property_readonly(kAudioSpecSampleRateKey, &PyAudioContentBlockSpec::getSampleRate)

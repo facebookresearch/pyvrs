@@ -143,8 +143,8 @@ class PyAudioContentBlockSpec {
     return spec_.getSampleFormatAsString();
   }
 
-  uint8_t getSampleBlockStride() const {
-    return spec_.getSampleBlockStride();
+  uint8_t getSampleFrameStride() const {
+    return spec_.getSampleFrameStride();
   }
 
   uint8_t getChannelCount() const {
