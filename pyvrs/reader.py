@@ -684,9 +684,9 @@ class VRSReader(BaseVRSReader, ABC):
         if stream_id in self._record_counts_by_type:
             return self._record_counts_by_type[stream_id]
 
-        self._record_counts_by_type[
-            stream_id
-        ] = self._reader.record_count_by_type_from_stream_id(stream_id)
+        self._record_counts_by_type[stream_id] = (
+            self._reader.record_count_by_type_from_stream_id(stream_id)
+        )
         return self._record_counts_by_type[stream_id]
 
     def _generate_filtered_indices(self, record_filter: RecordFilter) -> List[int]:
