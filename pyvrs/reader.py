@@ -159,7 +159,7 @@ class VRSReader(BaseVRSReader, ABC):
         self,
         path: PathType,
         auto_read_configuration_records: bool = True,
-        encoding: str = "utf-8",
+        encoding: str = "utf-8-safe",
         multi_path: bool = False,
     ) -> None:
         """
