@@ -177,7 +177,6 @@ struct DataPieceStringMapPyObjectorRegistrerer {
 #define POD_MACRO DEFINE_DATA_PIECE_TYPE
 #include <vrs/helpers/PODMacro.inc>
 
-DEFINE_DATA_PIECE(Array, string)
 DEFINE_DATA_PIECE(Vector, string)
 DEFINE_DATA_PIECE(StringMap, string)
 
