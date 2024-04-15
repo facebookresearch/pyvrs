@@ -43,7 +43,7 @@ class BaseVRSReader(ABC):
     Note:
         - BaseVRSReader: Base abstract class that defines the common functions across all child classes.
         - VRSReader: Abstract class that represents entire file (e.g. file without any filters).
-          The methods in child classes of this operats against all records.
+          The methods in child classes of this operations against all records.
           When user call filtered_by_fields method, that call will create FilteredVRSReader that represents slice of the file.
         - FilteredVRSReader: Abstract class that represents the slice of the original file (After applying filter).
           This class essentially has the exact same methods as VRSReader but operate against subset of the file.

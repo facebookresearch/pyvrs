@@ -225,7 +225,7 @@ class VRSReader(BaseVRSReader, ABC):
             return path
 
     def close(self):
-        """explicitly close the VRS reader without waiting for Python grabage collection."""
+        """explicitly close the VRS reader without waiting for Python garbage collection."""
         return self._reader.close()
 
     def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
@@ -702,7 +702,7 @@ class VRSReader(BaseVRSReader, ABC):
         raise NotImplementedError()
 
     def _open_files(self, multi_path: bool, specs: Union[FileSpec, List[FileSpec]]):
-        # self._path is used only in __str__ method, we use get_easy_path because it provides a good enough summry of the file.
+        # self._path is used only in __str__ method, we use get_easy_path because it provides a good enough summary of the file.
         if multi_path:
             self._path = specs[0].get_easy_path()
         else:
@@ -733,7 +733,7 @@ class VRSReader(BaseVRSReader, ABC):
                     would only keep '1011-1'.
             record_types: Record types that you are interested in. The options are {"data", "configuration", "state"}.
             min_timestamp: Minimum timestamp you want to read from.
-            max_timestamp: Maxmum timestamp you want to read to.
+            max_timestamp: Maximum timestamp you want to read to.
 
         Returns:
             FilteredVRSReader that represents filtered VRS file.
@@ -780,7 +780,7 @@ class SyncVRSReader(VRSReader):
                     would only keep '1011-1'.
             record_types: Record types that you are interested in. The options are {"data", "configuration", "state"}.
             min_timestamp: Minimum timestamp you want to read from.
-            max_timestamp: Maxmum timestamp you want to read to.
+            max_timestamp: Maximum timestamp you want to read to.
 
         Returns:
             FilteredVRSReader that represents filtered VRS file.
@@ -843,7 +843,7 @@ class AsyncVRSReader(VRSReader, AsyncIterable[VRSRecord]):
                     would only keep '1011-1'.
             record_types: Record types that you are interested in. The options are {"data", "configuration", "state"}.
             min_timestamp: Minimum timestamp you want to read from.
-            max_timestamp: Maxmum timestamp you want to read to.
+            max_timestamp: Maximum timestamp you want to read to.
 
         Returns:
             AsyncFilteredVRSReader that represents filtered VRS file.

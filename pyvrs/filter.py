@@ -56,7 +56,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         """
         Args:
             reader: reader object for the whole VRS file (i.e. without any filters)
-            record_fitler: filter that's applied to the VRS file
+            record_filter: filter that's applied to the VRS file
         """
         self._reader = reader
         self._record_filter = record_filter
@@ -417,7 +417,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
 class SyncFilteredVRSReader(FilteredVRSReader):
     """
-    Synchrnous version of FilteredVRSReader.
+    Synchronous version of FilteredVRSReader.
     """
 
     def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
