@@ -15,6 +15,7 @@
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -79,16 +80,18 @@ class CMakeBuild(build_ext):
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
-            "-GCodeBlocks",
         ]
         build_args = ["--target", os.path.basename(ext.name)]
 
         if "CMAKE_ARGS" in os.environ:
             cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
 
-        # Default to Ninja
-        if "CMAKE_GENERATOR" not in os.environ:
-            cmake_args += ["-GNinja"]
+        if sys.platform.startswith("win"):
+            build_args += ["--config", "Release"]
+        else:
+            # Default to Ninja
+            if "CMAKE_GENERATOR" not in os.environ:
+                cmake_args += ["-GNinja"]
 
         if sys.platform.startswith("darwin"):
             # Cross-compile support for macOS - respect ARCHFLAGS if set
@@ -104,6 +107,12 @@ class CMakeBuild(build_ext):
         subprocess.check_call(
             ["cmake", "--build", "."] + build_args, cwd=self.build_temp
         )
+
+        if sys.platform.startswith("win"):
+            [
+                shutil.copy(os.path.join(f"{extdir}/Release/", f), extdir)
+                for f in os.listdir(f"{extdir}/Release/")
+            ]
 
 
 def main():

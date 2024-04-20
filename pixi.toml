@@ -1,0 +1,32 @@
+[project]
+name = "pyvrs"
+version = "0.1.0"
+description = "pyvrs is a Python interface for C++ library VRS using pybind11."
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tasks]
+
+install_pyvrs = "python -m pip install -e ."
+clean = "rm -rf ./build ./wheels vrs.egg-info/"
+
+[build-dependencies]
+cmake = "3.28.3"
+cxx-compiler = "1.6.0.*"
+ninja = "1.11.1"
+
+[dependencies]
+gtest = "1.14.0"
+
+boost = "1.84.0"
+fmt = "10.1.1"
+libjpeg-turbo = "2.1.4.*"
+libpng = "1.6.39.*"
+lz4 = "4.3.2.*"
+portaudio = "19.6.0.*"
+xxhash = "0.8.2"
+zlib = "1.2.13.*"
+
+# Install Python dependencies
+python = "3.11.*"
+pip = "*"
