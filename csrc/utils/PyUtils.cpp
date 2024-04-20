@@ -16,6 +16,8 @@
 
 #include "PyUtils.h"
 
+#include <algorithm>
+
 #define DEFAULT_LOG_CHANNEL "PyUtils"
 #include <logging/Log.h>
 
@@ -39,13 +41,13 @@ string typeName(const DataPiece* piece, const char* suffix) {
 
 string lowercaseTypeName(Record::Type type) {
   string typeName = toString(type);
-  transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
+  std::transform(typeName.begin(), typeName.end(), typeName.begin(), ::tolower);
   return typeName;
 }
 
 string toupper(const string& s) {
   string t{s};
-  transform(t.begin(), t.end(), t.begin(), ::toupper);
+  std::transform(t.begin(), t.end(), t.begin(), ::toupper);
   return t;
 }
 
