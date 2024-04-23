@@ -13,7 +13,11 @@ pypi package is built with [this Github Action](https://github.com/facebookresea
 pip install vrs
 ```
 
+:warning: Note: Work on the Windows version of the PyPI package is currently in progress and will be completed soon. In the meantime, please build the package from the source. Further details can be found in the section below.
+
 ## From source
+
+### Mac and Linux:
 ```
 # Build locally
 git clone --recursive https://github.com/facebookresearch/pyvrs.git
@@ -25,6 +29,25 @@ git submodule update --init --recursive
 # Install VRS dependencies: https://github.com/facebookresearch/vrs#instructions-macos-and-ubuntu-and-container
 
 python -m pip install -e .
+```
+
+### Windows (via pixi):
+
+```
+# Donwload pyvrs
+git clone https://github.com/facebookresearch/pyvrs.git
+cd pyvrs
+git submodule sync --recursive
+git submodule update --init --recursive
+
+# Install pixi (details can be found: https://pixi.sh/latest/#__tabbed_1_2)
+iwr -useb https://pixi.sh/install.ps1 | iex
+# Install VRS dependencies:
+pixi run install_pyvrs
+
+# Start pixi shell to execute your python scripts
+pixi shell
+python yourPythonScript.py
 ```
 
 # Contributing
