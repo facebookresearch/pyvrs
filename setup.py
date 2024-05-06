@@ -129,7 +129,7 @@ def main():
         author="Meta Reality Labs Research",
         license="Apache-2.0",
         install_requires=["numpy", "typing", "dataclasses"],
-        python_requires=">=3.7",
+        python_requires=">=3.9",
         packages=find_packages(),
         zip_safe=False,
         ext_modules=[CMakeExtension("vrsbindings", sourcedir=ROOT_DIR)],
