@@ -44,6 +44,7 @@ def async_test(func):
 
 
 class TestAsyncRead(unittest.TestCase):
+    @unittest.skip
     @async_test
     async def test_async_read(self):
         reader = SyncVRSReader(

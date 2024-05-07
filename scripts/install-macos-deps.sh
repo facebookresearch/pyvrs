@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-brew install cmake git ninja googletest glog fmt cereal \
+brew install cmake git ninja googletest glog fmt \
     jpeg-turbo libpng \
     lz4 zstd xxhash boost
