@@ -52,7 +52,7 @@ jobs:
           fi
           python -m pip install -U pip
           python -m pip install numpy typing dataclasses pytest parameterized Pillow
-          python -m pip install cibuildwheel
+          python -m pip install cibuildwheel==2.17.0
 
       - name: Build wheels for CPython
         run: |

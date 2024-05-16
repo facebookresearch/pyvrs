@@ -51,7 +51,7 @@ export CIBW_BEFORE_BUILD_MACOS="arch -arm64 brew install boost cmake fmt glog jp
 export CIBW_SKIP="*-manylinux_i686 *musllinux*"
 
 # Build wheels for all specified versions
-python -m pip install cibuildwheel
+python -m pip install cibuildwheel==2.17.0
 python -m cibuildwheel --output-dir dist
 
 # # Upload to PyPI
