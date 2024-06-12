@@ -335,6 +335,11 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
                 sample.bytes[1] = src[channelIndex * 3 + 1];
                 sample.bytes[2] = src[channelIndex * 3 + 2];
               }
+              // Sign-extend if needed
+              if (audioSpec.getSampleFormat() == vrs::AudioSampleFormat::S24_LE ||
+                  audioSpec.getSampleFormat() == vrs::AudioSampleFormat::S24_BE) {
+                sample.bytes[3] = (0 != (sample.bytes[2] & 0x80)) ? 0xFF : 0;
+              }
               dst[channelIndex] = sample.int32;
             }
             src += audioSampleStride;
