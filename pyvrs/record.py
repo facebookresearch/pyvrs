@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Callable, Sequence, TypeVar, Union
+from typing import Callable, overload, Sequence, TypeVar, Union
 
 import numpy as np
 
@@ -160,6 +160,12 @@ class VRSBlocks(Sequence):
     def __init__(self, get_func: Callable[[int], T], range_: range) -> None:
         self._range = range_
         self._get_func = get_func
+
+    @overload
+    def __getitem__(self, i: int) -> T: ...
+
+    @overload
+    def __getitem__(self, i: slice) -> "VRSBlocks": ...
 
     def __getitem__(self, i: Union[int, slice]) -> Union[T, "VRSBlocks"]:
         if isinstance(i, int) or hasattr(i, "__index__"):

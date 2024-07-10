@@ -16,7 +16,17 @@
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, AsyncIterable, Dict, List, Mapping, Optional, Set, Union
+from typing import (
+    Any,
+    AsyncIterable,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    overload,
+    Set,
+    Union,
+)
 
 from . import (
     AsyncMultiReader,
@@ -227,6 +237,12 @@ class VRSReader(BaseVRSReader, ABC):
     def close(self):
         """explicitly close the VRS reader without waiting for Python garbage collection."""
         return self._reader.close()
+
+    @overload
+    def __getitem__(self, i: int) -> VRSRecord: ...
+
+    @overload
+    def __getitem__(self, i: slice) -> VRSReaderSlice: ...
 
     def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
         return self._read_record(range(self.n_records), i)
@@ -880,6 +896,12 @@ class AsyncVRSReader(VRSReader, AsyncIterable[VRSRecord]):
         result = await self[self._index]
         self._index += 1
         return result
+
+    @overload
+    async def __getitem__(self, i: int) -> VRSRecord: ...
+
+    @overload
+    async def __getitem__(self, i: slice) -> AsyncVRSReaderSlice: ...
 
     async def __getitem__(
         self, i: Union[int, slice]

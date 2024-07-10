@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Set, Union
+from typing import Any, Dict, Iterator, List, Mapping, Optional, overload, Set, Union
 
 from . import ImageConversion, RecordType
 
@@ -54,6 +54,12 @@ class BaseVRSReader(ABC):
         - SyncFilteredVRSReader: Synchronous version of FilteredVRSReader.
         - AsyncFilteredVRSReader: Asynchronous version of FilteredVRSReader, same difference as SyncVRSReader vs AsyncVRSReader.
     """
+
+    @overload
+    def __getitem__(self, i: int) -> VRSRecord: ...
+
+    @overload
+    def __getitem__(self, i: slice) -> VRSReaderSlice: ...
 
     @abstractmethod
     def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:

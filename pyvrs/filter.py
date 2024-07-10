@@ -16,13 +16,13 @@
 from abc import ABC, abstractmethod
 from bisect import bisect
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional, Set, Union
+from typing import Any, List, Mapping, Optional, overload, Set, Union
 
 from . import ImageConversion, RecordType
 
 from .base import BaseVRSReader
 from .record import VRSRecord
-from .slice import VRSReaderSlice
+from .slice import AsyncVRSReaderSlice, VRSReaderSlice
 from .utils import (
     get_recordable_type_id_name,
     string_of_set,
@@ -420,6 +420,12 @@ class SyncFilteredVRSReader(FilteredVRSReader):
     Synchronous version of FilteredVRSReader.
     """
 
+    @overload
+    def __getitem__(self, i: int) -> VRSRecord: ...
+
+    @overload
+    def __getitem__(self, i: slice) -> VRSReaderSlice: ...
+
     def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
         return self._read_record(self._filtered_indices, i)
 
@@ -502,9 +508,15 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
         self._index += 1
         return result
 
+    @overload
+    async def __getitem__(self, i: int) -> VRSRecord: ...
+
+    @overload
+    async def __getitem__(self, i: slice) -> AsyncVRSReaderSlice: ...
+
     async def __getitem__(
         self, i: Union[int, slice]
-    ) -> Union[VRSRecord, VRSReaderSlice]:
+    ) -> Union[VRSRecord, AsyncVRSReaderSlice]:
         return await self._reader._async_read_record(self._filtered_indices, i)
 
     def __repr__(self) -> str:

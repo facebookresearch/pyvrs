@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import List, Sequence, TYPE_CHECKING, Union
+from typing import List, overload, Sequence, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from .reader import AsyncVRSReader, VRSReader
@@ -32,6 +32,12 @@ class VRSReaderSlice(Sequence):
         self._path = Path(path)
         self._reader = r
         self._indices = indices
+
+    @overload
+    def __getitem__(self, i: int) -> VRSRecord: ...
+
+    @overload
+    def __getitem__(self, i: slice) -> "VRSReaderSlice": ...
 
     def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, "VRSReaderSlice"]:
         return index_or_slice_records(self._path, self._reader, self._indices, i)
@@ -70,6 +76,12 @@ class AsyncVRSReaderSlice(Sequence):
         result = await self[self.index]
         self.index += 1
         return result
+
+    @overload
+    async def __getitem__(self, i: int) -> VRSRecord: ...
+
+    @overload
+    async def __getitem__(self, i: slice) -> "AsyncVRSReaderSlice": ...
 
     async def __getitem__(
         self, i: Union[int, slice]
