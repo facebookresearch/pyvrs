@@ -262,8 +262,10 @@ void OssMultiVRSReader::open(const std::string& path) {
 void OssMultiVRSReader::open(const std::vector<std::string>& paths) {
   std::vector<FileSpec> specs(paths.size());
   for (size_t i = 0; i < paths.size(); i++) {
-    if (RecordFileReader::vrsFilePathToFileSpec(paths[i], specs[i]) != 0) {
-      throw py::value_error("Invalid path given: " + paths[i]);
+    int status = RecordFileReader::vrsFilePathToFileSpec(paths[i], specs[i]);
+    if (status != 0) {
+      throw py::value_error(
+          fmt::format("Invalid path '{}': {}", paths[i], errorCodeToMessageWithCode(status)));
     }
   }
   return open(specs);
