@@ -66,6 +66,10 @@ file (GLOB_RECURSE CSRCS
   "csrc/reader/*.hpp"
   "csrc/utils/*.cpp"
   "csrc/utils/*.h"
+  "csrc/writer/*.cpp"
+  "csrc/writer/*.h"
+  "csrc/writer/datalayouts/*.cpp"
+  "csrc/writer/datalayouts/*.h"
 )
 
 # Remove fb-only source files (if there is still any lying around)
