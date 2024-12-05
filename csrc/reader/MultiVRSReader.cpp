@@ -23,6 +23,7 @@
 #include <string>
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <pybind11/attr.h>
 #include <pybind11/cast.h>
