@@ -35,16 +35,11 @@
 #define DEFAULT_LOG_CHANNEL "VRSWriter"
 #include <logging/Log.h>
 
-#include <vrs/gaia/GaiaClient.h>
-#include <vrs/gaia/GaiaUploader.h>
-#include <vrs/gaia/UploadMetadata.h>
-
 #include "../VrsBindings.h"
 #include "../utils/PyUtils.h"
 #include "StreamFactory.h"
 
 // Open source DataLayout definitions
-#include "datalayouts/Annotations.h"
 #include "datalayouts/SampleDataLayout.h"
 
 namespace py = pybind11;
@@ -79,18 +74,6 @@ void VRSWriter::init() {
       "sample_with_image", createSampleStreamWithImage);
   StreamFactory::getInstance().registerStreamCreationFunction(
       "sample_with_multiple_data_layout", createSampleStreamWithMultipleDataLayout);
-  StreamFactory::getInstance().registerStreamCreationFunction(
-      "full_annotation", createFullAnnotationStream);
-  StreamFactory::getInstance().registerStreamCreationFunction(
-      "label_annotation", createLabelAnnotationStream);
-  StreamFactory::getInstance().registerStreamCreationFunction(
-      "time_segment_annotation", createTimeSegmentAnnotationStream);
-  StreamFactory::getInstance().registerStreamCreationFunction(
-      "frame_annotation", createFrameAnnotationStream);
-  StreamFactory::getInstance().registerStreamCreationFunction(
-      "bounding_box_annotation", createBoundingBoxAnnotationStream);
-  StreamFactory::getInstance().registerStreamCreationFunction(
-      "key_points_annotation", createKeyPointsAnnotationStream);
   /// Register open source stream writers (end)
 
 #if IS_VRS_FB_INTERNAL()
