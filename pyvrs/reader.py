@@ -419,6 +419,18 @@ class VRSReader(BaseVRSReader, ABC):
         """
         return self._reader.get_stream_info(stream_id)
 
+    def get_stream_size(self, stream_id: str) -> int:
+        """
+        Get a stream's size.
+
+        Args:
+            stream_id: stream_id you are interested in.
+
+        Returns:
+            The number of file bytes used by the stream.
+        """
+        return self._reader.get_stream_size(stream_id)
+
     def get_records_count(self, stream_id: str, record_type: RecordType) -> int:
         """
         Get the number of records for the stream_id & record_type.
