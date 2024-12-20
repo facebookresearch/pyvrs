@@ -204,6 +204,12 @@ class OssVRSReader : public vrs::utils::VideoRecordFormatStreamPlayer {
   /// "flavor": device flavor, if set.
   py::object getStreamInfo(const string& streamId);
 
+  /// Get a stream's footprint on disk.
+  /// This API is fairly expensive, which is why it's not folded into getStreamInfo().
+  /// @param streamId: VRS stream id.
+  /// @return Stream disk size, in bytes.
+  int64_t getStreamSize(const string& streamId);
+
   /// Enable reading the records of a specific device.
   /// @param streamId: VRS stream id to enable for reading.
   /// @return True if the stream was found and is now enabled for reading.

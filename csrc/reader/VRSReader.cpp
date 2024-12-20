@@ -435,6 +435,18 @@ void OssVRSReader::addStreamInfo(PyObject* dic, const StreamId& id, Record::Type
   addRecordInfo(dic, "last_", recordType, reader_.getLastRecord(id, recordType));
 }
 
+int64_t OssVRSReader::getStreamSize(const string& streamId) {
+  StreamId id = getStreamId(streamId);
+  int64_t size = 0;
+  const auto& index = reader_.getIndex();
+  for (uint32_t k = 0; k < index.size(); ++k) {
+    if (index[k].streamId == id) {
+      size += reader_.getRecordSize(k);
+    }
+  }
+  return size;
+}
+
 void OssVRSReader::addRecordInfo(
     PyObject* dic,
     const string& prefix,
@@ -1067,6 +1079,7 @@ void pybind_vrsreader(py::module& m) {
       .def("get_stream_for_flavor", &PyVRSReader::getStreamForFlavor)
       .def("find_stream", &PyVRSReader::findStream)
       .def("get_stream_info", &PyVRSReader::getStreamInfo)
+      .def("get_stream_size", &PyVRSReader::getStreamSize)
       .def("enable_stream", py::overload_cast<const string&>(&PyVRSReader::enableStream))
       .def("enable_streams", &PyVRSReader::enableStreams)
       .def("enable_streams_by_indexes", &PyVRSReader::enableStreamsByIndexes)
