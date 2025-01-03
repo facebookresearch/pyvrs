@@ -32,13 +32,11 @@
 namespace pyvrs {
 
 void AsyncReadJob::performJob(OssAsyncVRSReader& reader) {
-  py::gil_scoped_acquire acquire;
   py::object record = reader.readRecord(index_);
   loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }
 
 void AsyncReadJob::performJob(OssAsyncMultiVRSReader& reader) {
-  py::gil_scoped_acquire acquire;
   py::object record = reader.readRecord(index_);
   loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }
@@ -85,7 +83,11 @@ void OssAsyncVRSReader::asyncThreadActivity() {
   std::unique_ptr<AsyncJob> job;
   while (!shouldEndAsyncThread_) {
     if (workerQueue_.waitForJob(job, 1) && !shouldEndAsyncThread_) {
-      job->performJob(*this);
+      py::gil_scoped_acquire acquire;
+      if (!shouldEndAsyncThread_) {
+        job->performJob(*this);
+      }
+      job.reset(); // the job holds a py::object, so we need the GIL to delete it
     }
   }
 }
@@ -135,7 +137,11 @@ void OssAsyncMultiVRSReader::asyncThreadActivity() {
   std::unique_ptr<AsyncJob> job;
   while (!shouldEndAsyncThread_) {
     if (workerQueue_.waitForJob(job, 1) && !shouldEndAsyncThread_) {
-      job->performJob(*this);
+      py::gil_scoped_acquire acquire;
+      if (!shouldEndAsyncThread_) {
+        job->performJob(*this);
+      }
+      job.reset(); // the job holds a py::object, so we need the GIL to delete it
     }
   }
 }
