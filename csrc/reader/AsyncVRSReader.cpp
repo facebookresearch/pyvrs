@@ -31,14 +31,53 @@
 
 namespace pyvrs {
 
+AwaitableRecord::AwaitableRecord(uint32_t index, AsyncJobQueue& queue)
+    : index_{index}, queue_{queue} {
+  AsyncJob::getMainLoop(); // make sure the main loop is initialized
+}
+
+AwaitableRecord::AwaitableRecord(const AwaitableRecord& other)
+    : index_{other.index_}, queue_{other.queue_} {}
+
+py::object& AsyncJob::getMainLoop() {
+  static py::object mainLoop = py::module_::import("asyncio").attr("get_running_loop")();
+  return mainLoop;
+}
+
+template <class Reader>
+void AsyncThreadHandler<Reader>::cleanup() {
+  shouldEndAsyncThread_ = true;
+  if (asyncThread_.joinable()) {
+    asyncThread_.join();
+  }
+}
+
+template <class Reader>
+void AsyncThreadHandler<Reader>::asyncThreadActivity() {
+  std::unique_ptr<AsyncJob> job;
+  while (!shouldEndAsyncThread_) {
+    if (workerQueue_.waitForJob(job, 1) && !shouldEndAsyncThread_) {
+      py::gil_scoped_acquire acquire;
+      if (!shouldEndAsyncThread_) {
+        job->performJob(reader_);
+      }
+      job.reset(); // the job holds a py::object, so we need the GIL to delete it
+    }
+  }
+}
+
+// force template class instantiation
+template class AsyncThreadHandler<OssAsyncVRSReader>;
+template class AsyncThreadHandler<OssAsyncMultiVRSReader>;
+
 void AsyncReadJob::performJob(OssAsyncVRSReader& reader) {
   py::object record = reader.readRecord(index_);
-  loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
+  getMainLoop().attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }
 
 void AsyncReadJob::performJob(OssAsyncMultiVRSReader& reader) {
   py::object record = reader.readRecord(index_);
-  loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
+  getMainLoop().attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }
 
 AwaitableRecord
@@ -72,24 +111,8 @@ AwaitableRecord OssAsyncVRSReader::asyncReadRecord(int index) {
 }
 
 OssAsyncVRSReader::~OssAsyncVRSReader() {
-  shouldEndAsyncThread_ = true;
-  if (asyncThread_.joinable()) {
-    asyncThread_.join();
-  }
+  asyncThreadHandler_.cleanup();
   reader_.closeFile();
-}
-
-void OssAsyncVRSReader::asyncThreadActivity() {
-  std::unique_ptr<AsyncJob> job;
-  while (!shouldEndAsyncThread_) {
-    if (workerQueue_.waitForJob(job, 1) && !shouldEndAsyncThread_) {
-      py::gil_scoped_acquire acquire;
-      if (!shouldEndAsyncThread_) {
-        job->performJob(*this);
-      }
-      job.reset(); // the job holds a py::object, so we need the GIL to delete it
-    }
-  }
 }
 
 AwaitableRecord OssAsyncMultiVRSReader::asyncReadRecord(
@@ -126,24 +149,8 @@ AwaitableRecord OssAsyncMultiVRSReader::asyncReadRecord(int index) {
 }
 
 OssAsyncMultiVRSReader::~OssAsyncMultiVRSReader() {
-  shouldEndAsyncThread_ = true;
-  if (asyncThread_.joinable()) {
-    asyncThread_.join();
-  }
+  asyncThreadHandler_.cleanup();
   reader_.close();
-}
-
-void OssAsyncMultiVRSReader::asyncThreadActivity() {
-  std::unique_ptr<AsyncJob> job;
-  while (!shouldEndAsyncThread_) {
-    if (workerQueue_.waitForJob(job, 1) && !shouldEndAsyncThread_) {
-      py::gil_scoped_acquire acquire;
-      if (!shouldEndAsyncThread_) {
-        job->performJob(*this);
-      }
-      job.reset(); // the job holds a py::object, so we need the GIL to delete it
-    }
-  }
 }
 
 #if IS_VRS_OSS_CODE()
@@ -300,17 +307,7 @@ void pybind_asyncvrsreaders(py::module& m) {
       .def("get_prev_index", &PyAsyncMultiReader::getPrevIndex);
 
   py::class_<AwaitableRecord>(m, "AwaitableRecord")
-      .def("__await__", [](const AwaitableRecord& awaitable) {
-        py::object loop, fut;
-        {
-          py::gil_scoped_acquire acquire;
-          loop = py::module_::import("asyncio.events").attr("get_event_loop")();
-          fut = loop.attr("create_future")();
-        }
-        unique_ptr<AsyncJob> job = make_unique<AsyncReadJob>(loop, fut, awaitable.getIndex());
-        awaitable.scheduleJob(std::move(job));
-        return fut.attr("__await__")();
-      });
+      .def("__await__", [](const AwaitableRecord& awaitable) { return awaitable.await(); });
 }
 #endif
 } // namespace pyvrs

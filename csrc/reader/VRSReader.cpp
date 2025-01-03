@@ -709,7 +709,7 @@ py::object OssVRSReader::readNextRecord(RecordableTypeId typeId, const string& r
 }
 
 py::object OssVRSReader::readRecord(int index) {
-  if (static_cast<size_t>(index) >= reader_.getIndex().size()) {
+  if (static_cast<uint32_t>(index) >= reader_.getIndex().size()) {
     throw py::index_error("No record at index: " + to_string(index));
   }
   nextRecordIndex_ = static_cast<uint32_t>(index);
