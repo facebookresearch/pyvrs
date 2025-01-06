@@ -37,8 +37,7 @@ def async_test(func):
 
     @functools.wraps(func)
     def wrapper(*args: Any, **kws: Any) -> None:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(func(*args, **kws))
+        asyncio.run(func(*args, **kws))
 
     return wrapper
 

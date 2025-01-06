@@ -39,11 +39,13 @@ class OssAsyncVRSReader;
 class OssAsyncMultiVRSReader;
 
 /// \brief The base class for asynchronous job
-/// This class takes asyncio's event loop & future in constructor so that we can later call
-/// loop.call_soon_threadsafe(future.set_result(<result>)) to set the result into future.
+/// This class captures the asyncio's event loop, and creates a future for that loop so that we can
+/// later call loop.call_soon_threadsafe(future.set_result(<result>)) to set that future's result.
 class AsyncJob {
  public:
-  AsyncJob() : future_{AsyncJob::getMainLoop().attr("create_future")()} {}
+  AsyncJob()
+      : loop_{py::module_::import("asyncio").attr("get_running_loop")()},
+        future_{loop_.attr("create_future")()} {}
   AsyncJob(const AsyncJob& other) = delete;
   virtual ~AsyncJob() = default;
 
@@ -56,9 +58,8 @@ class AsyncJob {
     return future_.attr("__await__")();
   }
 
-  static py::object& getMainLoop();
-
  protected:
+  py::object loop_;
   py::object future_;
 };
 
@@ -77,10 +78,11 @@ class AsyncReadJob : public AsyncJob {
 using AsyncJobQueue = JobQueue<std::unique_ptr<AsyncJob>>;
 
 /// \brief Python awaitable record
-/// This class only exposes __await__ method to Python which does
-/// - Obtain Python event loop via asyncio.events.get_event_loop
-/// - Create future to return to Python side via loop.create_future
-/// - Create AsyncReadJob object with loop, future and record index
+/// This class only exposes __await__ method to Python which does the following:
+/// - Creates an AsyncReadJob object that:
+///   1 - captures asyncio.events.get_running_loop,
+///   2 - creates a future for that loop via loop.create_future(),
+///   3 - captures the record index
 /// - Send a job to AsyncReader's background thread
 /// - Call future.__await__() and Python side waits until set_result will be called by AsyncReader
 class AwaitableRecord {

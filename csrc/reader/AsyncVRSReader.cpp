@@ -32,17 +32,10 @@
 namespace pyvrs {
 
 AwaitableRecord::AwaitableRecord(uint32_t index, AsyncJobQueue& queue)
-    : index_{index}, queue_{queue} {
-  AsyncJob::getMainLoop(); // make sure the main loop is initialized
-}
+    : index_{index}, queue_{queue} {}
 
 AwaitableRecord::AwaitableRecord(const AwaitableRecord& other)
     : index_{other.index_}, queue_{other.queue_} {}
-
-py::object& AsyncJob::getMainLoop() {
-  static py::object mainLoop = py::module_::import("asyncio").attr("get_running_loop")();
-  return mainLoop;
-}
 
 template <class Reader>
 void AsyncThreadHandler<Reader>::cleanup() {
@@ -72,12 +65,12 @@ template class AsyncThreadHandler<OssAsyncMultiVRSReader>;
 
 void AsyncReadJob::performJob(OssAsyncVRSReader& reader) {
   py::object record = reader.readRecord(index_);
-  getMainLoop().attr("call_soon_threadsafe")(future_.attr("set_result"), record);
+  loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }
 
 void AsyncReadJob::performJob(OssAsyncMultiVRSReader& reader) {
   py::object record = reader.readRecord(index_);
-  getMainLoop().attr("call_soon_threadsafe")(future_.attr("set_result"), record);
+  loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }
 
 AwaitableRecord
