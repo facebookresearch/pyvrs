@@ -72,6 +72,7 @@ class AsyncReadJob : public AsyncJob {
 };
 
 using AsyncJobQueue = JobQueue<std::unique_ptr<AsyncJob>>;
+class AsyncReadHandler;
 
 /// \brief Python awaitable record
 /// This class only exposes __await__ method to Python which does the following:
@@ -83,30 +84,35 @@ using AsyncJobQueue = JobQueue<std::unique_ptr<AsyncJob>>;
 /// - Call future.__await__() and Python side waits until set_result will be called by AsyncReader
 class AwaitableRecord {
  public:
-  AwaitableRecord(uint32_t index, AsyncJobQueue& queue);
+  AwaitableRecord(uint32_t index, AsyncReadHandler& readHandler);
   AwaitableRecord(const AwaitableRecord& other);
 
   py::object await() const;
 
  private:
   uint32_t index_;
-  AsyncJobQueue& queue_;
+  AsyncReadHandler& readHandler_;
 };
 
 /// \brief Helper class to manage the background async thread
-class AsyncThreadHandler {
+class AsyncReadHandler {
  public:
-  AsyncThreadHandler(VRSReaderBase& reader, AsyncJobQueue& queue)
-      : reader_{reader},
-        workerQueue_(queue),
-        asyncThread_(&AsyncThreadHandler::asyncThreadActivity, this) {}
+  AsyncReadHandler(VRSReaderBase& reader)
+      : reader_{reader}, asyncThread_(&AsyncReadHandler::asyncThreadActivity, this) {}
+
+  VRSReaderBase& getReader() const {
+    return reader_;
+  }
+  AsyncJobQueue& getQueue() {
+    return workerQueue_;
+  }
 
   void asyncThreadActivity();
   void cleanup();
 
  private:
   VRSReaderBase& reader_;
-  AsyncJobQueue& workerQueue_;
+  AsyncJobQueue workerQueue_;
   atomic<bool> shouldEndAsyncThread_ = false;
   thread asyncThread_;
 };
@@ -117,7 +123,7 @@ class AsyncThreadHandler {
 class OssAsyncVRSReader : public OssVRSReader {
  public:
   explicit OssAsyncVRSReader(bool autoReadConfigurationRecord)
-      : OssVRSReader(autoReadConfigurationRecord), asyncThreadHandler_{*this, workerQueue_} {}
+      : OssVRSReader(autoReadConfigurationRecord), readHandler_{*this} {}
 
   ~OssAsyncVRSReader() override;
 
@@ -136,8 +142,7 @@ class OssAsyncVRSReader : public OssVRSReader {
   AwaitableRecord asyncReadRecord(int index);
 
  private:
-  AsyncJobQueue workerQueue_;
-  AsyncThreadHandler asyncThreadHandler_;
+  AsyncReadHandler readHandler_;
 };
 
 /// \brief The async MultiVRSReader class
@@ -146,7 +151,7 @@ class OssAsyncVRSReader : public OssVRSReader {
 class OssAsyncMultiVRSReader : public OssMultiVRSReader {
  public:
   explicit OssAsyncMultiVRSReader(bool autoReadConfigurationRecord)
-      : OssMultiVRSReader(autoReadConfigurationRecord), asyncThreadHandler_{*this, workerQueue_} {}
+      : OssMultiVRSReader(autoReadConfigurationRecord), readHandler_{*this} {}
 
   ~OssAsyncMultiVRSReader() override;
 
@@ -165,8 +170,7 @@ class OssAsyncMultiVRSReader : public OssMultiVRSReader {
   AwaitableRecord asyncReadRecord(int index);
 
  private:
-  AsyncJobQueue workerQueue_;
-  AsyncThreadHandler asyncThreadHandler_;
+  AsyncReadHandler readHandler_;
 };
 
 /// Binds methods and classes for AsyncVRSReader.

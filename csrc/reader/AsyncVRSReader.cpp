@@ -31,28 +31,28 @@
 
 namespace pyvrs {
 
-AwaitableRecord::AwaitableRecord(uint32_t index, AsyncJobQueue& queue)
-    : index_{index}, queue_{queue} {}
+AwaitableRecord::AwaitableRecord(uint32_t index, AsyncReadHandler& readHandler)
+    : index_{index}, readHandler_{readHandler} {}
 
 AwaitableRecord::AwaitableRecord(const AwaitableRecord& other)
-    : index_{other.index_}, queue_{other.queue_} {}
+    : index_{other.index_}, readHandler_{other.readHandler_} {}
 
 py::object AwaitableRecord::await() const {
   py::gil_scoped_acquire acquire;
   unique_ptr<AsyncJob> job = make_unique<AsyncReadJob>(index_);
   py::object res = job->await();
-  queue_.sendJob(std::move(job));
+  readHandler_.getQueue().sendJob(std::move(job));
   return res;
 }
 
-void AsyncThreadHandler::cleanup() {
+void AsyncReadHandler::cleanup() {
   shouldEndAsyncThread_ = true;
   if (asyncThread_.joinable()) {
     asyncThread_.join();
   }
 }
 
-void AsyncThreadHandler::asyncThreadActivity() {
+void AsyncReadHandler::asyncThreadActivity() {
   std::unique_ptr<AsyncJob> job;
   while (!shouldEndAsyncThread_) {
     if (workerQueue_.waitForJob(job, 1) && !shouldEndAsyncThread_) {
@@ -90,18 +90,18 @@ OssAsyncVRSReader::asyncReadRecord(const string& streamId, const string& recordT
     nextRecordIndex_ = static_cast<uint32_t>(reader_.getIndex().size());
     throw py::index_error("Invalid record index");
   }
-  return AwaitableRecord(static_cast<uint32_t>(record - reader_.getIndex().data()), workerQueue_);
+  return AwaitableRecord(static_cast<uint32_t>(record - reader_.getIndex().data()), readHandler_);
 }
 
 AwaitableRecord OssAsyncVRSReader::asyncReadRecord(int index) {
   if (static_cast<size_t>(index) >= reader_.getIndex().size()) {
     throw py::index_error("No record for this index");
   }
-  return AwaitableRecord(static_cast<uint32_t>(index), workerQueue_);
+  return AwaitableRecord(static_cast<uint32_t>(index), readHandler_);
 }
 
 OssAsyncVRSReader::~OssAsyncVRSReader() {
-  asyncThreadHandler_.cleanup();
+  readHandler_.cleanup();
   reader_.closeFile();
 }
 
@@ -128,18 +128,18 @@ AwaitableRecord OssAsyncMultiVRSReader::asyncReadRecord(
     nextRecordIndex_ = reader_.getRecordCount();
     throw py::index_error("Invalid record index: " + to_string(index));
   }
-  return AwaitableRecord(reader_.getRecordIndex(record), workerQueue_);
+  return AwaitableRecord(reader_.getRecordIndex(record), readHandler_);
 }
 
 AwaitableRecord OssAsyncMultiVRSReader::asyncReadRecord(int index) {
   if (static_cast<uint32_t>(index) >= reader_.getRecordCount()) {
     throw py::index_error("No record for this index");
   }
-  return AwaitableRecord(static_cast<uint32_t>(index), workerQueue_);
+  return AwaitableRecord(static_cast<uint32_t>(index), readHandler_);
 }
 
 OssAsyncMultiVRSReader::~OssAsyncMultiVRSReader() {
-  asyncThreadHandler_.cleanup();
+  readHandler_.cleanup();
   reader_.close();
 }
 
