@@ -37,16 +37,22 @@ AwaitableRecord::AwaitableRecord(uint32_t index, AsyncJobQueue& queue)
 AwaitableRecord::AwaitableRecord(const AwaitableRecord& other)
     : index_{other.index_}, queue_{other.queue_} {}
 
-template <class Reader>
-void AsyncThreadHandler<Reader>::cleanup() {
+py::object AwaitableRecord::await() const {
+  py::gil_scoped_acquire acquire;
+  unique_ptr<AsyncJob> job = make_unique<AsyncReadJob>(index_);
+  py::object res = job->await();
+  queue_.sendJob(std::move(job));
+  return res;
+}
+
+void AsyncThreadHandler::cleanup() {
   shouldEndAsyncThread_ = true;
   if (asyncThread_.joinable()) {
     asyncThread_.join();
   }
 }
 
-template <class Reader>
-void AsyncThreadHandler<Reader>::asyncThreadActivity() {
+void AsyncThreadHandler::asyncThreadActivity() {
   std::unique_ptr<AsyncJob> job;
   while (!shouldEndAsyncThread_) {
     if (workerQueue_.waitForJob(job, 1) && !shouldEndAsyncThread_) {
@@ -59,16 +65,7 @@ void AsyncThreadHandler<Reader>::asyncThreadActivity() {
   }
 }
 
-// force template class instantiation
-template class AsyncThreadHandler<OssAsyncVRSReader>;
-template class AsyncThreadHandler<OssAsyncMultiVRSReader>;
-
-void AsyncReadJob::performJob(OssAsyncVRSReader& reader) {
-  py::object record = reader.readRecord(index_);
-  loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
-}
-
-void AsyncReadJob::performJob(OssAsyncMultiVRSReader& reader) {
+void AsyncReadJob::performJob(VRSReaderBase& reader) {
   py::object record = reader.readRecord(index_);
   loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }

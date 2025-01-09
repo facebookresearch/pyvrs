@@ -36,9 +36,6 @@ namespace pyvrs {
 using namespace vrs;
 using namespace std;
 
-class OssAsyncVRSReader;
-class OssAsyncMultiVRSReader;
-
 /// \brief The base class for asynchronous job
 /// This class captures the asyncio's event loop, and creates a future for that loop so that we can
 /// later call loop.call_soon_threadsafe(future.set_result(<result>)) to set that future's result.
@@ -52,8 +49,7 @@ class AsyncJob {
 
   AsyncJob& operator=(const AsyncJob&) = delete;
 
-  virtual void performJob(OssAsyncVRSReader& reader) = 0;
-  virtual void performJob(OssAsyncMultiVRSReader& reader) = 0;
+  virtual void performJob(VRSReaderBase& reader) = 0;
 
   py::object await() {
     return future_.attr("__await__")();
@@ -69,8 +65,7 @@ class AsyncReadJob : public AsyncJob {
  public:
   explicit AsyncReadJob(uint32_t index) : index_(index) {}
 
-  void performJob(OssAsyncVRSReader& reader) override;
-  void performJob(OssAsyncMultiVRSReader& reader) override;
+  void performJob(VRSReaderBase& reader) override;
 
  private:
   uint32_t index_;
@@ -91,13 +86,7 @@ class AwaitableRecord {
   AwaitableRecord(uint32_t index, AsyncJobQueue& queue);
   AwaitableRecord(const AwaitableRecord& other);
 
-  py::object await() const {
-    py::gil_scoped_acquire acquire;
-    unique_ptr<AsyncJob> job = make_unique<AsyncReadJob>(index_);
-    py::object res = job->await();
-    queue_.sendJob(std::move(job));
-    return res;
-  }
+  py::object await() const;
 
  private:
   uint32_t index_;
@@ -105,10 +94,9 @@ class AwaitableRecord {
 };
 
 /// \brief Helper class to manage the background async thread
-template <class VrsReader>
 class AsyncThreadHandler {
  public:
-  AsyncThreadHandler(VrsReader& reader, AsyncJobQueue& queue)
+  AsyncThreadHandler(VRSReaderBase& reader, AsyncJobQueue& queue)
       : reader_{reader},
         workerQueue_(queue),
         asyncThread_(&AsyncThreadHandler::asyncThreadActivity, this) {}
@@ -117,7 +105,7 @@ class AsyncThreadHandler {
   void cleanup();
 
  private:
-  VrsReader& reader_;
+  VRSReaderBase& reader_;
   AsyncJobQueue& workerQueue_;
   atomic<bool> shouldEndAsyncThread_ = false;
   thread asyncThread_;
@@ -149,7 +137,7 @@ class OssAsyncVRSReader : public OssVRSReader {
 
  private:
   AsyncJobQueue workerQueue_;
-  AsyncThreadHandler<OssAsyncVRSReader> asyncThreadHandler_;
+  AsyncThreadHandler asyncThreadHandler_;
 };
 
 /// \brief The async MultiVRSReader class
@@ -178,7 +166,7 @@ class OssAsyncMultiVRSReader : public OssMultiVRSReader {
 
  private:
   AsyncJobQueue workerQueue_;
-  AsyncThreadHandler<OssAsyncMultiVRSReader> asyncThreadHandler_;
+  AsyncThreadHandler asyncThreadHandler_;
 };
 
 /// Binds methods and classes for AsyncVRSReader.
