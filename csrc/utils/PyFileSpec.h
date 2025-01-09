@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -89,7 +90,6 @@ void pybind_filespec(py::module& m);
 using PyFileSpec = pyvrs::OssPyFileSpec;
 #else
 #include "PyFileSpec_fb.h"
-using PyFileSpec = pyvrs::FbPyFileSpec;
 #endif
 
 template <>

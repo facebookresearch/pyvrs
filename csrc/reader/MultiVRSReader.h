@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -545,5 +546,4 @@ void pybind_multivrsreader(py::module& m);
 using PyMultiVRSReader = pyvrs::OssMultiVRSReader;
 #else
 #include "MultiVRSReader_fb.h"
-using PyMultiVRSReader = pyvrs::FbMultiVRSReader;
 #endif

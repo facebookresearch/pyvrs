@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -189,6 +190,4 @@ using PyAsyncReader = pyvrs::OssAsyncVRSReader;
 using PyAsyncMultiReader = pyvrs::OssAsyncMultiVRSReader;
 #else
 #include "AsyncVRSReader_fb.h"
-using PyAsyncReader = pyvrs::FbAsyncVRSReader;
-using PyAsyncMultiReader = pyvrs::FbAsyncMultiVRSReader;
 #endif
