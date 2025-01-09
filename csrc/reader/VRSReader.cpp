@@ -1050,6 +1050,31 @@ bool OssVRSReader::match(
       (recordType == Record::Type::UNDEFINED || record.recordType == recordType);
 }
 
+bool OssVRSReader::setCachingStrategy(CachingStrategy cachingStrategy) {
+  return reader_.setCachingStrategy(cachingStrategy);
+}
+CachingStrategy OssVRSReader::getCachingStrategy() const {
+  return reader_.getCachingStrategy();
+}
+
+bool OssVRSReader::prefetchRecordSequence(
+    const vector<uint32_t>& recordIndexes,
+    bool clearSequence) {
+  vector<const IndexRecord::RecordInfo*> records;
+  records.reserve(recordIndexes.size());
+  const vector<IndexRecord::RecordInfo>& index = reader_.getIndex();
+  for (const auto recordIndex : recordIndexes) {
+    if (recordIndex < index.size()) {
+      records.push_back(&index[recordIndex]);
+    }
+  }
+  return reader_.prefetchRecordSequence(records, clearSequence);
+}
+
+bool OssVRSReader::purgeFileCache() {
+  return reader_.purgeFileCache();
+}
+
 #if IS_VRS_OSS_CODE()
 void pybind_vrsreader(py::module& m) {
   py::class_<PyVRSReader>(m, "Reader")
@@ -1136,7 +1161,15 @@ void pybind_vrsreader(py::module& m) {
               &PyVRSReader::getNearestRecordIndexByTime))
       .def("get_timestamp_list_for_indices", &PyVRSReader::getTimestampListForIndices)
       .def("get_next_index", &PyVRSReader::getNextIndex)
-      .def("get_prev_index", &PyVRSReader::getPrevIndex);
+      .def("get_prev_index", &PyVRSReader::getPrevIndex)
+      .def("set_caching_strategy", &PyVRSReader::setCachingStrategy)
+      .def("get_caching_strategy", &PyVRSReader::getCachingStrategy)
+      .def(
+          "prefetch_record_sequence",
+          &PyVRSReader::prefetchRecordSequence,
+          py::arg("sequence"),
+          py::arg("clearSequence") = true)
+      .def("purge_file_cache", &PyVRSReader::purgeFileCache);
 }
 #endif
 } // namespace pyvrs

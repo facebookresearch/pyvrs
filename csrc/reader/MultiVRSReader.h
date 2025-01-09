@@ -466,6 +466,33 @@ class OssMultiVRSReader {
   /// throw IndexError if we can't find any records
   int32_t getPrevIndex(const string& streamId, const string& recordType, int index);
 
+  // ---------------------------------
+  // File cache optimizations
+  // ---------------------------------
+  /// Set & get the current file handler's Caching strategy.
+  /// This should be called *after* opening the file, as open might replace the file handler.
+  bool setCachingStrategy(CachingStrategy cachingStrategy);
+  CachingStrategy getCachingStrategy() const;
+
+  /// When accessing data over a network, optimize caching for the specific read sequence.
+  /// @param recordIndexes: a sequence of records in the exact order they will be read. It's ok to
+  /// skip one or more records, but:
+  /// - don't try to read "past" records, or you'll confuse the caching strategy, possibly leading
+  /// to much worse performance.
+  /// - if you read a single record out of the sequence, the prefetch list will be cleared.
+  /// You may call this method as often as you like, and any previous read sequence will be cleared,
+  /// but whatever is already in the cache will remain.
+  /// @param clearSequence: Flag on whether to cancel any pre-existing custom read sequence upon
+  /// caching starts.
+  /// @return True if the file handler backend supports this request, false if it was ignored.
+  bool prefetchRecordSequence(const vector<uint32_t>& recordIndexes, bool clearSequence = true);
+
+  /// If the underlying file handler caches data on reads, purge its caches to free memory.
+  /// Sets the caching strategy to Passive, and clears any pending read sequence.
+  /// @return True if the caches were purged, false if they weren't for some reason.
+  /// Note: this is a best effort. If transactions are pending, their cache blocks won't be cleared.
+  bool purgeFileCache();
+
  protected:
   void open(const std::vector<FileSpec>& specs);
   // Similar to readNextRecord() except that this does not invoke skipIgnoredRecords()

@@ -964,6 +964,35 @@ OssMultiVRSReader::getPrevIndex(const string& streamId, const string& recordType
   return prevIndex;
 }
 
+bool OssMultiVRSReader::setCachingStrategy(CachingStrategy cachingStrategy) {
+  return reader_.setCachingStrategy(cachingStrategy);
+}
+
+CachingStrategy OssMultiVRSReader::getCachingStrategy() const {
+  return reader_.getCachingStrategy();
+}
+
+bool OssMultiVRSReader::prefetchRecordSequence(
+    const vector<uint32_t>& recordIndexes,
+    bool clearSequence) {
+  vector<const IndexRecord::RecordInfo*> records;
+  records.reserve(recordIndexes.size());
+  for (const auto recordIndex : recordIndexes) {
+    const IndexRecord::RecordInfo* record = reader_.getRecord(recordIndex);
+    if (record == nullptr) {
+      XR_LOGW("Attempting to prefetch invalid index {}", recordIndex);
+      return false;
+    } else {
+      records.push_back(record);
+    }
+  }
+  return reader_.prefetchRecordSequence(records, clearSequence);
+}
+
+bool OssMultiVRSReader::purgeFileCache() {
+  return reader_.purgeFileCache();
+}
+
 void OssMultiVRSReader::readConfigurationRecord(const StreamId& streamId, uint32_t idx) {
   if (configIndex_.empty()) {
     for (uint32_t i = 0; i < reader_.getRecordCount(); i++) {
@@ -1185,7 +1214,15 @@ void pybind_multivrsreader(py::module& m) {
               &PyMultiVRSReader::getNearestRecordIndexByTime))
       .def("get_timestamp_list_for_indices", &PyMultiVRSReader::getTimestampListForIndices)
       .def("get_next_index", &PyMultiVRSReader::getNextIndex)
-      .def("get_prev_index", &PyMultiVRSReader::getPrevIndex);
+      .def("get_prev_index", &PyMultiVRSReader::getPrevIndex)
+      .def("set_caching_strategy", &PyMultiVRSReader::setCachingStrategy)
+      .def("get_caching_strategy", &PyMultiVRSReader::getCachingStrategy)
+      .def(
+          "prefetch_record_sequence",
+          &PyMultiVRSReader::prefetchRecordSequence,
+          py::arg("sequence"),
+          py::arg("clearSequence") = true)
+      .def("purge_file_cache", &PyMultiVRSReader::purgeFileCache);
 }
 #endif
 } // namespace pyvrs
