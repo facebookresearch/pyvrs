@@ -76,16 +76,52 @@ enum class ImageConversion {
 /// - IndexError might be thrown, if you pass an invalid index.
 /// - ValueError might be thrown, if you pass an invalid RecordableTypeId, an invalid StreamId,
 ///   or an invalid record type filter.
-class OssVRSReader : public vrs::utils::VideoRecordFormatStreamPlayer {
+class OssVRSReader {
+  class VRSReaderStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlayer {
+   public:
+    explicit VRSReaderStreamPlayer(OssVRSReader& reader) : reader_(reader) {}
+    bool checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex);
+    bool processRecordHeader(const CurrentRecord& record, DataReference& outDataReference) override;
+    bool onDataLayoutRead(const CurrentRecord& record, size_t blockIndex, DataLayout& dl) override;
+    bool onImageRead(const CurrentRecord& record, size_t blockIndex, const ContentBlock& cb)
+        override;
+    bool onAudioRead(const CurrentRecord& record, size_t blockIndex, const ContentBlock& cb)
+        override;
+    bool onCustomBlockRead(const CurrentRecord& record, size_t bi, const ContentBlock& cb) override;
+    bool onUnsupportedBlock(const CurrentRecord& record, size_t bi, const ContentBlock& cb)
+        override;
+
+   private:
+    /// Set the data we read from VRS record into ContentBlockBuffer (ContentBlockBuffer is a
+    /// class that's exposed to Python via protocol_buffer).
+    /// When the content type is image, we decode the data based on image spec.
+    /// @param blocks: A vector of ContentBlockBuffer we want to write the data into.
+    /// @param record: Record that's read in callback (onImageRead, onAudioRead, etc...)
+    /// @param blockIndex: Index of the block we are writing.
+    /// @param contentBlock: The description of this content block buffer.
+    bool setBlock(
+        vector<ContentBlockBuffer>& blocks,
+        const CurrentRecord& record,
+        size_t blockIndex,
+        const ContentBlock& contentBlock);
+
+    int recordReadComplete(RecordFileReader& fileReader, const IndexRecord::RecordInfo& recordInfo)
+        override {
+      return readMissingFrames(fileReader, recordInfo, true);
+    }
+
+    OssVRSReader& reader_;
+  };
+
  public:
   /// @param autoReadConfigurationRecord: If this is true, we try to automatically read the
   /// configuration if it's not already read.
   explicit OssVRSReader(bool autoReadConfigurationRecord)
-      : autoReadConfigurationRecord_{autoReadConfigurationRecord} {
+      : streamPlayer_{*this}, autoReadConfigurationRecord_{autoReadConfigurationRecord} {
     init();
   }
 
-  ~OssVRSReader() override {
+  ~OssVRSReader() {
     close();
   }
 
@@ -126,15 +162,6 @@ class OssVRSReader : public vrs::utils::VideoRecordFormatStreamPlayer {
   std::set<string> getAvailableStreamIds();
 
   std::map<string, int> recordCountByTypeFromStreamId(const string& streamId);
-
-  /// Callback functions when the data is read.
-  bool processRecordHeader(const CurrentRecord& record, DataReference& outDataReference) override;
-  bool onDataLayoutRead(const CurrentRecord& record, size_t blockIndex, DataLayout& dl) override;
-  bool onImageRead(const CurrentRecord& record, size_t blockIndex, const ContentBlock& cb) override;
-  bool onAudioRead(const CurrentRecord& record, size_t blockIndex, const ContentBlock& cb) override;
-  bool onCustomBlockRead(const CurrentRecord& record, size_t bi, const ContentBlock& cb) override;
-  bool onUnsupportedBlock(const CurrentRecord& record, size_t bi, const ContentBlock& cb) override;
-  bool checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex);
 
   // ---------------------------------------------------------------------------
   // Discovering tags, streams, their details, and choosing which to read/enable
@@ -503,11 +530,6 @@ class OssVRSReader : public vrs::utils::VideoRecordFormatStreamPlayer {
   // corresponding configuration record if it's not already read.
   void readConfigurationRecord(const StreamId& streamId, uint32_t idx);
 
-  int recordReadComplete(RecordFileReader& fileReader, const IndexRecord::RecordInfo& recordInfo)
-      override {
-    return readMissingFrames(fileReader, recordInfo, true);
-  }
-
   void skipIgnoredRecords();
 
   /// Initialize record summary based on index records.
@@ -555,6 +577,7 @@ class OssVRSReader : public vrs::utils::VideoRecordFormatStreamPlayer {
   static constexpr const char* kUtf8 = "utf-8";
 
   RecordFileReader reader_;
+  VRSReaderStreamPlayer streamPlayer_;
   RecordCache lastRecord_;
   uint32_t nextRecordIndex_;
   set<StreamId> enabledStreams_;

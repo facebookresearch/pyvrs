@@ -66,9 +66,9 @@ class OssMultiVRSReader {
  public:
   /// MultiVRSReader inner classes that read data from single file.
   /// \brief The stream player class that receives data from MultiRecordFileReader.
-  class MultiVideoRecordFormatStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlayer {
+  class MultiVRSReaderStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlayer {
    public:
-    explicit MultiVideoRecordFormatStreamPlayer(OssMultiVRSReader& multiVRSReader)
+    explicit MultiVRSReaderStreamPlayer(OssMultiVRSReader& multiVRSReader)
         : multiVRSReader_(multiVRSReader) {}
     bool checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex);
     bool processRecordHeader(const CurrentRecord& record, DataReference& outDataReference) override;
@@ -109,7 +109,7 @@ class OssMultiVRSReader {
     init();
   }
 
-  virtual ~OssMultiVRSReader() {
+  ~OssMultiVRSReader() {
     close();
   }
 
@@ -557,7 +557,7 @@ class OssMultiVRSReader {
   ImageConversion imageConversion_ = ImageConversion::Off; // default image conversion
   map<StreamId, ImageConversion> streamImageConversion_; // per stream image conversion
   string encoding_ = kUtf8;
-  map<StreamId, MultiVideoRecordFormatStreamPlayer> playerByStreamIdMap_;
+  map<StreamId, MultiVRSReaderStreamPlayer> playerByStreamIdMap_;
 
   map<StreamId, vector<uint32_t>> configIndex_;
   map<StreamId, uint32_t> lastReadConfigIndex_;

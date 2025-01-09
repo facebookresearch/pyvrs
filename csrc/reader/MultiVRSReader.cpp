@@ -51,7 +51,7 @@ using UniqueStreamId = vrs::MultiRecordFileReader::UniqueStreamId;
 
 namespace pyvrs {
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::checkSkipTrailingBlocks(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::checkSkipTrailingBlocks(
     const CurrentRecord& record,
     size_t blockIndex) {
   // check whether we should stop reading further as the next content block will be considered
@@ -67,14 +67,14 @@ bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::checkSkipTrailingBlo
   }
 }
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::processRecordHeader(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::processRecordHeader(
     const CurrentRecord& record,
     DataReference& outDataRef) {
   multiVRSReader_.lastRecord_.recordFormatVersion = record.formatVersion;
   return RecordFormatStreamPlayer::processRecordHeader(record, outDataRef);
 }
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::onDataLayoutRead(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onDataLayoutRead(
     const CurrentRecord& record,
     size_t blkIdx,
     DataLayout& dl) {
@@ -112,35 +112,35 @@ bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::onDataLayoutRead(
   return checkSkipTrailingBlocks(record, blkIdx);
 }
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::onImageRead(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onImageRead(
     const CurrentRecord& record,
     size_t blkIdx,
     const ContentBlock& cb) {
   return setBlock(multiVRSReader_.lastRecord_.images, record, blkIdx, cb);
 }
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::onAudioRead(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onAudioRead(
     const CurrentRecord& record,
     size_t blkIdx,
     const ContentBlock& cb) {
   return setBlock(multiVRSReader_.lastRecord_.audioBlocks, record, blkIdx, cb);
 }
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::onCustomBlockRead(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onCustomBlockRead(
     const CurrentRecord& rec,
     size_t bix,
     const ContentBlock& cb) {
   return setBlock(multiVRSReader_.lastRecord_.customBlocks, rec, bix, cb);
 }
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::onUnsupportedBlock(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onUnsupportedBlock(
     const CurrentRecord& cr,
     size_t bix,
     const ContentBlock& cb) {
   return setBlock(multiVRSReader_.lastRecord_.unsupportedBlocks, cr, bix, cb);
 }
 
-bool OssMultiVRSReader::MultiVideoRecordFormatStreamPlayer::setBlock(
+bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::setBlock(
     vector<ContentBlockBuffer>& blocks,
     const CurrentRecord& record,
     size_t blockIndex,

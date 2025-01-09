@@ -131,7 +131,7 @@ class OssAsyncVRSReader : public OssVRSReader {
   explicit OssAsyncVRSReader(bool autoReadConfigurationRecord)
       : OssVRSReader(autoReadConfigurationRecord), asyncThreadHandler_{*this, workerQueue_} {}
 
-  ~OssAsyncVRSReader() override;
+  ~OssAsyncVRSReader();
 
   /// Read a stream's record, by record type & index.
   /// @param streamId: VRS stream id to read.
@@ -160,7 +160,7 @@ class OssAsyncMultiVRSReader : public OssMultiVRSReader {
   explicit OssAsyncMultiVRSReader(bool autoReadConfigurationRecord)
       : OssMultiVRSReader(autoReadConfigurationRecord), asyncThreadHandler_{*this, workerQueue_} {}
 
-  ~OssAsyncMultiVRSReader() override;
+  ~OssAsyncMultiVRSReader();
 
   /// Read a stream's record, by record type & index.
   /// @param streamId: VRS stream id to read.

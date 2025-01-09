@@ -162,14 +162,19 @@ map<string, int> OssVRSReader::recordCountByTypeFromStreamId(const string& strea
   return recordCountsByTypeAndStreamIdMap_[id];
 }
 
-bool OssVRSReader::processRecordHeader(const CurrentRecord& record, DataReference& outDataRef) {
-  lastRecord_.recordFormatVersion = record.formatVersion;
+bool OssVRSReader::VRSReaderStreamPlayer::processRecordHeader(
+    const CurrentRecord& record,
+    DataReference& outDataRef) {
+  reader_.lastRecord_.recordFormatVersion = record.formatVersion;
   return RecordFormatStreamPlayer::processRecordHeader(record, outDataRef);
 }
 
-bool OssVRSReader::onDataLayoutRead(const CurrentRecord& record, size_t blkIdx, DataLayout& dl) {
+bool OssVRSReader::VRSReaderStreamPlayer::onDataLayoutRead(
+    const CurrentRecord& record,
+    size_t blkIdx,
+    DataLayout& dl) {
   PyObject* dic = PyDict_New();
-  lastRecord_.datalayoutBlocks.emplace_back(pyWrap(dic));
+  reader_.lastRecord_.datalayoutBlocks.emplace_back(pyWrap(dic));
   dl.forEachDataPiece(
       [dic](const DataPiece* piece) { getDataPieceValuePyObjectorRegistry().map(dic, piece); },
       DataPieceType::Value);
@@ -183,13 +188,13 @@ bool OssVRSReader::onDataLayoutRead(const CurrentRecord& record, size_t blkIdx, 
       DataPieceType::Vector);
 
   dl.forEachDataPiece(
-      [dic, &encoding = this->encoding_](const DataPiece* piece) {
+      [dic, &encoding = reader_.encoding_](const DataPiece* piece) {
         getDataPieceStringMapPyObjectorRegistry().map(dic, piece, encoding);
       },
       DataPieceType::StringMap);
 
   dl.forEachDataPiece(
-      [dic, &encoding = this->encoding_](const DataPiece* piece) {
+      [dic, &encoding = reader_.encoding_](const DataPiece* piece) {
         const auto& value = reinterpret_cast<const DataPieceString*>(piece)->get();
         string errors;
         pyDict_SetItemWithDecRef(
@@ -202,35 +207,49 @@ bool OssVRSReader::onDataLayoutRead(const CurrentRecord& record, size_t blkIdx, 
   return checkSkipTrailingBlocks(record, blkIdx);
 }
 
-bool OssVRSReader::onImageRead(const CurrentRecord& record, size_t blkIdx, const ContentBlock& cb) {
-  return setBlock(lastRecord_.images, record, blkIdx, cb);
+bool OssVRSReader::VRSReaderStreamPlayer::onImageRead(
+    const CurrentRecord& record,
+    size_t blkIdx,
+    const ContentBlock& cb) {
+  return setBlock(reader_.lastRecord_.images, record, blkIdx, cb);
 }
 
-bool OssVRSReader::onAudioRead(const CurrentRecord& record, size_t blkIdx, const ContentBlock& cb) {
-  return setBlock(lastRecord_.audioBlocks, record, blkIdx, cb);
+bool OssVRSReader::VRSReaderStreamPlayer::onAudioRead(
+    const CurrentRecord& record,
+    size_t blkIdx,
+    const ContentBlock& cb) {
+  return setBlock(reader_.lastRecord_.audioBlocks, record, blkIdx, cb);
 }
 
-bool OssVRSReader::onCustomBlockRead(const CurrentRecord& rec, size_t bix, const ContentBlock& cb) {
-  return setBlock(lastRecord_.customBlocks, rec, bix, cb);
+bool OssVRSReader::VRSReaderStreamPlayer::onCustomBlockRead(
+    const CurrentRecord& rec,
+    size_t bix,
+    const ContentBlock& cb) {
+  return setBlock(reader_.lastRecord_.customBlocks, rec, bix, cb);
 }
 
-bool OssVRSReader::onUnsupportedBlock(const CurrentRecord& cr, size_t bix, const ContentBlock& cb) {
-  return setBlock(lastRecord_.unsupportedBlocks, cr, bix, cb);
+bool OssVRSReader::VRSReaderStreamPlayer::onUnsupportedBlock(
+    const CurrentRecord& cr,
+    size_t bix,
+    const ContentBlock& cb) {
+  return setBlock(reader_.lastRecord_.unsupportedBlocks, cr, bix, cb);
 }
 
-bool OssVRSReader::checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex) {
+bool OssVRSReader::VRSReaderStreamPlayer::checkSkipTrailingBlocks(
+    const CurrentRecord& record,
+    size_t blockIndex) {
   // check whether we should stop reading further as the next content block will be considered
   // trailing for this device type and currently processed record
-  auto trailingBlockCount =
-      firstSkippedTrailingBlockIndex_.find({record.streamId.getTypeId(), record.recordType});
-  if (trailingBlockCount != firstSkippedTrailingBlockIndex_.end()) {
+  auto trailingBlockCount = reader_.firstSkippedTrailingBlockIndex_.find(
+      {record.streamId.getTypeId(), record.recordType});
+  if (trailingBlockCount != reader_.firstSkippedTrailingBlockIndex_.end()) {
     return (blockIndex + 1) < trailingBlockCount->second;
   } else {
     return true;
   }
 }
 
-bool OssVRSReader::setBlock(
+bool OssVRSReader::VRSReaderStreamPlayer::setBlock(
     vector<ContentBlockBuffer>& blocks,
     const CurrentRecord& record,
     size_t blockIndex,
@@ -254,7 +273,7 @@ bool OssVRSReader::setBlock(
   }
   if (blockSize > 0) {
     ContentBlockBuffer& block = blocks.back();
-    ImageConversion imageConversion = getImageConversion(record.streamId);
+    ImageConversion imageConversion = reader_.getImageConversion(record.streamId);
     if (contentBlock.getContentType() != ContentType::IMAGE ||
         imageConversion == ImageConversion::Off) {
       // default handling
@@ -461,7 +480,7 @@ void OssVRSReader::addRecordInfo(
 }
 
 void OssVRSReader::enableStream(const StreamId& id) {
-  reader_.setStreamPlayer(id, this);
+  reader_.setStreamPlayer(id, &streamPlayer_);
   enabledStreams_.insert(id);
 }
 
@@ -534,7 +553,7 @@ ImageConversion OssVRSReader::getImageConversion(const StreamId& id) {
 void OssVRSReader::setImageConversion(ImageConversion conversion) {
   imageConversion_ = conversion;
   streamImageConversion_.clear();
-  resetVideoFrameHandler();
+  streamPlayer_.resetVideoFrameHandler();
 }
 
 void OssVRSReader::setImageConversion(const StreamId& id, ImageConversion conversion) {
@@ -542,7 +561,7 @@ void OssVRSReader::setImageConversion(const StreamId& id, ImageConversion conver
     throw py::value_error("Invalid stream ID: " + id.getName());
   }
   streamImageConversion_[id] = conversion;
-  resetVideoFrameHandler(id);
+  streamPlayer_.resetVideoFrameHandler(id);
 }
 
 void OssVRSReader::setImageConversion(const string& streamId, ImageConversion conversion) {
@@ -808,7 +827,7 @@ void OssVRSReader::skipTrailingBlocks(
     RecordableTypeId recordableTypeId,
     Record::Type recordType,
     size_t firstTrailingContentBlockIndex) {
-  resetVideoFrameHandler();
+  streamPlayer_.resetVideoFrameHandler();
   if (recordType != Record::Type::UNDEFINED) {
     if (firstTrailingContentBlockIndex) {
       firstSkippedTrailingBlockIndex_[{recordableTypeId, recordType}] =
