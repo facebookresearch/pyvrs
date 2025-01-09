@@ -16,20 +16,17 @@
 
 #pragma once
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include <pybind11/pybind11.h>
-
 #include <vrs/RecordFileReader.h>
 #include <vrs/RecordFormat.h>
 #include <vrs/os/Platform.h>
 #include <vrs/utils/VideoRecordFormatStreamPlayer.h>
+
+#include "VRSReaderBase.h"
 
 #include "../utils/PyBuffer.h"
 #include "../utils/PyFileSpec.h"
@@ -37,7 +34,6 @@
 
 namespace pyvrs {
 
-namespace py = pybind11;
 using namespace vrs;
 
 enum class ImageConversion {
@@ -76,7 +72,7 @@ enum class ImageConversion {
 /// - IndexError might be thrown, if you pass an invalid index.
 /// - ValueError might be thrown, if you pass an invalid RecordableTypeId, an invalid StreamId,
 ///   or an invalid record type filter.
-class OssVRSReader {
+class OssVRSReader : public VRSReaderBase {
   class VRSReaderStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlayer {
    public:
     explicit VRSReaderStreamPlayer(OssVRSReader& reader) : reader_(reader) {}
@@ -121,7 +117,7 @@ class OssVRSReader {
     init();
   }
 
-  ~OssVRSReader() {
+  ~OssVRSReader() override {
     close();
   }
 
@@ -389,7 +385,7 @@ class OssVRSReader {
   /// "unsupported_block_count": number of unrecognized blocks.
   /// This might happen if you read a data record containing an image,
   /// before reading the stream's configuration record describing the image format.
-  py::object readRecord(int index);
+  py::object readRecord(int index) override;
 
   // Skip reading content blocks of the record after reading preset number of them
   /// @param recordableTypeId: Device type of the stream to skip trailing blocks.

@@ -16,29 +16,24 @@
 
 #pragma once
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-#include <pybind11/pybind11.h>
 
 #include <vrs/MultiRecordFileReader.h>
 #include <vrs/RecordFileReader.h>
 #include <vrs/RecordFormat.h>
 #include <vrs/utils/VideoRecordFormatStreamPlayer.h>
 
+#include "VRSReader.h"
+
 #include "../utils/PyBuffer.h"
 #include "../utils/PyFileSpec.h"
 #include "../utils/PyRecord.h"
-#include "VRSReader.h"
 
 namespace pyvrs {
 
-namespace py = pybind11;
 using namespace vrs;
 
 /// @brief The MultiVRSReader class
@@ -62,7 +57,7 @@ using namespace vrs;
 /// - IndexError might be thrown, if you pass an invalid index.
 /// - ValueError might be thrown, if you pass an invalid RecordableTypeId, an invalid StreamId,
 ///   or an invalid record type filter.
-class OssMultiVRSReader {
+class OssMultiVRSReader : public VRSReaderBase {
  public:
   /// MultiVRSReader inner classes that read data from single file.
   /// \brief The stream player class that receives data from MultiRecordFileReader.
@@ -109,7 +104,7 @@ class OssMultiVRSReader {
     init();
   }
 
-  ~OssMultiVRSReader() {
+  ~OssMultiVRSReader() override {
     close();
   }
 
@@ -362,7 +357,7 @@ class OssMultiVRSReader {
   /// "unsupported_block_count": number of unrecognized blocks.
   /// This might happen if you read a data record containing an image,
   /// before reading the stream's configuration record describing the image format.
-  py::object readRecord(int index);
+  py::object readRecord(int index) override;
 
   // Skip reading content blocks of the record after reading preset number of them
   /// @param recordableTypeId: Device type of the stream to skip trailing blocks.
