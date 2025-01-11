@@ -176,10 +176,8 @@ bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::setBlock(
       if (contentBlock.getContentType() == ContentType::IMAGE) {
         // for raw images, we return a structured array based on the image format
         block.structuredArray = (contentBlock.image().getImageFormat() == vrs::ImageFormat::RAW);
-      } else if (contentBlock.getContentType() != ContentType::AUDIO) {
-        block.structuredArray = true;
       } else {
-        block.structuredArray = false;
+        block.structuredArray = (contentBlock.getContentType() == ContentType::AUDIO);
       }
     } else if (imageConversion == ImageConversion::RawBuffer) {
       // default handling
