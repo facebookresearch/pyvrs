@@ -59,13 +59,11 @@ using namespace vrs;
 ///   or an invalid record type filter.
 class OssMultiVRSReader : public VRSReaderBase {
  public:
-  /// MultiVRSReader inner classes that read data from single file.
-  /// \brief The stream player class that receives data from MultiRecordFileReader.
-  class MultiVRSReaderStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlayer {
+  class MultiVRSReaderStreamPlayer : public BaseVRSReaderStreamPlayer {
    public:
     explicit MultiVRSReaderStreamPlayer(OssMultiVRSReader& multiVRSReader)
         : multiVRSReader_(multiVRSReader) {}
-    bool checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex);
+
     bool processRecordHeader(const CurrentRecord& record, DataReference& outDataReference) override;
     bool onDataLayoutRead(const CurrentRecord& record, size_t blockIndex, DataLayout& dl) override;
     bool onImageRead(const CurrentRecord& record, size_t blockIndex, const ContentBlock& cb)
@@ -76,24 +74,10 @@ class OssMultiVRSReader : public VRSReaderBase {
     bool onUnsupportedBlock(const CurrentRecord& record, size_t bi, const ContentBlock& cb)
         override;
 
-   private:
-    /// Set the data we read from VRS record into ContentBlockBuffer (ContentBlockBuffer is a
-    /// class that's exposed to Python via protocol_buffer).
-    /// When the content type is image, we decode the data based on image spec.
-    /// @param blocks: A vector of ContentBlockBuffer we want to write the data into.
-    /// @param record: Record that's read in callback (onImageRead, onAudioRead, etc...)
-    /// @param blockIndex: Index of the block we are writing.
-    /// @param contentBlock: The description of this content block buffer.
-    bool setBlock(
-        vector<ContentBlockBuffer>& blocks,
-        const CurrentRecord& record,
-        size_t blockIndex,
-        const ContentBlock& contentBlock);
+    bool checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex) override;
+    ImageConversion getImageConversion(const CurrentRecord& record) override;
 
-    int recordReadComplete(RecordFileReader& fileReader, const IndexRecord::RecordInfo& recordInfo)
-        override {
-      return readMissingFrames(fileReader, recordInfo, true);
-    }
+   private:
     OssMultiVRSReader& multiVRSReader_;
   };
 

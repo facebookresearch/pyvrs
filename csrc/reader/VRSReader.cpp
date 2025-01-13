@@ -169,12 +169,8 @@ bool OssVRSReader::VRSReaderStreamPlayer::processRecordHeader(
   return RecordFormatStreamPlayer::processRecordHeader(record, outDataRef);
 }
 
-bool OssVRSReader::VRSReaderStreamPlayer::onDataLayoutRead(
-    const CurrentRecord& record,
-    size_t blkIdx,
-    DataLayout& dl) {
+PyObject* BaseVRSReaderStreamPlayer::readDataLayout(DataLayout& dl, const string& encoding) {
   PyObject* dic = PyDict_New();
-  reader_.lastRecord_.datalayoutBlocks.emplace_back(pyWrap(dic));
   dl.forEachDataPiece(
       [dic](const DataPiece* piece) { getDataPieceValuePyObjectorRegistry().map(dic, piece); },
       DataPieceType::Value);
@@ -188,13 +184,13 @@ bool OssVRSReader::VRSReaderStreamPlayer::onDataLayoutRead(
       DataPieceType::Vector);
 
   dl.forEachDataPiece(
-      [dic, &encoding = reader_.encoding_](const DataPiece* piece) {
+      [dic, &encoding](const DataPiece* piece) {
         getDataPieceStringMapPyObjectorRegistry().map(dic, piece, encoding);
       },
       DataPieceType::StringMap);
 
   dl.forEachDataPiece(
-      [dic, &encoding = reader_.encoding_](const DataPiece* piece) {
+      [dic, &encoding](const DataPiece* piece) {
         const auto& value = reinterpret_cast<const DataPieceString*>(piece)->get();
         string errors;
         pyDict_SetItemWithDecRef(
@@ -203,7 +199,14 @@ bool OssVRSReader::VRSReaderStreamPlayer::onDataLayoutRead(
             unicodeDecode(value, encoding, errors));
       },
       DataPieceType::String);
+  return dic;
+}
 
+bool OssVRSReader::VRSReaderStreamPlayer::onDataLayoutRead(
+    const CurrentRecord& record,
+    size_t blkIdx,
+    DataLayout& dl) {
+  reader_.lastRecord_.datalayoutBlocks.emplace_back(pyWrap(readDataLayout(dl, reader_.encoding_)));
   return checkSkipTrailingBlocks(record, blkIdx);
 }
 
@@ -249,7 +252,12 @@ bool OssVRSReader::VRSReaderStreamPlayer::checkSkipTrailingBlocks(
   }
 }
 
-bool OssVRSReader::VRSReaderStreamPlayer::setBlock(
+ImageConversion OssVRSReader::VRSReaderStreamPlayer::getImageConversion(
+    const CurrentRecord& record) {
+  return reader_.getImageConversion(record.streamId);
+}
+
+bool BaseVRSReaderStreamPlayer::setBlock(
     vector<ContentBlockBuffer>& blocks,
     const CurrentRecord& record,
     size_t blockIndex,
@@ -273,7 +281,7 @@ bool OssVRSReader::VRSReaderStreamPlayer::setBlock(
   }
   if (blockSize > 0) {
     ContentBlockBuffer& block = blocks.back();
-    ImageConversion imageConversion = reader_.getImageConversion(record.streamId);
+    ImageConversion imageConversion = getImageConversion(record);
     if (contentBlock.getContentType() != ContentType::IMAGE ||
         imageConversion == ImageConversion::Off) {
       // default handling

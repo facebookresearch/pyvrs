@@ -78,37 +78,8 @@ bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onDataLayoutRead(
     const CurrentRecord& record,
     size_t blkIdx,
     DataLayout& dl) {
-  PyObject* dic = PyDict_New();
-  multiVRSReader_.lastRecord_.datalayoutBlocks.emplace_back(pyWrap(dic));
-  dl.forEachDataPiece(
-      [dic](const DataPiece* piece) { getDataPieceValuePyObjectorRegistry().map(dic, piece); },
-      DataPieceType::Value);
-
-  dl.forEachDataPiece(
-      [dic](const DataPiece* piece) { getDataPieceArrayPyObjectorRegistry().map(dic, piece); },
-      DataPieceType::Array);
-
-  dl.forEachDataPiece(
-      [dic](const DataPiece* piece) { getDataPieceVectorPyObjectorRegistry().map(dic, piece); },
-      DataPieceType::Vector);
-
-  dl.forEachDataPiece(
-      [dic, &encoding = multiVRSReader_.encoding_](const DataPiece* piece) {
-        getDataPieceStringMapPyObjectorRegistry().map(dic, piece, encoding);
-      },
-      DataPieceType::StringMap);
-
-  dl.forEachDataPiece(
-      [dic, &encoding = multiVRSReader_.encoding_](const DataPiece* piece) {
-        const auto& value = reinterpret_cast<const DataPieceString*>(piece)->get();
-        std::string errors;
-        pyDict_SetItemWithDecRef(
-            dic,
-            Py_BuildValue("(s,s)", piece->getLabel().c_str(), "string"),
-            unicodeDecode(value, encoding, errors));
-      },
-      DataPieceType::String);
-
+  multiVRSReader_.lastRecord_.datalayoutBlocks.emplace_back(
+      pyWrap(readDataLayout(dl, multiVRSReader_.encoding_)));
   return checkSkipTrailingBlocks(record, blkIdx);
 }
 
@@ -140,99 +111,10 @@ bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onUnsupportedBlock(
   return setBlock(multiVRSReader_.lastRecord_.unsupportedBlocks, cr, bix, cb);
 }
 
-bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::setBlock(
-    vector<ContentBlockBuffer>& blocks,
-    const CurrentRecord& record,
-    size_t blockIndex,
-    const ContentBlock& contentBlock) {
-  // When we are reading video encoded files "and" we jump to certain frame, this method will be
-  // called for the non-requested frame.
-  // This is because if there is a missing frames (we need to start reading from the key frame), we
-  // call readMissingFrames via recordReadComplete method.
-  // This directly invokes the readRecord in RecordFileReader and doesn't go through any of
-  // readRecord method in VRSReader class, which doesn't reset the last read records.
-  // We need to make sure that the lastRecord_ only contains the block that the requested record's
-  // block.
-  if (blocks.size() >= blockIndex) {
-    blocks.clear();
-  }
-  blocks.emplace_back(contentBlock);
-  size_t blockSize = contentBlock.getBlockSize();
-  if (blockSize == ContentBlock::kSizeUnknown) {
-    XR_LOGW("Block size unknown for {}", contentBlock.asString());
-    return false;
-  }
-  if (blockSize > 0) {
-    ContentBlockBuffer& block = blocks.back();
-    ImageConversion imageConversion = multiVRSReader_.getImageConversion(
-        multiVRSReader_.getUniqueStreamIdForRecordIndex(multiVRSReader_.nextRecordIndex_));
-    if (contentBlock.getContentType() != ContentType::IMAGE ||
-        imageConversion == ImageConversion::Off) {
-      // default handling
-      auto& data = block.bytes;
-      data.resize(blockSize);
-      record.reader->read(data);
-      block.bytesAdjusted = false;
-      if (contentBlock.getContentType() == ContentType::IMAGE) {
-        // for raw images, we return a structured array based on the image format
-        block.structuredArray = (contentBlock.image().getImageFormat() == vrs::ImageFormat::RAW);
-      } else {
-        block.structuredArray = (contentBlock.getContentType() == ContentType::AUDIO);
-      }
-    } else if (imageConversion == ImageConversion::RawBuffer) {
-      // default handling
-      auto& data = block.bytes;
-      data.resize(blockSize);
-      record.reader->read(data);
-      block.bytesAdjusted = false;
-      block.structuredArray = false;
-    } else {
-      // image conversion handling
-      if (imageConversion == ImageConversion::RecordUnreadBytesBackdoor) {
-        // Grab all remaining bytes in the record (NOTE: including
-        // the bytes of any subsequent content blocks!) and return
-        // them as a byte image of height 1. This is a backdoor for
-        // accessing image content block data in legacy VRS files
-        // with incorrect image specs that cannot practically be
-        // rewritten to be compliant. This backdoor should be used
-        // with care, and only as a last resort.
-        uint32_t unreadBytes = record.reader->getUnreadBytes();
-        block.spec = ContentBlock(
-            ImageContentBlockSpec(
-                ImageFormat::RAW,
-                PixelFormat::GREY8,
-                unreadBytes, // width
-                1), // height
-            unreadBytes);
-        auto& data = block.bytes;
-        data.resize(unreadBytes);
-        record.reader->read(data);
-        block.structuredArray = false;
-      } else {
-        std::shared_ptr<utils::PixelFrame> frame = make_shared<utils::PixelFrame>();
-        bool frameValid = readFrame(*frame, record, contentBlock);
-        if (XR_VERIFY(frameValid)) {
-          block.structuredArray = true;
-          // the image was read & maybe decompressed. Does it need to be converted, too?
-          if (imageConversion == ImageConversion::Normalize ||
-              imageConversion == ImageConversion::NormalizeGrey8) {
-            std::shared_ptr<utils::PixelFrame> convertedFrame;
-            bool grey16supported = (imageConversion == ImageConversion::Normalize);
-            utils::PixelFrame::normalizeFrame(frame, convertedFrame, grey16supported);
-            block.spec = convertedFrame->getSpec();
-            block.bytes.swap(convertedFrame->getBuffer());
-          } else {
-            block.spec = frame->getSpec();
-            block.bytes.swap(frame->getBuffer());
-          }
-        } else {
-          // we failed to produce something usable, just return the raw buffer...
-          block.structuredArray = false;
-        }
-      }
-    }
-  }
-  return checkSkipTrailingBlocks(record, blockIndex);
+ImageConversion OssMultiVRSReader::MultiVRSReaderStreamPlayer::getImageConversion(
+    const CurrentRecord& record) {
+  return multiVRSReader_.getImageConversion(
+      multiVRSReader_.getUniqueStreamIdForRecordIndex(multiVRSReader_.nextRecordIndex_));
 }
 
 void OssMultiVRSReader::init() {
