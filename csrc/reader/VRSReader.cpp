@@ -1204,14 +1204,11 @@ void pybind_vrsreader(py::module& m) {
       .def("purge_file_cache", &PyVRSReader::purgeFileCache)
       .def(
           "__enter__",
-          [&](PyVRSReader& r) { return &r; },
+          [](PyVRSReader& r) { return &r; },
           "Enter the runtime context related to this VRSReader")
       .def(
           "__exit__",
-          [&](PyVRSReader& r,
-              pybind11::object* exc_type,
-              pybind11::object* exc_value,
-              pybind11::object* traceback) { r.close(); },
+          [](PyVRSReader& r, const py::args&) { r.close(); },
           "Exit the runtime context related to this VRSReader");
 }
 #endif

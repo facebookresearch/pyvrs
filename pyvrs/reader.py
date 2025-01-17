@@ -208,7 +208,7 @@ class VRSReader(BaseVRSReader, ABC):
         """Context manager entry point."""
         return self
 
-    def __exit__(self) -> None:
+    def __exit__(self, type, value, traceback) -> None:
         """Context manager exit point."""
         self.close()
 
