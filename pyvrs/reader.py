@@ -204,6 +204,14 @@ class VRSReader(BaseVRSReader, ABC):
         self._reader = reader_cls(auto_read_configuration_records)
         self._open_files(multi_path, file_spec)
 
+    def __enter__(self) -> "VRSReader":
+        """Context manager entry point."""
+        return self
+
+    def __exit__(self) -> None:
+        """Context manager exit point."""
+        self.close()
+
     def _path_to_file_spec(
         self, path: PathType, multi_path: bool
     ) -> Union[FileSpec, List[FileSpec]]:

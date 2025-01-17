@@ -1105,7 +1105,12 @@ bool OssVRSReader::purgeFileCache() {
 #if IS_VRS_OSS_CODE()
 void pybind_vrsreader(py::module& m) {
   py::class_<PyVRSReader>(m, "Reader")
+      .def(py::init<>())
       .def(py::init<bool>())
+      .def(py::init<const string&>())
+      .def(py::init<const PyFileSpec&>())
+      .def(py::init<const string&, bool>())
+      .def(py::init<const PyFileSpec&, bool>())
       .def("open", py::overload_cast<const string&>(&PyVRSReader::open))
       .def("open", py::overload_cast<const PyFileSpec&>(&PyVRSReader::open))
       .def("close", &PyVRSReader::close)
@@ -1196,7 +1201,18 @@ void pybind_vrsreader(py::module& m) {
           &PyVRSReader::prefetchRecordSequence,
           py::arg("sequence"),
           py::arg("clearSequence") = true)
-      .def("purge_file_cache", &PyVRSReader::purgeFileCache);
+      .def("purge_file_cache", &PyVRSReader::purgeFileCache)
+      .def(
+          "__enter__",
+          [&](PyVRSReader& r) { return &r; },
+          "Enter the runtime context related to this VRSReader")
+      .def(
+          "__exit__",
+          [&](PyVRSReader& r,
+              pybind11::object* exc_type,
+              pybind11::object* exc_value,
+              pybind11::object* traceback) { r.close(); },
+          "Exit the runtime context related to this VRSReader");
 }
 #endif
 } // namespace pyvrs

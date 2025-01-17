@@ -127,6 +127,21 @@ class OssVRSReader : public VRSReaderBase {
       : streamPlayer_{*this}, autoReadConfigurationRecord_{autoReadConfigurationRecord} {
     init();
   }
+  OssVRSReader() : OssVRSReader(false) {}
+  explicit OssVRSReader(const string& path) : OssVRSReader(false) {
+    open(path);
+  }
+  OssVRSReader(const string& path, bool autoReadConfigurationRecord)
+      : OssVRSReader(autoReadConfigurationRecord) {
+    open(path);
+  }
+  explicit OssVRSReader(const PyFileSpec& spec) : OssVRSReader(false) {
+    open(spec);
+  }
+  OssVRSReader(const PyFileSpec& spec, bool autoReadConfigurationRecord)
+      : OssVRSReader(autoReadConfigurationRecord) {
+    open(spec);
+  }
 
   ~OssVRSReader() override {
     close();
