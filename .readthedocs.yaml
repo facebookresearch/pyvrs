@@ -18,6 +18,7 @@ build:
     - ccache
     - libgtest-dev
     - libfmt-dev
+    - libjpeg-dev
     - libturbojpeg-dev
     - libpng-dev
     - liblz4-dev
