@@ -17,11 +17,9 @@
 #include "Utils.h"
 
 #include <vrs/os/Platform.h>
-#include <vrs/utils/AudioTrackExtractor.h>
 #include <vrs/utils/Validation.h>
 
 #include "../VrsBindings.h"
-#include "../reader/FilteredFileReader.h"
 #include "PyBuffer.h"
 #include "PyExceptions.h"
 #include "PyFileSpec.h"
@@ -40,11 +38,6 @@ static string verbatimChecksum(const string& path, bool showProgress) {
   return vrs::utils::verbatimChecksum(path, showProgress);
 }
 
-string extractAudioTrack(pyvrs::FilteredFileReader& filteredReader, const string& wavFilePath) {
-  initVrsBindings();
-  return vrs::utils::extractAudioTrack(filteredReader.getFilteredReader(), wavFilePath);
-}
-
 void pybind_utils(py::module& m) {
   py::enum_<vrs::CompressionPreset>(m, "CompressionPreset")
       .value("NONE", vrs::CompressionPreset::None)
@@ -59,10 +52,6 @@ void pybind_utils(py::module& m) {
       .export_values();
   m.def("records_checksum", &recordsChecksum, "Calculate a VRS file's logical checksum");
   m.def("verbatim_checksum", &verbatimChecksum, "Calculate a file's checksum");
-  m.def(
-      "extract_audio_track",
-      &extractAudioTrack,
-      "Extract audio track from given FilteredFileReader");
   pybind_exception(m);
   pybind_record(m);
   pybind_buffer(m);
