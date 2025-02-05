@@ -26,6 +26,7 @@
 #if IS_VRS_FB_INTERNAL()
 #include "archive/Archive.h"
 #include "fb/FbInternal.h"
+#include "fb/dataset_snapshot/PyDatasetSnapshot.h"
 #include "filter/Filter.h" // Disable filter internally until AsyncImageFilter is reworked.
 #include "writer/Writer.h"
 #endif
@@ -45,15 +46,24 @@ PYBIND11_MODULE(PYBIND_MODULE_NAME, m) {
             :toctree: _generate
       )pbdoc";
 
+  // NOTE: the order of includes matters for FB-internal python stubs generation
+#if IS_VRS_FB_INTERNAL()
+  // Register some very basic types used in FB bindings
+  pyvrs::pybind_fbinternal_basics(m);
+#endif
+
   // Register submodules.
-  pyvrs::pybind_reader(m);
   pyvrs::pybind_utils(m);
 
+#if IS_VRS_FB_INTERNAL()
+  pyvrs::pybind_fbinternal(m);
+#endif
+  pyvrs::pybind_reader(m);
 #if IS_VRS_FB_INTERNAL()
   pyvrs::pybind_filter(m); // Disable filter internally until AsyncImageFilter is reworked.
   pyvrs::pybind_writer(m);
   pyvrs::pybind_archive(m);
-  pyvrs::pybind_fbinternal(m);
+  pyvrs::pybind_dataset_snapshot(m);
 #endif
 
 #ifdef VERSION_INFO

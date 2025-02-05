@@ -130,6 +130,34 @@ void pybind_record(py::module& m) {
 
   static_assert(int(vrs::PixelFormat::COUNT) == 23, "vrs::PixelFormat Python bindings incomplete");
 
+  py::enum_<vrs::AudioSampleFormat>(m, "AudioSampleFormat", py::arithmetic())
+      .value("UNDEFINED", vrs::AudioSampleFormat::UNDEFINED)
+      .value("S8", vrs::AudioSampleFormat::S8)
+      .value("U8", vrs::AudioSampleFormat::U8)
+      .value("A_LAW", vrs::AudioSampleFormat::A_LAW)
+      .value("MU_LAW", vrs::AudioSampleFormat::MU_LAW)
+      .value("S16_LE", vrs::AudioSampleFormat::S16_LE)
+      .value("U16_LE", vrs::AudioSampleFormat::U16_LE)
+      .value("S16_BE", vrs::AudioSampleFormat::S16_BE)
+      .value("U16_BE", vrs::AudioSampleFormat::U16_BE)
+      .value("S24_LE", vrs::AudioSampleFormat::S24_LE)
+      .value("U24_LE", vrs::AudioSampleFormat::U24_LE)
+      .value("S24_BE", vrs::AudioSampleFormat::S24_BE)
+      .value("U24_BE", vrs::AudioSampleFormat::U24_BE)
+      .value("S32_LE", vrs::AudioSampleFormat::S32_LE)
+      .value("U32_LE", vrs::AudioSampleFormat::U32_LE)
+      .value("S32_BE", vrs::AudioSampleFormat::S32_BE)
+      .value("U32_BE", vrs::AudioSampleFormat::U32_BE)
+      .value("F32_LE", vrs::AudioSampleFormat::F32_LE)
+      .value("F32_BE", vrs::AudioSampleFormat::F32_BE)
+      .value("F64_LE", vrs::AudioSampleFormat::F64_LE)
+      .value("F64_BE", vrs::AudioSampleFormat::F64_BE);
+
+  static_assert(
+      int(vrs::AudioSampleFormat::COUNT) == 21,
+      "vrs::AudioSampleFormat Python bindings incomplete");
+
+  py::enum_<vrs::RecordableTypeId>(m, "RecordableTypeId");
   py::class_<vrs::StreamId>(m, "RecordableId")
       .def("get_type_id", &vrs::StreamId::getTypeId)
       .def("get_instance_id", &vrs::StreamId::getInstanceId)
@@ -137,7 +165,6 @@ void pybind_record(py::module& m) {
       .def("get_type_name", &vrs::StreamId::getTypeName)
       .def("get_name", &vrs::StreamId::getName)
       .def("get_numeric_name", &vrs::StreamId::getNumericName);
-  py::enum_<vrs::RecordableTypeId>(m, "RecordableTypeId");
 
   m.def("recordable_type_id_name", [](const std::string& recordableIdAsString) {
     const vrs::StreamId recId = vrs::StreamId::fromNumericName(recordableIdAsString);

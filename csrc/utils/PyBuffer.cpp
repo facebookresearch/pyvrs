@@ -595,22 +595,6 @@ void pybind_buffer(py::module& m) {
           .def("__str__", [](const PyContentBlock& block) { return block.asString(); });
   DEF_DICT_FUNC(contentBlock, PyContentBlock)
 
-  py::class_<pyvrs::ContentBlockBuffer>(m, "Buffer", py::buffer_protocol())
-      .def("jxl_compress", &pyvrs::ContentBlockBuffer::jxlCompress)
-      .def("jpg_compress", &pyvrs::ContentBlockBuffer::jpgCompress)
-      .def("decompress", &pyvrs::ContentBlockBuffer::decompress)
-      .def_buffer([](pyvrs::ContentBlockBuffer& block) -> py::buffer_info {
-        return pyvrs::convertContentBlockBuffer(block);
-      })
-      .def("__str__", [](const pyvrs::ContentBlockBuffer& block) {
-        return fmt::format(
-            "{}, {} bytes, structured: {}, adjusted: {}",
-            block.spec.asString(),
-            block.bytes.size(),
-            block.structuredArray,
-            block.bytesAdjusted);
-      });
-
   py::class_<pyvrs::ImageBuffer>(m, "ImageBuffer", py::buffer_protocol())
       .def(py::init<const PyImageContentBlockSpec&, const py::buffer&>())
       .def(py::init<const PyImageContentBlockSpec&, int64_t, const py::buffer&>())
@@ -630,6 +614,22 @@ void pybind_buffer(py::module& m) {
             image.spec.asString(),
             image.bytes.size(),
             image.recordIndex);
+      });
+
+  py::class_<pyvrs::ContentBlockBuffer>(m, "Buffer", py::buffer_protocol())
+      .def("jxl_compress", &pyvrs::ContentBlockBuffer::jxlCompress)
+      .def("jpg_compress", &pyvrs::ContentBlockBuffer::jpgCompress)
+      .def("decompress", &pyvrs::ContentBlockBuffer::decompress)
+      .def_buffer([](pyvrs::ContentBlockBuffer& block) -> py::buffer_info {
+        return pyvrs::convertContentBlockBuffer(block);
+      })
+      .def("__str__", [](const pyvrs::ContentBlockBuffer& block) {
+        return fmt::format(
+            "{}, {} bytes, structured: {}, adjusted: {}",
+            block.spec.asString(),
+            block.bytes.size(),
+            block.structuredArray,
+            block.bytesAdjusted);
       });
 
   py::class_<pyvrs::BinaryBuffer>(m, "BinaryBuffer", py::buffer_protocol())

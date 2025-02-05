@@ -73,23 +73,10 @@ using namespace vrs;
       }));
 
 void pybind_writer(py::module& m) {
-  py::class_<pyvrs::VRSWriter>(m, "Writer")
-      .def(py::init<>())
-      .def("resetNewInstanceIds", &pyvrs::VRSWriter::resetNewInstanceIds)
-      .def("create", py::overload_cast<const std::string&>(&pyvrs::VRSWriter::create))
-      .def("createStream", &pyvrs::VRSWriter::createStream, py::return_value_policy::reference)
-      .def(
-          "createFlavoredStream",
-          &pyvrs::VRSWriter::createFlavoredStream,
-          py::return_value_policy::reference)
-      .def("setTag", &pyvrs::VRSWriter::setTag)
-      .def("writeRecords", &pyvrs::VRSWriter::writeRecords)
-      .def("getBackgroundThreadQueueByteSize", &pyvrs::VRSWriter::getBackgroundThreadQueueByteSize)
-      .def("close", &pyvrs::VRSWriter::close)
-#if IS_VRS_FB_INTERNAL()
-#include "Writer_fb.hpp"
-#endif
-      ;
+  py::class_<pyvrs::PyRecordFormat, std::unique_ptr<pyvrs::PyRecordFormat, py::nodelete>>(
+      m, "RecordFormat")
+      .def("getMembers", &pyvrs::PyRecordFormat::getMembers)
+      .def("getJsonDataLayouts", &pyvrs::PyRecordFormat::getJsonDataLayouts);
 
   py::class_<pyvrs::PyStream, std::unique_ptr<pyvrs::PyStream, py::nodelete>>(m, "Stream")
       .def("createRecordFormat", &pyvrs::PyStream::createRecordFormat)
@@ -112,10 +99,23 @@ void pybind_writer(py::module& m) {
       .def("setTag", &pyvrs::PyStream::setTag)
       .def("getStreamID", &pyvrs::PyStream::getStreamID);
 
-  py::class_<pyvrs::PyRecordFormat, std::unique_ptr<pyvrs::PyRecordFormat, py::nodelete>>(
-      m, "RecordFormat")
-      .def("getMembers", &pyvrs::PyRecordFormat::getMembers)
-      .def("getJsonDataLayouts", &pyvrs::PyRecordFormat::getJsonDataLayouts);
+  py::class_<pyvrs::VRSWriter>(m, "Writer")
+      .def(py::init<>())
+      .def("resetNewInstanceIds", &pyvrs::VRSWriter::resetNewInstanceIds)
+      .def("create", py::overload_cast<const std::string&>(&pyvrs::VRSWriter::create))
+      .def("createStream", &pyvrs::VRSWriter::createStream, py::return_value_policy::reference)
+      .def(
+          "createFlavoredStream",
+          &pyvrs::VRSWriter::createFlavoredStream,
+          py::return_value_policy::reference)
+      .def("setTag", &pyvrs::VRSWriter::setTag)
+      .def("writeRecords", &pyvrs::VRSWriter::writeRecords)
+      .def("getBackgroundThreadQueueByteSize", &pyvrs::VRSWriter::getBackgroundThreadQueueByteSize)
+      .def("close", &pyvrs::VRSWriter::close)
+#if IS_VRS_FB_INTERNAL()
+#include "Writer_fb.hpp"
+#endif
+      ;
 
   py::class_<pyvrs::DataPieceWrapper>(m, "DataPieceWrapper").def(py::init<>());
 
