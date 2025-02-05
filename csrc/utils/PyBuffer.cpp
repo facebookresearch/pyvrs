@@ -616,7 +616,7 @@ void pybind_buffer(py::module& m) {
             image.recordIndex);
       });
 
-  py::class_<pyvrs::ContentBlockBuffer>(m, "Buffer", py::buffer_protocol())
+  py::class_<pyvrs::ContentBlockBuffer>(m, "ContentBuffer", py::buffer_protocol())
       .def("jxl_compress", &pyvrs::ContentBlockBuffer::jxlCompress)
       .def("jpg_compress", &pyvrs::ContentBlockBuffer::jpgCompress)
       .def("decompress", &pyvrs::ContentBlockBuffer::decompress)
