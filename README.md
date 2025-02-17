@@ -34,7 +34,7 @@ python -m pip install -e .
 ### Windows (via pixi):
 
 ```
-# Donwload pyvrs
+# Download pyvrs
 git clone https://github.com/facebookresearch/pyvrs.git
 cd pyvrs
 git submodule sync --recursive
