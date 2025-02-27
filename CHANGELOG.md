@@ -4,6 +4,11 @@ This file captures the main changes made to the pyvrs open source project since
 its creation. None of the changes made before pyvrs was open sourced are meant
 to be covered.
 
+# Version 1.2.2 (Feb 26, 2025)
+
+- Async handler fixes.
+- Misc changes.
+
 # Version 1.2.1 (May 15, 2024)
 
 - Misc changes.

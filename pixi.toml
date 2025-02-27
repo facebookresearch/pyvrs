@@ -1,6 +1,6 @@
 [project]
 name = "pyvrs"
-version = "0.1.0"
+version = "1.2.2"
 description = "pyvrs is a Python interface for C++ library VRS using pybind11."
 channels = ["conda-forge"]
 platforms = ["win-64"]
