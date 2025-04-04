@@ -131,7 +131,7 @@ void OssMultiVRSReader::open(const std::vector<PyFileSpec>& pySpecs) {
   for (const auto& pySpec : pySpecs) {
     specs.emplace_back(pySpec.getSpec());
   }
-  return open(specs);
+  open(specs);
 }
 
 void OssMultiVRSReader::open(const std::string& path) {
@@ -149,7 +149,7 @@ void OssMultiVRSReader::open(const std::vector<std::string>& paths) {
           fmt::format("Invalid path '{}': {}", paths[i], errorCodeToMessageWithCode(status)));
     }
   }
-  return open(specs);
+  open(specs);
 }
 
 void OssMultiVRSReader::open(const std::vector<FileSpec>& specs) {
