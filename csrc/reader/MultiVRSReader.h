@@ -197,6 +197,20 @@ class OssMultiVRSReader : public VRSReaderBase {
   /// @return Stream disk size, in bytes.
   int64_t getStreamSize(const string& streamId);
 
+  /// Tell if a stream might contain at least one image (and probably will).
+  /// This is a best guess effort, but it is still possible that no images are actually found!
+  /// @param streamId: StreamId of the record stream to check.
+  /// @return True if at least one Data record RecordFormat definition found in the stream has at
+  /// least one image content block, and the stream contains at least one data record.
+  bool mightContainImages(const string& streamId);
+
+  /// Tell if a stream might contain some audio data (and probably will).
+  /// This is a best guess effort, but it is still possible that no audio will actually be found!
+  /// @param streamId: StreamId of the record stream to check.
+  /// @return True if at least one Data record RecordFormat definition found in the stream has at
+  /// least one audio content block, and the stream contains at least one data record.
+  bool mightContainAudio(const string& streamId);
+
   /// Enable reading the records of a specific device.
   /// @param streamId: VRS stream id to enable for reading.
   /// @return True if the stream was found and is now enabled for reading.

@@ -44,17 +44,17 @@ class TimestampNotFoundError : public std::exception {
       vrs::Record::Type recordType = vrs::Record::Type::UNDEFINED) {
     std::stringstream ss;
 
-    ss << "Record not found ";
+    ss << "Record not found";
     if (streamId.isValid()) {
-      ss << fmt::format("for stream: {} ", streamId.getName());
+      ss << fmt::format(" for stream {}", streamId.getFullName());
     }
     if (recordType != vrs::Record::Type::UNDEFINED) {
-      ss << fmt::format("for record type: {}", toString(recordType));
+      ss << fmt::format(" for record type {}", toString(recordType));
     }
     if (epsilon != 0) {
-      ss << fmt::format("in range ({0}-{1})-({0}+{1})", timestamp, epsilon);
+      ss << fmt::format(" in range ({0}-{1})-({0}+{1})", timestamp, epsilon);
     } else {
-      ss << fmt::format("at timestamp {}", timestamp);
+      ss << fmt::format(" at timestamp {}", timestamp);
     }
     message_ = ss.str();
   }
@@ -78,9 +78,9 @@ class StreamNotFoundError : public std::exception {
       const std::string& streamId,
       const std::set<vrs::StreamId>& availableStreamIds) {
     std::stringstream ss;
-    ss << fmt::format("No matching stream for {0}. Available streams are:\n", streamId);
+    ss << fmt::format("No matching stream for {}. Available streams are:\n", streamId);
     for (auto it : availableStreamIds) {
-      ss << it.getName() << "\n";
+      ss << "  " << it.getFullName() << "\n";
     }
     message_ = ss.str();
   }

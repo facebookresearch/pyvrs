@@ -566,7 +566,7 @@ void OssVRSReader::setImageConversion(ImageConversion conversion) {
 
 void OssVRSReader::setImageConversion(const StreamId& id, ImageConversion conversion) {
   if (!id.isValid()) {
-    throw py::value_error("Invalid stream ID: " + id.getName());
+    throw py::value_error("Invalid stream ID: " + id.getFullName());
   }
   streamImageConversion_[id] = conversion;
   streamPlayer_.resetVideoFrameHandler(id);

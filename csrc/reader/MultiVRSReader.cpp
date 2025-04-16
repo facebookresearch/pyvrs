@@ -349,6 +349,14 @@ int64_t OssMultiVRSReader::getStreamSize(const string& streamId) {
   return size;
 }
 
+bool OssMultiVRSReader::mightContainImages(const string& streamId) {
+  return reader_.mightContainImages(getStreamId(streamId));
+}
+
+bool OssMultiVRSReader::mightContainAudio(const string& streamId) {
+  return reader_.mightContainAudio(getStreamId(streamId));
+}
+
 void OssMultiVRSReader::addRecordInfo(
     PyObject* dic,
     const string& prefix,
@@ -1034,6 +1042,8 @@ void pybind_multivrsreader(py::module& m) {
       .def("find_stream", &PyMultiVRSReader::findStream)
       .def("get_stream_info", &PyMultiVRSReader::getStreamInfo)
       .def("get_stream_size", &PyMultiVRSReader::getStreamSize)
+      .def("might_contain_images", &PyMultiVRSReader::mightContainImages)
+      .def("might_contain_audio", &PyMultiVRSReader::mightContainAudio)
       .def("enable_stream", py::overload_cast<const string&>(&PyMultiVRSReader::enableStream))
       .def("enable_streams", &PyMultiVRSReader::enableStreams)
       .def("enable_streams_by_indexes", &PyMultiVRSReader::enableStreamsByIndexes)
