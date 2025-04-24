@@ -72,7 +72,7 @@ file (GLOB_RECURSE CSRCS
   "csrc/writer/datalayouts/*.h"
 )
 
-# Remove fb-only source files (if there is still any lying around)
+# Remove fb-only source files (if there are still any lying around)
 file (GLOB_RECURSE FB_CSRCS "csrc/*/*_fb\.*")
 if (FB_CSRCS)
   list(REMOVE_ITEM CSRCS ${FB_CSRCS})
