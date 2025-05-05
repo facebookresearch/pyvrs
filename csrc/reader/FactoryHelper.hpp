@@ -181,3 +181,11 @@ DEFINE_DATA_PIECE(Vector, string)
 DEFINE_DATA_PIECE(StringMap, string)
 
 } // namespace
+
+namespace pyvrs {
+// To prevent the inclusion of this expensive header in more than one file, this function should
+// trigger a linker error if included more than once
+int singleIncludeBreakCheck() {
+  return 0;
+}
+} // namespace pyvrs

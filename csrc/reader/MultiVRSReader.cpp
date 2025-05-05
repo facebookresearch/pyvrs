@@ -45,7 +45,6 @@
 #include "../utils/PyExceptions.h"
 #include "../utils/PyRecord.h"
 #include "../utils/PyUtils.h"
-#include "FactoryHelper.hpp"
 
 using UniqueStreamId = vrs::MultiRecordFileReader::UniqueStreamId;
 
