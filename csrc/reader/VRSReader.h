@@ -53,13 +53,15 @@ enum class ImageConversion {
   RecordUnreadBytesBackdoor,
 };
 
+PyObject* dataLayoutToPyDict(DataLayout& dl, const string& encoding);
+
 /// @brief BaseVRSReaderStreamPlayer class to factorize VRSReader and MultiVRSReader handling.
 class BaseVRSReaderStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlayer {
  protected:
   virtual bool checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex) = 0;
   virtual ImageConversion getImageConversion(const CurrentRecord& record) = 0;
 
-  PyObject* readDataLayout(DataLayout& dl, const string& encoding);
+  static PyObject* readDataLayout(DataLayout& dl, const string& encoding);
 
   /// Set the data we read from VRS record into ContentBlockBuffer (ContentBlockBuffer is a
   /// class that's exposed to Python via protocol_buffer).

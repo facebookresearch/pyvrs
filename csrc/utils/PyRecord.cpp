@@ -50,11 +50,15 @@ const constexpr char* kImageCountKey = "image_count";
 const constexpr char* kMetadataCountKey = "metadata_count";
 const constexpr char* kUnsupportedBlockCountKey = "unsupported_block_count";
 
-PyRecord::PyRecord(const IndexRecord::RecordInfo& info, int32_t recordIndex_, RecordCache& record) {
+PyRecord::PyRecord(const IndexRecord::RecordInfo& info, int32_t recordIndex_) {
   recordIndex = recordIndex_;
   recordType = lowercaseTypeName(info.recordType);
   recordTimestamp = info.timestamp;
   streamId = info.streamId.getNumericName();
+}
+
+PyRecord::PyRecord(const IndexRecord::RecordInfo& info, int32_t recordIndex_, RecordCache& record)
+    : PyRecord(info, recordIndex_) {
   recordFormatVersion = record.recordFormatVersion;
   datalayoutBlocks = std::move(record.datalayoutBlocks);
   imageBlocks = std::move(record.images);

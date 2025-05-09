@@ -169,7 +169,7 @@ bool OssVRSReader::VRSReaderStreamPlayer::processRecordHeader(
   return RecordFormatStreamPlayer::processRecordHeader(record, outDataRef);
 }
 
-PyObject* BaseVRSReaderStreamPlayer::readDataLayout(DataLayout& dl, const string& encoding) {
+PyObject* dataLayoutToPyDict(DataLayout& dl, const string& encoding) {
   PyObject* dic = PyDict_New();
   dl.forEachDataPiece(
       [dic](const DataPiece* piece) { getDataPieceValuePyObjectorRegistry().map(dic, piece); },
@@ -200,6 +200,10 @@ PyObject* BaseVRSReaderStreamPlayer::readDataLayout(DataLayout& dl, const string
       },
       DataPieceType::String);
   return dic;
+}
+
+PyObject* BaseVRSReaderStreamPlayer::readDataLayout(DataLayout& dl, const string& encoding) {
+  return dataLayoutToPyDict(dl, encoding);
 }
 
 bool OssVRSReader::VRSReaderStreamPlayer::onDataLayoutRead(
@@ -786,9 +790,7 @@ py::object OssVRSReader::readNextRecordInternal() {
     throw runtime_error("Read error: " + errorCodeToMessageWithCode(status));
   }
 
-  auto r = PyRecord(record, nextRecordIndex_, lastRecord_);
-  nextRecordIndex_++;
-  return py::cast(r);
+  return py::cast(PyRecord(record, nextRecordIndex_++, lastRecord_));
 }
 
 void OssVRSReader::readConfigurationRecord(const StreamId& streamId, uint32_t idx) {

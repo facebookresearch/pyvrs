@@ -61,6 +61,7 @@ struct RecordCache {
 /// The fields are exposed as a read only property but the methods required for dict interface is
 /// supported so that user can treat PyRecord object as Python Dictionary to iterate on.
 struct PyRecord {
+  explicit PyRecord(const IndexRecord::RecordInfo& info, int32_t recordIndex_);
   explicit PyRecord(const IndexRecord::RecordInfo& info, int32_t recordIndex_, RecordCache& record);
 
   int32_t recordIndex;
