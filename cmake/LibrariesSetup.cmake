@@ -25,6 +25,7 @@ find_package(Boost REQUIRED
     system
     thread
 )
+find_package(Eigen REQUIRED)
 find_package(FmtLib REQUIRED)
 find_package(RapidjsonLib REQUIRED)
 find_package(Lz4 REQUIRED)
@@ -33,6 +34,7 @@ find_package(xxHash REQUIRED)
 find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(TurboJpeg REQUIRED)
+find_package(Ocean REQUIRED)
 
 # Setup unit test infra, but only if unit tests are enabled
 if (UNIT_TESTS)
