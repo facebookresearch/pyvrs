@@ -29,7 +29,6 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update -y
-            sudo apt-get upgrade -y
             sudo apt-get install -o Acquire::Retries=5 \
               cmake git ninja-build libgtest-dev libfmt-dev \
               libjpeg-dev libturbojpeg-dev libpng-dev \
