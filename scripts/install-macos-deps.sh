@@ -15,4 +15,4 @@
 
 brew install cmake git ninja googletest glog fmt \
     jpeg-turbo libpng \
-    lz4 zstd xxhash boost
+    lz4 zstd xxhash boost opus

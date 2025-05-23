@@ -19,7 +19,7 @@ sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /
 
 # Install VRS dependencies
 yum install -y cmake git ninja-build gtest-devel \
-    lz4-devel libzstd-devel xxhash-devel libpng-devel
+    lz4-devel libzstd-devel xxhash-devel libpng-devel libopus-devel
 
 cd /tmp && git clone https://github.com/fmtlib/fmt.git -b 8.1.1 \
     && cd fmt \
