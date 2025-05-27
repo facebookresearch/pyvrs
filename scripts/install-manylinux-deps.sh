@@ -21,6 +21,14 @@ sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /
 yum install -y cmake git ninja-build gtest-devel \
     lz4-devel libzstd-devel xxhash-devel libpng-devel
 
+cd /tmp && curl -kOL http://downloads.xiph.org/releases/opus/opus-1.5.2.tar.gz \
+    && tar -zxf opus-1.5.2.tar.gz \
+    && cd opus-1.5.2 \
+    && ./configure \
+    && make -j4 \
+    && make install \
+    && rm -rf /tmp/opus-1.5.2.tar.gz /tmp/opus-1.5.2;
+
 cd /tmp && git clone https://github.com/fmtlib/fmt.git -b 8.1.1 \
     && cd fmt \
     && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DFMT_TEST=OFF .;make -j4 install; rm -rf /tmp/fmt;

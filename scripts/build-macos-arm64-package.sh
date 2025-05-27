@@ -47,7 +47,7 @@ export CIBW_OUTPUT_DIR="dist"
 export CIBW_ARCHS="arm64"
 export CIBW_BUILD_VERBOSITY="3"
 export CIBW_BUILD="cp39-*64 cp310-*64 cp311-*64 cp312-*64"
-export CIBW_BEFORE_BUILD_MACOS="arch -arm64 brew install boost cmake fmt glog jpeg-turbo libpng lz4 xxhash zstd"
+export CIBW_BEFORE_BUILD_MACOS="arch -arm64 brew install boost cmake fmt glog jpeg-turbo libpng lz4 xxhash zstd opus"
 export CIBW_SKIP="*-manylinux_i686 *musllinux*"
 
 # Build wheels for all specified versions
