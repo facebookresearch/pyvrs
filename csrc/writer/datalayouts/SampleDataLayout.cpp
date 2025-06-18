@@ -71,11 +71,11 @@ std::unique_ptr<PyStream> createSampleStreamWithImage() {
       Record::Type::CONFIGURATION, 1, std::make_unique<MyConfiguration>());
 
   // To add image in record, you need to create an additional ContentBlocks
-  std::vector<ContentBlock> dataContentBlocks = {ContentBlock(ImageFormat::RAW)};
+  std::vector<ContentBlock> rawImageContentBlock = {ContentBlock(ImageFormat::RAW)};
 
   // If you want to add additional content blocks, you have to create a wrapper
   auto dataRecordFormat = std::make_unique<PyRecordFormat>(
-      Record::Type::DATA, 1, std::make_unique<MyMetadata>(), dataContentBlocks);
+      Record::Type::DATA, 1, std::make_unique<MyMetadata>(), rawImageContentBlock);
 
   return std::make_unique<PyStream>(
       RecordableTypeId::UnitTest1,
@@ -94,8 +94,7 @@ std::unique_ptr<PyStream> createSampleStreamWithMultipleDataLayout() {
   auto configurationRecordFormat = std::make_unique<PyRecordFormat>(
       Record::Type::CONFIGURATION, 1, std::make_unique<MyConfiguration>());
 
-  std::vector<ContentBlock> dataContentBlock = {ContentBlock(ImageFormat::RAW)};
-  std::vector<ContentBlock> dataContentBlock2 = {};
+  std::vector<ContentBlock> rawImageContentBlock = {ContentBlock(ImageFormat::RAW)};
 
   // Pass a vector of unique_ptr<PythonDataLayout> to the constructor of record format.
   auto dataRecordFormat = std::make_unique<PyRecordFormat>(
@@ -103,8 +102,7 @@ std::unique_ptr<PyStream> createSampleStreamWithMultipleDataLayout() {
       1,
       std::make_unique<MyMetadata>(),
       std::make_unique<MyMetadata>(),
-      dataContentBlock,
-      dataContentBlock2);
+      rawImageContentBlock);
 
   return std::make_unique<PyStream>(
       RecordableTypeId::UnitTest1,

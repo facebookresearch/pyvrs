@@ -73,10 +73,8 @@ RecordFormat PyRecordFormat::getRecordFormat() const {
   for (auto& dataLayout : dataLayouts_) {
     format = format + dataLayout->getContentBlock();
   }
-  for (auto& contentBlocks : additionalContentBlocks_) {
-    for (ContentBlock contentBlock : contentBlocks) {
-      format = format + contentBlock;
-    }
+  for (const ContentBlock& contentBlock : additionalContentBlocks_) {
+    format = format + contentBlock;
   }
   return format;
 }

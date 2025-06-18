@@ -59,7 +59,7 @@ class PyRecordFormat {
     if (dataLayout) {
       dataLayouts_.push_back(std::move(dataLayout));
     }
-    additionalContentBlocks_.push_back(additionalContentBlocks);
+    additionalContentBlocks_ = additionalContentBlocks;
   }
 
   PyRecordFormat(
@@ -67,8 +67,7 @@ class PyRecordFormat {
       uint32_t formatVersion,
       std::unique_ptr<vrs::DataLayout>&& dataLayout1,
       std::unique_ptr<vrs::DataLayout>&& dataLayout2,
-      const std::vector<ContentBlock>& additionalContentBlocks1,
-      const std::vector<ContentBlock>& additionalContentBlocks2)
+      const std::vector<ContentBlock>& additionalContentBlocks)
       : recordType_(recordType), formatVersion_(formatVersion) {
     if (dataLayout1) {
       dataLayouts_.push_back(std::move(dataLayout1));
@@ -76,8 +75,7 @@ class PyRecordFormat {
     if (dataLayout2) {
       dataLayouts_.push_back(std::move(dataLayout2));
     }
-    additionalContentBlocks_.push_back(additionalContentBlocks1);
-    additionalContentBlocks_.push_back(additionalContentBlocks2);
+    additionalContentBlocks_ = additionalContentBlocks;
   }
 
   PyRecordFormat(PyRecordFormat&& other) {
@@ -110,7 +108,7 @@ class PyRecordFormat {
 
  private:
   std::vector<std::unique_ptr<vrs::DataLayout>> dataLayouts_;
-  std::vector<std::vector<ContentBlock>> additionalContentBlocks_;
+  std::vector<ContentBlock> additionalContentBlocks_;
   Record::Type recordType_;
   uint32_t formatVersion_;
 };
