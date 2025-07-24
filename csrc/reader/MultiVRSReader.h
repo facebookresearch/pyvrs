@@ -92,6 +92,12 @@ class OssMultiVRSReader : public VRSReaderBase {
     close();
   }
 
+  OssMultiVRSReader(const OssMultiVRSReader&) = delete;
+  OssMultiVRSReader& operator=(const OssMultiVRSReader&) = delete;
+
+  OssMultiVRSReader(OssMultiVRSReader&&) = delete;
+  OssMultiVRSReader& operator=(OssMultiVRSReader&&) = delete;
+
   // ---------------------
   // File level operations
   // ---------------------
