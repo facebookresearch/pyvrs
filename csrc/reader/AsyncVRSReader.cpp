@@ -227,6 +227,7 @@ void pybind_asyncvrsreaders(py::module& m) {
       .def("open", py::overload_cast<const std::vector<std::string>&>(&PyAsyncMultiReader::open))
       .def("open", py::overload_cast<const std::vector<PyFileSpec>&>(&PyAsyncMultiReader::open))
       .def("close", &PyAsyncMultiReader::close)
+      .def("set_related_file_tags", &PyAsyncMultiReader::setRelatedFileTags)
       .def("set_encoding", &PyAsyncMultiReader::setEncoding)
       .def("get_encoding", &PyAsyncMultiReader::getEncoding)
       .def(
