@@ -170,6 +170,10 @@ int OssMultiVRSReader::close() {
   return reader_.close();
 }
 
+void OssMultiVRSReader::setRelatedFileTags(std::vector<std::string>&& tags) {
+  reader_.setRelatedFileTags(std::move(tags));
+}
+
 void OssMultiVRSReader::setEncoding(const string& encoding) {
   encoding_ = encoding;
 }
@@ -1018,6 +1022,7 @@ void pybind_multivrsreader(py::module& m) {
       .def("open", py::overload_cast<const std::vector<std::string>&>(&PyMultiVRSReader::open))
       .def("open", py::overload_cast<const std::vector<PyFileSpec>&>(&PyMultiVRSReader::open))
       .def("close", &PyMultiVRSReader::close)
+      .def("set_related_file_tags", &PyMultiVRSReader::setRelatedFileTags)
       .def("set_encoding", &PyMultiVRSReader::setEncoding)
       .def("get_encoding", &PyMultiVRSReader::getEncoding)
       .def(

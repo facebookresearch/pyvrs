@@ -114,6 +114,9 @@ class OssMultiVRSReader : public VRSReaderBase {
 
   int close();
 
+  /// Set the tags that determine whether VRS files are related to each other.
+  void setRelatedFileTags(std::vector<std::string>&& tags);
+
   /// Set the character encoding to use when reading strings from the file.
   void setEncoding(const string& encoding);
 
