@@ -240,7 +240,8 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
       case vrs::PixelFormat::RAW10:
       case vrs::PixelFormat::RAW10_BAYER_RGGB:
       case vrs::PixelFormat::RAW10_BAYER_BGGR:
-        // expose raw buffer of bytes and let the user decode the RAW10 format.
+      case vrs::PixelFormat::GREY10PACKED:
+        // expose raw buffer of bytes and let the user decode the format.
         bytesPerPixel = 1;
         channelCount = 1;
         width = stride;
@@ -491,7 +492,8 @@ py::buffer_info convertImageBlockBuffer(ImageBuffer& block) {
       case PixelFormat::RAW10:
       case PixelFormat::RAW10_BAYER_RGGB:
       case PixelFormat::RAW10_BAYER_BGGR:
-        // expose raw buffer of bytes and let the user decode the RAW10 format.
+      case PixelFormat::GREY10PACKED:
+        // expose raw buffer of bytes and let the user decode the format.
         bytesPerPixel = 1;
         channelCount = 1;
         width = stride;

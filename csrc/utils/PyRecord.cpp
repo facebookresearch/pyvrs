@@ -130,9 +130,10 @@ void pybind_record(py::module& m) {
       .value("RAW10_BAYER_RGGB", vrs::PixelFormat::RAW10_BAYER_RGGB)
       .value("RAW10_BAYER_BGGR", vrs::PixelFormat::RAW10_BAYER_BGGR)
       .value("YUV_420_NV21", vrs::PixelFormat::YUV_420_NV21)
-      .value("YUV_420_NV12", vrs::PixelFormat::YUV_420_NV12);
+      .value("YUV_420_NV12", vrs::PixelFormat::YUV_420_NV12)
+      .value("GREY10PACKED", vrs::PixelFormat::GREY10PACKED);
 
-  static_assert(int(vrs::PixelFormat::COUNT) == 23, "vrs::PixelFormat Python bindings incomplete");
+  static_assert(int(vrs::PixelFormat::COUNT) == 24, "vrs::PixelFormat Python bindings incomplete");
 
   py::enum_<vrs::AudioSampleFormat>(m, "AudioSampleFormat", py::arithmetic())
       .value("UNDEFINED", vrs::AudioSampleFormat::UNDEFINED)
