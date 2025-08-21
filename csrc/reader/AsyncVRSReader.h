@@ -97,7 +97,7 @@ class AwaitableRecord {
 /// \brief Helper class to manage the background async thread
 class AsyncReadHandler {
  public:
-  AsyncReadHandler(VRSReaderBase& reader)
+  explicit AsyncReadHandler(VRSReaderBase& reader)
       : reader_{reader}, asyncThread_(&AsyncReadHandler::asyncThreadActivity, this) {}
 
   VRSReaderBase& getReader() const {

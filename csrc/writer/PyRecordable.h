@@ -40,7 +40,7 @@ class PyRecordFormat {
  public:
   ~PyRecordFormat() = default;
   PyRecordFormat() {}
-  PyRecordFormat(
+  explicit PyRecordFormat(
       const Record::Type& recordType,
       uint32_t formatVersion = 0,
       std::unique_ptr<vrs::DataLayout>&& dataLayout = nullptr)
@@ -136,7 +136,7 @@ class PyStream {
  public:
   ~PyStream(){};
 
-  PyStream(
+  explicit PyStream(
       RecordableTypeId typeId,
       std::unique_ptr<PyRecordFormat>&& configurationRecordFormat = nullptr,
       std::unique_ptr<PyRecordFormat>&& dataRecordFormat = nullptr,
