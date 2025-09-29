@@ -18,6 +18,7 @@
 
 #include <vrs/os/Platform.h>
 #include <vrs/utils/AudioTrackExtractor.h>
+#include <vrs/utils/cli/DataExtraction.h>
 
 #include "AsyncVRSReader.h"
 #include "FilteredFileReader.h"
@@ -30,6 +31,11 @@ namespace py = pybind11;
 string extractAudioTrack(pyvrs::FilteredFileReader& filteredReader, const string& wavFilePath) {
   initVrsBindings();
   return vrs::utils::extractAudioTrack(filteredReader.getFilteredReader(), wavFilePath);
+}
+
+int extractAudio(const string& path, pyvrs::FilteredFileReader& filteredReader) {
+  initVrsBindings();
+  return vrs::utils::extractAudio(path, filteredReader.getFilteredReader());
 }
 
 void pybind_reader(py::module& m) {
@@ -54,5 +60,7 @@ void pybind_reader(py::module& m) {
       "extract_audio_track",
       &extractAudioTrack,
       "Extract audio track from given FilteredFileReader");
+
+  m.def("extract_audio", &extractAudio, "Extract all audio tracks from given FilteredFileReader");
 }
 } // namespace pyvrs
