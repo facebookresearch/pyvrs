@@ -149,6 +149,11 @@ class OssVRSReader : public VRSReaderBase {
     close();
   }
 
+  OssVRSReader(const OssVRSReader&) = delete;
+  OssVRSReader& operator=(const OssVRSReader&) = delete;
+  OssVRSReader(OssVRSReader&&) = delete;
+  OssVRSReader& operator=(OssVRSReader&&) = delete;
+
   // ---------------------
   // File level operations
   // ---------------------
