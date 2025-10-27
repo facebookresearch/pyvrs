@@ -156,8 +156,9 @@ void OssMultiVRSReader::open(const std::vector<FileSpec>& specs) {
   int status = reader_.open(specs);
   if (status != 0) {
     close();
-    throw std::runtime_error(fmt::format(
-        "Could not open '{}': {}", fmt::join(specs, ", "), errorCodeToMessageWithCode(status)));
+    throw std::runtime_error(
+        fmt::format(
+            "Could not open '{}': {}", fmt::join(specs, ", "), errorCodeToMessageWithCode(status)));
   }
   if (autoReadConfigurationRecord_) {
     for (const auto& streamId : reader_.getStreams()) {

@@ -128,9 +128,10 @@ void PyStream::init(
     recordFormatMap_.insert(
         std::make_pair(Record::Type::CONFIGURATION, std::move(configurationRecordFormat)));
   } else {
-    recordFormatMap_.insert(std::make_pair(
-        Record::Type::CONFIGURATION,
-        std::make_unique<PyRecordFormat>(Record::Type::CONFIGURATION)));
+    recordFormatMap_.insert(
+        std::make_pair(
+            Record::Type::CONFIGURATION,
+            std::make_unique<PyRecordFormat>(Record::Type::CONFIGURATION)));
   }
   if (dataRecordFormat != nullptr) {
     recordFormatMap_.insert(std::make_pair(Record::Type::DATA, std::move(dataRecordFormat)));

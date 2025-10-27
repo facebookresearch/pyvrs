@@ -162,8 +162,11 @@ void ImageBuffer::initBytesFromPyBuffer(const py::buffer& b) {
   }
 
   if (imageFormat == ImageFormat::RAW && size != spec.getRawImageSize()) {
-    throw py::value_error(fmt::format(
-        "Buffer size {} doesn't match the expected image size {}", size, spec.getRawImageSize()));
+    throw py::value_error(
+        fmt::format(
+            "Buffer size {} doesn't match the expected image size {}",
+            size,
+            spec.getRawImageSize()));
   }
   if (imageFormat == ImageFormat::UNDEFINED || imageFormat == ImageFormat::COUNT) {
     throw py::value_error(fmt::format("Invalid image format: {}", toString(imageFormat)));

@@ -134,7 +134,7 @@ class PyRecordable : public Recordable {
 
 class PyStream {
  public:
-  ~PyStream(){};
+  ~PyStream() {};
 
   explicit PyStream(
       RecordableTypeId typeId,
