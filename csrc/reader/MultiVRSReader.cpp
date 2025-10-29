@@ -666,6 +666,8 @@ py::object OssMultiVRSReader::readNextRecordInternal() {
   }
 
   auto r = PyRecord(record, nextRecordIndex_, lastRecord_);
+  // the stream ID in record is the file's stream ID, not the unique stream ID
+  r.streamId = reader_.getUniqueStreamId(&record).getNumericName();
   nextRecordIndex_++;
   return py::cast(r);
 }
