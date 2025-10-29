@@ -451,6 +451,7 @@ py::object OssVRSReader::getStreamInfo(const string& streamId) {
   PyDict_SetItem(dic, pyObject("state_records_count"), pyObject(state));
   PyDict_SetItem(dic, pyObject("data_records_count"), pyObject(data));
   PyDict_SetItem(dic, pyObject("device_name"), pyObject(reader_.getOriginalRecordableTypeName(id)));
+  PyDict_SetItem(dic, pyObject("serial_number"), pyObject(reader_.getSerialNumber(id)));
   string flavor = reader_.getFlavor(id);
   if (!flavor.empty()) {
     PyDict_SetItem(dic, pyObject("flavor"), pyObject(flavor));
