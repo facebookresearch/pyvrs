@@ -993,9 +993,12 @@ PyObject* OssMultiVRSReader::getRecordInfo(
   string type = lowercaseTypeName(record.recordType);
   pyDict_SetItemWithDecRef(dic, pyObject("record_type"), pyObject(type));
   pyDict_SetItemWithDecRef(dic, pyObject("record_timestamp"), pyObject(record.timestamp));
-  const std::string streamIdName = reader_.getUniqueStreamId(&record).getNumericName();
+  UniqueStreamId uniqueStreamId = reader_.getUniqueStreamId(&record);
+  const std::string streamIdName = uniqueStreamId.getNumericName();
   pyDict_SetItemWithDecRef(dic, pyObject("stream_id"), pyObject(streamIdName));
   pyDict_SetItemWithDecRef(dic, pyObject("recordable_id"), pyObject(streamIdName));
+  pyDict_SetItemWithDecRef(
+      dic, pyObject("serial_number"), pyObject(reader_.getSerialNumber(uniqueStreamId)));
   return dic;
 }
 

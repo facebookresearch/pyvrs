@@ -265,6 +265,7 @@ class OssMultiVRSReader : public VRSReaderBase {
   /// "record_timestamp": timestamp of the record.
   /// "stream_id": streamId of the record.
   /// "record_type": record type, either "configuration", "state" or "data".
+  /// "serial_number": stream serial number.
   py::object getAllRecordsInfo();
 
   /// Get basic record information for a number of records in the file.
@@ -275,6 +276,7 @@ class OssMultiVRSReader : public VRSReaderBase {
   /// "record_timestamp": timestamp of the record.
   /// "stream_id": streamId of the record.
   /// "record_type": record type, either "configuration", "state" or "data".
+  /// "serial_number": stream serial number.
   py::object getRecordsInfo(int32_t firstIndex, int32_t count);
 
   /// Get basic record information for all the read enabled streams' records.
@@ -283,6 +285,7 @@ class OssMultiVRSReader : public VRSReaderBase {
   /// "record_timestamp": timestamp of the record.
   /// "stream_id": streamId of the record.
   /// "record_type": record type, either "configuration", "state" or "data".
+  /// "serial_number": stream serial number.
   py::object getEnabledStreamsRecordsInfo();
 
   // ---------------
@@ -296,6 +299,7 @@ class OssMultiVRSReader : public VRSReaderBase {
   /// "record_timestamp": timestamp of the record.
   /// "stream_id": streamId of the record.
   /// "record_type": record type, either "configuration", "state" or "data".
+  /// "serial_number": stream serial number.
   /// If there are no records for this index, throws an IndexError exception.
   py::object gotoRecord(int index);
 
@@ -306,6 +310,7 @@ class OssMultiVRSReader : public VRSReaderBase {
   /// "record_timestamp": timestamp of the record.
   /// "stream_id": streamId of the record.
   /// "record_type": record type, either "configuration", "state" or "data".
+  /// "serial_number": stream serial number.
   /// If there are no records at or after this timestamp, throws an IndexError exception.
   py::object gotoTime(double timestamp);
 
@@ -356,6 +361,7 @@ class OssMultiVRSReader : public VRSReaderBase {
   /// "record_timestamp": timestamp of the record, as number of seconds (double).
   /// "stream_id": stream id of the stream the record was read from.
   /// "record_type": record type, either "configuration", "state" or "data".
+  /// "serial_number": stream serial number.
   /// "metadata_count": number of metadata blocks read. Use getMetadata() to get them.
   /// "image_count": number of image blocks read. Use getImageXXX() to get them.
   /// "audio_block_count": number of audio blocks read. Use getAudioBlockXXX() to get them.

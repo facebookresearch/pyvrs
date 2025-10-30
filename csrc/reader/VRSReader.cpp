@@ -45,7 +45,10 @@
 
 namespace {
 
-PyObject* getRecordInfo(const IndexRecord::RecordInfo& record, int32_t recordIndex) {
+PyObject* getRecordInfo(
+    RecordFileReader& reader,
+    const IndexRecord::RecordInfo& record,
+    int32_t recordIndex) {
   PyObject* dic = PyDict_New();
   pyDict_SetItemWithDecRef(dic, pyObject("record_index"), pyObject(recordIndex));
   string type = lowercaseTypeName(record.recordType);
@@ -54,6 +57,10 @@ PyObject* getRecordInfo(const IndexRecord::RecordInfo& record, int32_t recordInd
   pyDict_SetItemWithDecRef(dic, pyObject("stream_id"), pyObject(record.streamId.getNumericName()));
   pyDict_SetItemWithDecRef(
       dic, pyObject("recordable_id"), pyObject(record.streamId.getNumericName()));
+  pyDict_SetItemWithDecRef(
+      dic, pyObject("recordable_id"), pyObject(record.streamId.getNumericName()));
+  pyDict_SetItemWithDecRef(
+      dic, pyObject("serial_number"), pyObject(reader.getSerialNumber(record.streamId)));
   return dic;
 }
 
@@ -620,7 +627,7 @@ py::object OssVRSReader::getAllRecordsInfo() {
   PyObject* list = PyList_New(listSize);
   int32_t recordIndex = 0;
   for (const auto& record : index) {
-    auto pyRecordInfo = getRecordInfo(record, recordIndex);
+    auto pyRecordInfo = getRecordInfo(reader_, record, recordIndex);
     PyList_SetItem(list, recordIndex, pyRecordInfo);
     recordIndex++;
   }
@@ -640,7 +647,7 @@ py::object OssVRSReader::getRecordsInfo(int32_t firstIndex, int32_t count) {
   PyObject* list = PyList_New(last - first);
   int32_t recordIndex = 0;
   for (size_t sourceIndex = first; sourceIndex < last; ++sourceIndex, ++recordIndex) {
-    auto pyRecordInfo = getRecordInfo(index[sourceIndex], sourceIndex);
+    auto pyRecordInfo = getRecordInfo(reader_, index[sourceIndex], sourceIndex);
     PyList_SetItem(list, recordIndex, pyRecordInfo);
   }
   return pyWrap(list);
@@ -656,7 +663,7 @@ py::object OssVRSReader::getEnabledStreamsRecordsInfo() {
     int32_t recordIndex = 0;
     for (const auto& record : index) {
       if (enabledStreams_.find(record.streamId) != enabledStreams_.end()) {
-        auto pyRecordInfo = getRecordInfo(record, recordIndex);
+        auto pyRecordInfo = getRecordInfo(reader_, record, recordIndex);
         PyList_Append(list, pyRecordInfo);
         Py_DECREF(pyRecordInfo);
       }
@@ -686,7 +693,8 @@ py::object OssVRSReader::getNextRecordInfo(const char* errorMessage) {
     nextRecordIndex_ = static_cast<uint32_t>(index.size());
     throw py::index_error(errorMessage);
   }
-  return pyWrap(getRecordInfo(index[nextRecordIndex_], static_cast<int32_t>(nextRecordIndex_)));
+  return pyWrap(
+      getRecordInfo(reader_, index[nextRecordIndex_], static_cast<int32_t>(nextRecordIndex_)));
 }
 
 py::object OssVRSReader::readNextRecord() {
