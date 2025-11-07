@@ -30,7 +30,7 @@ include(FetchContent)
 FetchContent_Declare(
   ocean
   GIT_REPOSITORY https://github.com/facebookresearch/ocean.git
-  GIT_TAG        origin/main
+  GIT_TAG        origin/main # TODO: update this to a specific Hash after pyvrs master CI is fixed.
 )
 set(OCEAN_BUILD_MINIMAL ON)
 set(OCEAN_BUILD_TEST    OFF)
