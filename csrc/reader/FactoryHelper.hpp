@@ -68,7 +68,7 @@ void DataPieceValuePyObjector(PyObject* dic, const DataPiece* piece) {
   }
 }
 
-static PyObjectorRegistry& getDataPieceValuePyObjectorRegistry() {
+PyObjectorRegistry& getDataPieceValuePyObjectorRegistry() noexcept {
   static PyObjectorRegistry sInstance;
   return sInstance;
 }
@@ -95,7 +95,7 @@ void DataPieceArrayPyObjector(PyObject* dic, const DataPiece* piece) {
   }
 }
 
-static PyObjectorRegistry& getDataPieceArrayPyObjectorRegistry() {
+PyObjectorRegistry& getDataPieceArrayPyObjectorRegistry() noexcept {
   static PyObjectorRegistry sInstance;
   return sInstance;
 }
@@ -122,7 +122,7 @@ void DataPieceVectorPyObjector(PyObject* dic, const DataPiece* piece) {
   }
 }
 
-static PyObjectorRegistry& getDataPieceVectorPyObjectorRegistry() {
+PyObjectorRegistry& getDataPieceVectorPyObjectorRegistry() noexcept {
   static PyObjectorRegistry sInstance;
   return sInstance;
 }
@@ -151,7 +151,7 @@ void DataPieceStringMapPyObjector(PyObject* dic, const DataPiece* piece, const s
   }
 }
 
-static PyObjectorStringRegistry& getDataPieceStringMapPyObjectorRegistry() {
+PyObjectorStringRegistry& getDataPieceStringMapPyObjectorRegistry() noexcept {
   static PyObjectorStringRegistry sInstance;
   return sInstance;
 }
