@@ -33,7 +33,6 @@ jobs:
               cmake git ninja-build libgtest-dev libfmt-dev \
               libjpeg-dev libturbojpeg-dev libpng-dev \
               liblz4-dev libzstd-dev libxxhash-dev \
-              libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-date-time-dev \
               portaudio19-dev libopus-dev
             python -m pip install -U pip
             python -m pip install pybind11[global]
@@ -42,7 +41,6 @@ jobs:
               brew install cmake git ninja googletest glog fmt \
                   jpeg-turbo libpng \
                   lz4 zstd xxhash \
-                  boost \
                   portaudio opus pybind11
 
           else
