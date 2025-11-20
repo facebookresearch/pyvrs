@@ -18,7 +18,6 @@ ninja = "1.11.1"
 [dependencies]
 gtest = "1.14.0"
 
-boost = "1.84.0"
 fmt = "10.1.1"
 libjpeg-turbo = "2.1.4.*"
 libpng = "1.6.39.*"
