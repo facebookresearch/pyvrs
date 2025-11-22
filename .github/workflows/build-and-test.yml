@@ -39,7 +39,9 @@ jobs:
             python -m pip install pybind11[global]
 
           elif [ "$RUNNER_OS" == "macOS" ]; then
-              brew install cmake git ninja googletest glog fmt \
+              # Update or install cmake
+              brew upgrade cmake || brew install cmake
+              brew install git ninja googletest glog fmt \
                   jpeg-turbo libpng \
                   lz4 zstd xxhash \
                   boost \

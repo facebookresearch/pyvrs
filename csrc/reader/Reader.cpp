@@ -18,7 +18,10 @@
 
 #include <vrs/os/Platform.h>
 #include <vrs/utils/AudioTrackExtractor.h>
+
+#if IS_VRS_FB_INTERNAL()
 #include <vrs/utils/cli/DataExtraction.h>
+#endif
 
 #include "AsyncVRSReader.h"
 #include "FilteredFileReader.h"
@@ -33,10 +36,12 @@ string extractAudioTrack(pyvrs::FilteredFileReader& filteredReader, const string
   return vrs::utils::extractAudioTrack(filteredReader.getFilteredReader(), wavFilePath);
 }
 
+#if IS_VRS_FB_INTERNAL()
 int extractAudio(const string& path, pyvrs::FilteredFileReader& filteredReader) {
   initVrsBindings();
   return vrs::utils::extractAudio(path, filteredReader.getFilteredReader());
 }
+#endif
 
 void pybind_reader(py::module& m) {
   py::enum_<pyvrs::ImageConversion>(m, "ImageConversion")
@@ -54,13 +59,12 @@ void pybind_reader(py::module& m) {
 
 #if IS_VRS_FB_INTERNAL()
   pybind_filtered_filereader(m);
+  m.def("extract_audio", &extractAudio, "Extract all audio tracks from given FilteredFileReader");
 #endif
 
   m.def(
       "extract_audio_track",
       &extractAudioTrack,
       "Extract audio track from given FilteredFileReader");
-
-  m.def("extract_audio", &extractAudio, "Extract all audio tracks from given FilteredFileReader");
 }
 } // namespace pyvrs
