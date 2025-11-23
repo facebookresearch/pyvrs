@@ -36,9 +36,3 @@ cd /tmp && git clone https://github.com/fmtlib/fmt.git -b 8.1.1 \
 cd /tmp && git clone https://github.com/libjpeg-turbo/libjpeg-turbo.git -b 2.1.4 \
     && cd libjpeg-turbo \
     && cmake -DCMAKE_BUILD_TYPE=Release -DWITH_JPEG8=1 -DCMAKE_INSTALL_DEFAULT_PREFIX=/usr .;make -j4 install; rm -rf /tmp/libjpeg-turbo;
-
-cd /tmp && git clone --recursive https://github.com/boostorg/boost.git -b boost-1.81.0 \
-    && cd boost \
-    && ./bootstrap.sh \
-    && ./b2 install \
-    && rm -rf /tmp/boost;

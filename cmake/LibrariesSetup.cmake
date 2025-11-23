@@ -17,14 +17,6 @@ if (EXISTS "$ENV{HOME}/homebrew")
   list(APPEND CMAKE_FIND_ROOT_PATH "$ENV{HOME}/homebrew")
 endif()
 
-find_package(Boost REQUIRED
-  COMPONENTS
-    filesystem
-    chrono
-    date_time
-    system
-    thread
-)
 find_package(Eigen REQUIRED)
 find_package(FmtLib REQUIRED)
 find_package(RapidjsonLib REQUIRED)
