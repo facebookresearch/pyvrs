@@ -60,6 +60,7 @@ DataSource PyRecordFormat::getDataSource(
 
 const std::vector<const vrs::DataLayout*> PyRecordFormat::getDataLayouts() const {
   std::vector<const vrs::DataLayout*> dataLayouts = {};
+  dataLayouts.reserve(dataLayouts_.size());
   for (auto& dataLayout : dataLayouts_) {
     dataLayouts.emplace_back(dataLayout.get());
   }
@@ -256,6 +257,7 @@ std::string PyStream::getStreamID() {
 
 std::vector<std::string> PyRecordFormat::getJsonDataLayouts() const {
   std::vector<std::string> v;
+  v.reserve(dataLayouts_.size());
   for (auto& dataLayout : dataLayouts_) {
     v.push_back(dataLayout->asJson());
   }
