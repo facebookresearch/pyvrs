@@ -29,9 +29,9 @@ void pybind_exception(py::module& m) {
         std::rethrow_exception(p);
       }
     } catch (const pyvrs::TimestampNotFoundError& e) {
-      timestampNotFoundError(e.what());
+      py::set_error(timestampNotFoundError, e.what());
     } catch (const pyvrs::StreamNotFoundError& e) {
-      streamNotFoundError(e.what());
+      py::set_error(streamNotFoundError, e.what());
     }
   });
 }
