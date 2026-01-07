@@ -111,7 +111,7 @@ bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onUnsupportedBlock(
 }
 
 ImageConversion OssMultiVRSReader::MultiVRSReaderStreamPlayer::getImageConversion(
-    const CurrentRecord& record) {
+    const CurrentRecord& /*record*/) {
   return multiVRSReader_.getImageConversion(
       multiVRSReader_.getUniqueStreamIdForRecordIndex(multiVRSReader_.nextRecordIndex_));
 }
