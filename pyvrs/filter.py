@@ -19,7 +19,6 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, overload, Set, Union
 
 from . import ImageConversion, RecordType
-
 from .base import BaseVRSReader
 from .record import VRSRecord
 from .slice import AsyncVRSReaderSlice, VRSReaderSlice

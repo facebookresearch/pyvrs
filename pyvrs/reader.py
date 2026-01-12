@@ -38,7 +38,6 @@ from . import (
     RecordableTypeId,
     RecordType,
 )
-
 from .base import BaseVRSReader
 from .filter import (
     AsyncFilteredVRSReader,

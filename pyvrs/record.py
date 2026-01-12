@@ -19,7 +19,6 @@ from typing import Callable, overload, Sequence, TypeVar, Union
 import numpy as np
 
 from . import VRSRecord as _VRSRecord
-
 from .utils import stringify_metadata_keys
 
 T = TypeVar("T")

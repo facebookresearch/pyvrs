@@ -17,7 +17,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Mapping, Optional, overload, Set, Union
 
 from . import ImageConversion, RecordType
-
 from .record import VRSRecord
 from .slice import VRSReaderSlice
 

@@ -19,7 +19,6 @@ from typing import Dict, List, Union
 import numpy as np
 
 from . import CompressionPreset, RecordFormat, RecordType, Stream, Writer
-
 from .datalayout import VRSDataLayout
 
 __all__ = [
