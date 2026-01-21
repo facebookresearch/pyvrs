@@ -41,7 +41,7 @@ class StreamFactory {
 
  protected:
   StreamFactory() = default;
-  virtual ~StreamFactory() = default;
+  ~StreamFactory() = default;
 
  private:
   std::map<std::string, StreamCreationFunc> streamCreationFunctionMap_ = {};
