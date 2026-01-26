@@ -47,6 +47,10 @@ class VRSWriter {
  public:
   VRSWriter();
   ~VRSWriter();
+  VRSWriter(const VRSWriter&) = delete;
+  VRSWriter& operator=(const VRSWriter&) = delete;
+  VRSWriter(VRSWriter&&) = delete;
+  VRSWriter& operator=(VRSWriter&&) = delete;
 
   void init();
 
