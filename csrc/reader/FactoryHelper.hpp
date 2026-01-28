@@ -20,6 +20,7 @@
 #include <Python.h>
 
 #include <vrs/DataPieces.h>
+#include <vrs/os/CompilerAttributes.h>
 
 #include "../utils/PyUtils.h"
 
@@ -68,7 +69,8 @@ void DataPieceValuePyObjector(PyObject* dic, const DataPiece* piece) {
   }
 }
 
-PyObjectorRegistry& getDataPieceValuePyObjectorRegistry() noexcept {
+inline PyObjectorRegistry& getDataPieceValuePyObjectorRegistry() noexcept {
+  // NOLINTNEXTLINE(facebook-hte-InlinedStaticLocalVariableWarning)
   static PyObjectorRegistry sInstance;
   return sInstance;
 }
@@ -95,7 +97,8 @@ void DataPieceArrayPyObjector(PyObject* dic, const DataPiece* piece) {
   }
 }
 
-PyObjectorRegistry& getDataPieceArrayPyObjectorRegistry() noexcept {
+inline PyObjectorRegistry& getDataPieceArrayPyObjectorRegistry() noexcept {
+  // NOLINTNEXTLINE(facebook-hte-InlinedStaticLocalVariableWarning)
   static PyObjectorRegistry sInstance;
   return sInstance;
 }
@@ -122,7 +125,8 @@ void DataPieceVectorPyObjector(PyObject* dic, const DataPiece* piece) {
   }
 }
 
-PyObjectorRegistry& getDataPieceVectorPyObjectorRegistry() noexcept {
+inline PyObjectorRegistry& getDataPieceVectorPyObjectorRegistry() noexcept {
+  // NOLINTNEXTLINE(facebook-hte-InlinedStaticLocalVariableWarning)
   static PyObjectorRegistry sInstance;
   return sInstance;
 }
@@ -151,7 +155,8 @@ void DataPieceStringMapPyObjector(PyObject* dic, const DataPiece* piece, const s
   }
 }
 
-PyObjectorStringRegistry& getDataPieceStringMapPyObjectorRegistry() noexcept {
+inline PyObjectorStringRegistry& getDataPieceStringMapPyObjectorRegistry() noexcept {
+  // NOLINTNEXTLINE(facebook-hte-InlinedStaticLocalVariableWarning)
   static PyObjectorStringRegistry sInstance;
   return sInstance;
 }
@@ -183,9 +188,9 @@ DEFINE_DATA_PIECE(StringMap, string)
 } // namespace
 
 namespace pyvrs {
-// To prevent the inclusion of this expensive header in more than one file, this function should
-// trigger a linker error if included more than once
-int singleIncludeBreakCheck() {
+// To prevent the inclusion of this expensive header in more than one file, this function exists to
+// trigger a linker error when included more than once. DO NOT MAKE IT INLINE!
+NOINLINE int singleIncludeBreakCheck() {
   return 0;
 }
 } // namespace pyvrs
