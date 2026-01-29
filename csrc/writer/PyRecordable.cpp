@@ -148,7 +148,7 @@ void PyStream::init(
   }
 }
 
-PyStream::PyStream(PyStream&& other) {
+PyStream::PyStream(PyStream&& other) noexcept {
   other.recordable_ = std::move(recordable_);
   for (auto& recordFormat : recordFormatMap_) {
     other.recordFormatMap_.insert(

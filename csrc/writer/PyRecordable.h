@@ -78,7 +78,7 @@ class PyRecordFormat {
     additionalContentBlocks_ = additionalContentBlocks;
   }
 
-  PyRecordFormat(PyRecordFormat&& other) {
+  PyRecordFormat(PyRecordFormat&& other) noexcept {
     dataLayouts_.swap(other.dataLayouts_);
     additionalContentBlocks_ = other.additionalContentBlocks_;
     recordType_ = other.recordType_;
@@ -162,7 +162,7 @@ class PyStream {
         std::move(stateRecordFormat));
   }
 
-  PyStream(PyStream&& other);
+  PyStream(PyStream&& other) noexcept;
 
   PyRecordable* getRecordable() {
     return recordable_.get();
