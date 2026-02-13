@@ -17,12 +17,25 @@ if (EXISTS "$ENV{HOME}/homebrew")
   list(APPEND CMAKE_FIND_ROOT_PATH "$ENV{HOME}/homebrew")
 endif()
 
+# Add standard Homebrew prefixes so CMake can find Homebrew-installed packages
+# (especially inside cibuildwheel's isolated build environment).
+if (APPLE)
+  execute_process(
+    COMMAND brew --prefix
+    OUTPUT_VARIABLE _HOMEBREW_PREFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  if (_HOMEBREW_PREFIX)
+    list(APPEND CMAKE_PREFIX_PATH "${_HOMEBREW_PREFIX}")
+  endif()
+endif()
+
 find_package(Boost
   COMPONENTS
     filesystem
     chrono
     date_time
-    system
     thread
   CONFIG
   REQUIRED
