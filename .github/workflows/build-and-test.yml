@@ -12,7 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest,  macOS-latest]
+        # UPDATED: Replaced macos-13 with macos-latest
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
 
     steps:
@@ -60,7 +61,9 @@ jobs:
           python -m cibuildwheel --output-dir dist
         env:
           CIBW_ARCHS_LINUX: x86_64
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          # UPDATED: Changed to arm64 because macos-latest is now Apple Silicon
+          CIBW_ARCHS_MACOS: "arm64"
+
           CIBW_BUILD: "cp39-*64 cp310-*64 cp311-*64 cp312-*64"
           CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
           CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
