@@ -74,3 +74,9 @@ jobs:
         run: |
           pip install -e .
           python -m pytest test
+
+      - name: Upload wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: dist/*.whl
