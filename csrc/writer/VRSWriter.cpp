@@ -138,4 +138,12 @@ int VRSWriter::close() {
   return writer_.waitForFileClosed();
 }
 
+PyGenericWriter* VRSWriter::createGenericStream(uint16_t typeId, const std::string& flavor) {
+  auto recordableTypeId = static_cast<RecordableTypeId>(typeId);
+  genericWriters_.emplace_back(std::make_unique<PyGenericWriter>(recordableTypeId, flavor));
+  auto* writer = genericWriters_.back().get();
+  writer_.addRecordable(writer);
+  return writer;
+}
+
 } // namespace pyvrs

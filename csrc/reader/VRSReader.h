@@ -172,6 +172,13 @@ class OssVRSReader : public VRSReaderBase {
   /// Get the character encoding that's being used when reading strings from the file.
   string getEncoding();
 
+  /// Enable or disable raw bytes capture mode.
+  /// When enabled, records are read as raw bytes without content block parsing.
+  void setRawBytesMode(bool enable);
+
+  /// Check if raw bytes capture mode is enabled.
+  bool getRawBytesMode() const;
+
   /// Get an array of chunks, as a pair of path & size in bytes.
   py::object getFileChunks() const;
 
@@ -626,6 +633,7 @@ class OssVRSReader : public VRSReaderBase {
   map<StreamId, vector<uint32_t>> configIndex_;
   map<StreamId, uint32_t> lastReadConfigIndex_;
   bool autoReadConfigurationRecord_ = false;
+  bool rawBytesMode_ = false;
 };
 
 /// Binds methods and classes for VRSReader.

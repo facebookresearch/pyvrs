@@ -112,6 +112,14 @@ string OssVRSReader::getEncoding() {
   return encoding_;
 }
 
+void OssVRSReader::setRawBytesMode(bool enable) {
+  rawBytesMode_ = enable;
+}
+
+bool OssVRSReader::getRawBytesMode() const {
+  return rawBytesMode_;
+}
+
 py::object OssVRSReader::getFileChunks() const {
   vector<pair<string, int64_t>> chunks = reader_.getFileChunks();
   Py_ssize_t listSize = static_cast<Py_ssize_t>(chunks.size());
@@ -173,6 +181,16 @@ bool OssVRSReader::VRSReaderStreamPlayer::processRecordHeader(
     const CurrentRecord& record,
     DataReference& outDataRef) {
   reader_.lastRecord_.recordFormatVersion = record.formatVersion;
+  if (reader_.rawBytesMode_) {
+    uint32_t unreadBytes = record.reader->getUnreadBytes();
+    auto& rawBytes = reader_.lastRecord_.rawRecordBytes;
+    rawBytes.resize(unreadBytes);
+    if (unreadBytes > 0) {
+      record.reader->read(rawBytes);
+    }
+    reader_.lastRecord_.hasRawRecordBytes = true;
+    return false;
+  }
   return RecordFormatStreamPlayer::processRecordHeader(record, outDataRef);
 }
 
@@ -1213,6 +1231,8 @@ void pybind_vrsreader(py::module& m) {
           py::arg("sequence"),
           py::arg("clearSequence") = true)
       .def("purge_file_cache", &PyVRSReader::purgeFileCache)
+      .def("set_raw_bytes_mode", &PyVRSReader::setRawBytesMode)
+      .def("get_raw_bytes_mode", &PyVRSReader::getRawBytesMode)
       .def(
           "__enter__",
           [](PyVRSReader& r) { return &r; },
