@@ -44,6 +44,8 @@ struct RecordCache {
   vector<ContentBlockBuffer> audioBlocks;
   vector<ContentBlockBuffer> customBlocks;
   vector<ContentBlockBuffer> unsupportedBlocks;
+  vector<uint8_t> rawRecordBytes;
+  bool hasRawRecordBytes = false;
 
   void clear() {
     recordFormatVersion = 0;
@@ -52,6 +54,8 @@ struct RecordCache {
     audioBlocks.clear();
     customBlocks.clear();
     unsupportedBlocks.clear();
+    rawRecordBytes.clear();
+    hasRawRecordBytes = false;
   }
 };
 
@@ -79,6 +83,9 @@ struct PyRecord {
   vector<PyAudioContentBlockSpec> audioSpecs;
   vector<PyContentBlock> customBlockSpecs;
   vector<PyImageContentBlockSpec> imageSpecs;
+
+  py::bytes rawRecordBytes;
+  bool hasRawRecordBytes = false;
 
   /// members and methods to set up dictionary interface.
   void initAttributesMap();

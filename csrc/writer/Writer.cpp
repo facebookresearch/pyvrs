@@ -34,6 +34,7 @@
 
 #include <vrs/os/Platform.h>
 
+#include "PyGenericWriter.h"
 #include "PyRecordable.h"
 #include "VRSWriter.h"
 
@@ -73,6 +74,30 @@ using namespace vrs;
       }));
 
 void pybind_writer(py::module& m) {
+  py::class_<pyvrs::PyGenericWriter, std::unique_ptr<pyvrs::PyGenericWriter, py::nodelete>>(
+      m, "GenericWriter")
+      .def(
+          "create_raw_record",
+          &pyvrs::PyGenericWriter::createRawRecord,
+          py::arg("timestamp"),
+          py::arg("record_type"),
+          py::arg("format_version"),
+          py::arg("raw_data"))
+      .def(
+          "create_raw_record_from_buffer",
+          &pyvrs::PyGenericWriter::createRawRecordFromBuffer,
+          py::arg("timestamp"),
+          py::arg("record_type"),
+          py::arg("format_version"),
+          py::arg("buffer"))
+      .def(
+          "set_tag",
+          &pyvrs::PyGenericWriter::setStreamTag,
+          py::arg("tag_name"),
+          py::arg("tag_value"))
+      .def("set_compression", &pyvrs::PyGenericWriter::setStreamCompression, py::arg("preset"))
+      .def("get_stream_id", &pyvrs::PyGenericWriter::getStreamIdStr);
+
   py::class_<pyvrs::PyRecordFormat, std::unique_ptr<pyvrs::PyRecordFormat, py::nodelete>>(
       m, "RecordFormat")
       .def("getMembers", &pyvrs::PyRecordFormat::getMembers)
@@ -112,6 +137,12 @@ void pybind_writer(py::module& m) {
       .def("writeRecords", &pyvrs::VRSWriter::writeRecords)
       .def("getBackgroundThreadQueueByteSize", &pyvrs::VRSWriter::getBackgroundThreadQueueByteSize)
       .def("close", &pyvrs::VRSWriter::close)
+      .def(
+          "createGenericStream",
+          &pyvrs::VRSWriter::createGenericStream,
+          py::arg("type_id"),
+          py::arg("flavor") = "",
+          py::return_value_policy::reference)
 #if IS_VRS_FB_INTERNAL()
 #include "Writer_fb.hpp"
 #endif

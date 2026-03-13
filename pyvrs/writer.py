@@ -18,11 +18,12 @@ from typing import Dict, List, Union
 
 import numpy as np
 
-from . import CompressionPreset, RecordFormat, RecordType, Stream, Writer
+from . import CompressionPreset, GenericWriter, RecordFormat, RecordType, Stream, Writer
 from .datalayout import VRSDataLayout
 
 __all__ = [
     "TimestampOrderWriteException",
+    "VRSGenericStream",
     "VRSRecordFormat",
     "VRSStream",
     "VRSWriter",
@@ -57,7 +58,7 @@ class VRSWriter:
         self,
         name: str,
         flavor: str = "",
-        compression: CompressionPreset = CompressionPreset.Zmedium,
+        compression: CompressionPreset = CompressionPreset.ZSTD_MEDIUM,
     ) -> "VRSStream":
         if len(flavor) > 0:
             return VRSStream(
@@ -65,6 +66,16 @@ class VRSWriter:
             )
         else:
             return VRSStream(self._writer.createStream(name), self, compression)
+
+    def create_generic_stream(
+        self,
+        type_id: int,
+        flavor: str = "",
+        compression: CompressionPreset = CompressionPreset.ZSTD_MEDIUM,
+    ) -> "VRSGenericStream":
+        gw = self._writer.createGenericStream(type_id, flavor)
+        gw.set_compression(compression)
+        return VRSGenericStream(gw, self)
 
     def set_tag(self, tag_name: str, tag_value: str) -> None:
         if self.file_created:
@@ -121,7 +132,7 @@ class VRSStream:
         self,
         stream: Stream,
         writer: VRSWriter,
-        compression: CompressionPreset = CompressionPreset.Zmedium,
+        compression: CompressionPreset = CompressionPreset.ZSTD_MEDIUM,
     ) -> None:
         self.stream = stream
         self.stream.setCompression(compression)
@@ -282,3 +293,44 @@ class VRSRecordFormat:
         )
 
         return s
+
+
+class VRSGenericStream:
+    """A generic stream for verbatim record copying without predefined DataLayout."""
+
+    def __init__(self, generic_writer: GenericWriter, writer: VRSWriter) -> None:
+        self._gw = generic_writer
+        self.writer = writer
+
+    def create_raw_record(
+        self,
+        timestamp: float,
+        record_type: RecordType,
+        format_version: int,
+        raw_data: bytes,
+    ) -> None:
+        self.writer.assert_timestamp(timestamp)
+        self._gw.create_raw_record(timestamp, record_type, format_version, raw_data)
+
+    def create_raw_record_from_buffer(
+        self,
+        timestamp: float,
+        record_type: RecordType,
+        format_version: int,
+        buffer: np.ndarray,
+    ) -> None:
+        self.writer.assert_timestamp(timestamp)
+        self._gw.create_raw_record_from_buffer(
+            timestamp, record_type, format_version, buffer
+        )
+
+    def set_tag(self, tag_name: str, tag_value: str) -> None:
+        if self.writer.file_created:
+            raise Exception("Tags should be set before file is created.")
+        self._gw.set_tag(tag_name, tag_value)
+
+    def set_compression(self, preset: CompressionPreset) -> None:
+        self._gw.set_compression(preset)
+
+    def get_stream_id(self) -> str:
+        return self._gw.get_stream_id()

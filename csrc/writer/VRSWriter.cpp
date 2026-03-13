@@ -40,6 +40,7 @@
 #include "StreamFactory.h"
 
 // Open source DataLayout definitions
+#include "datalayouts/AriaGen2ImageDataLayout.h"
 #include "datalayouts/SampleDataLayout.h"
 
 namespace py = pybind11;
@@ -74,6 +75,16 @@ void VRSWriter::init() {
       "sample_with_image", createSampleStreamWithImage);
   StreamFactory::getInstance().registerStreamCreationFunction(
       "sample_with_multiple_data_layout", createSampleStreamWithMultipleDataLayout);
+  // Aria Gen2 camera streams with correct RecordableTypeId + H.265 content block
+  StreamFactory::getInstance().registerFlavoredStreamCreationFunction(
+      "aria_gen2_rgb_camera", [](const string& flavor) {
+        return createAriaGen2ImageStream(
+            flavor, RecordableTypeId::RgbCameraRecordableClass, "H.265");
+      });
+  StreamFactory::getInstance().registerFlavoredStreamCreationFunction(
+      "aria_gen2_slam_camera", [](const string& flavor) {
+        return createAriaGen2ImageStream(flavor, RecordableTypeId::SlamCameraData, "H.265");
+      });
   /// Register open source stream writers (end)
 
 #if IS_VRS_FB_INTERNAL()
@@ -125,6 +136,14 @@ uint64_t VRSWriter::getBackgroundThreadQueueByteSize() {
 
 int VRSWriter::close() {
   return writer_.waitForFileClosed();
+}
+
+PyGenericWriter* VRSWriter::createGenericStream(uint16_t typeId, const std::string& flavor) {
+  auto recordableTypeId = static_cast<RecordableTypeId>(typeId);
+  genericWriters_.emplace_back(std::make_unique<PyGenericWriter>(recordableTypeId, flavor));
+  auto* writer = genericWriters_.back().get();
+  writer_.addRecordable(writer);
+  return writer;
 }
 
 } // namespace pyvrs

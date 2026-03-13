@@ -33,6 +33,7 @@
 #include <vrs/Recordable.h>
 
 #include "PyDataPiece.h"
+#include "PyGenericWriter.h"
 
 namespace pyvrs {
 
@@ -72,6 +73,8 @@ class VRSWriter {
   PyStream* createStream(const std::string& name);
   PyStream* createFlavoredStream(const std::string& name, const std::string& flavor);
 
+  PyGenericWriter* createGenericStream(uint16_t typeId, const std::string& flavor = "");
+
   void setTag(const std::string& tagName, const std::string& tagValue);
 
   void addRecordable(Recordable* recordable);
@@ -89,6 +92,7 @@ class VRSWriter {
  private:
   RecordFileWriter writer_;
   std::vector<std::unique_ptr<PyStream>> streams_;
+  std::vector<std::unique_ptr<PyGenericWriter>> genericWriters_;
 };
 
 } // namespace pyvrs

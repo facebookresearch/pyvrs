@@ -66,6 +66,12 @@ PyRecord::PyRecord(const IndexRecord::RecordInfo& info, int32_t recordIndex_, Re
   customBlocks = std::move(record.customBlocks);
   unsupportedBlocks = std::move(record.unsupportedBlocks);
 
+  if (record.hasRawRecordBytes) {
+    hasRawRecordBytes = true;
+    rawRecordBytes = py::bytes(
+        reinterpret_cast<const char*>(record.rawRecordBytes.data()), record.rawRecordBytes.size());
+  }
+
   // Set specs
   for (const auto& audioBlock : audioBlocks) {
     audioSpecs.emplace_back(audioBlock.spec.audio());
@@ -249,19 +255,23 @@ void pybind_record(py::module& m) {
                     record.recordType,
                     record.recordTimestamp);
               })
-          .def("__str__", [](const pyvrs::PyRecord& record) {
-            return fmt::format(
-                "{} record for {} @ {}s [{}]\n"
-                "{} audio blocks, {} custom blocks, {} image blocks, {} metadata blocks",
-                toupper(record.recordType),
-                record.streamId,
-                record.recordTimestamp,
-                record.recordIndex,
-                record.audioBlocks.size(),
-                record.customBlocks.size(),
-                record.imageBlocks.size(),
-                record.datalayoutBlocks.size());
-          });
+          .def(
+              "__str__",
+              [](const pyvrs::PyRecord& record) {
+                return fmt::format(
+                    "{} record for {} @ {}s [{}]\n"
+                    "{} audio blocks, {} custom blocks, {} image blocks, {} metadata blocks",
+                    toupper(record.recordType),
+                    record.streamId,
+                    record.recordTimestamp,
+                    record.recordIndex,
+                    record.audioBlocks.size(),
+                    record.customBlocks.size(),
+                    record.imageBlocks.size(),
+                    record.datalayoutBlocks.size());
+              })
+          .def_readonly("raw_record_bytes", &pyvrs::PyRecord::rawRecordBytes)
+          .def_readonly("has_raw_record_bytes", &pyvrs::PyRecord::hasRawRecordBytes);
 
   DEF_DICT_FUNC(record, PyRecord);
 
