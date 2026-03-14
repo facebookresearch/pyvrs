@@ -54,6 +54,31 @@ jobs:
           fi
           python -m pip install -U pip
           python -m pip install numpy typing dataclasses pytest parameterized Pillow
+
+      - name: Pre-download virtualenv to avoid GitHub rate limits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VIRTUALENV_VERSION=20.21.1
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            CACHE_DIR="$HOME/Library/Caches/cibuildwheel"
+          else
+            CACHE_DIR="$HOME/.cache/cibuildwheel"
+          fi
+          mkdir -p "$CACHE_DIR"
+          DEST="$CACHE_DIR/virtualenv-${VIRTUALENV_VERSION}.pyz"
+          if [ ! -f "$DEST" ]; then
+            # Use GitHub API (authenticated, 5000 req/hr) instead of raw blob URL (unauthenticated, 60 req/hr)
+            curl -sL --retry 5 --retry-delay 10 --retry-all-errors \
+              -H "Authorization: token ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github.v3.raw" \
+              -o "$DEST" \
+              "https://api.github.com/repos/pypa/get-virtualenv/contents/public/virtualenv.pyz?ref=${VIRTUALENV_VERSION}"
+          fi
+          ls -la "$DEST"
+
+      - name: Install cibuildwheel
+        run: |
           python -m pip install cibuildwheel==2.17.0
 
       - name: Build wheels for CPython
@@ -68,6 +93,8 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
           CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
           CIBW_SKIP: "*-manylinux_i686 *musllinux*"
+          # Homebrew libs on macos-latest (macOS 15) require 15.0, must match wheel platform tag.
+          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=15.0
 
       - name: Build and Test Python
         shell: bash

@@ -35,12 +35,16 @@ from vrsbindings import (
     recordable_type_id_name,
     RecordableId,
     RecordableTypeId,
+    RecordFormat,
     records_checksum,
     RecordType,
+    Stream,
     StreamNotFoundError,
     TimestampNotFoundError,
     verbatim_checksum,
+    verbatim_copy,
     VRSRecord,
+    Writer,
 )
 
 from .reader import AsyncVRSReader, SyncVRSReader
@@ -69,10 +73,14 @@ __all__ = [
     "recordable_type_id_name",
     "RecordableId",
     "RecordableTypeId",
+    "RecordFormat",
     "records_checksum",
     "RecordType",
+    "Stream",
     "StreamNotFoundError",
     "TimestampNotFoundError",
     "verbatim_checksum",
+    "verbatim_copy",
     "VRSRecord",
+    "Writer",
 ]
