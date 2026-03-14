@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import time
-from typing import Dict, List, Union
+from typing import Dict, List, Sequence, Union
 
 import numpy as np
 
@@ -57,7 +57,7 @@ class VRSWriter:
         self,
         name: str,
         flavor: str = "",
-        compression: CompressionPreset = CompressionPreset.Zmedium,
+        compression: CompressionPreset = CompressionPreset.ZSTD_MEDIUM,
     ) -> "VRSStream":
         if len(flavor) > 0:
             return VRSStream(
@@ -101,6 +101,30 @@ class VRSWriter:
     def close(self) -> None:
         return self._writer.close()
 
+    def add_verbatim_copy_streams(self, reader, stream_ids: Sequence[str]) -> int:
+        """Register streams from a reader for verbatim copying into this writer.
+
+        Must be called before the first flush_records() call.
+        The reader must remain open until after copy_verbatim_records() is called.
+
+        Args:
+            reader: A pyvrs Reader (C++ binding object, e.g. SyncVRSReader._reader).
+            stream_ids: Stream IDs to copy verbatim (e.g. ["281-1", "282-1"]).
+        """
+        if self.file_created:
+            raise Exception(
+                "add_verbatim_copy_streams must be called before flush_records"
+            )
+        return self._writer.addVerbatimCopyStreams(reader, list(stream_ids))
+
+    def copy_verbatim_records(self) -> int:
+        """Copy all registered verbatim stream records into the output file.
+
+        Call after all processed records have been written, before close().
+        """
+        self._create()
+        return self._writer.copyVerbatimRecords()
+
     # Recordable instance ids are automatically assigned when Recordable objects are created.
     # This guarantees that each Recordable gets a unique ID.
     # WARNING! If your code relies on specific instance IDs, your design is weak, and you are
@@ -121,7 +145,7 @@ class VRSStream:
         self,
         stream: Stream,
         writer: VRSWriter,
-        compression: CompressionPreset = CompressionPreset.Zmedium,
+        compression: CompressionPreset = CompressionPreset.ZSTD_MEDIUM,
     ) -> None:
         self.stream = stream
         self.stream.setCompression(compression)
