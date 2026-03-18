@@ -61,6 +61,8 @@ file (GLOB_RECURSE CSRCS
   "csrc/Pybind11.cpp"
   "csrc/VrsBindings.cpp"
   "csrc/VrsBindings.h"
+  "csrc/filter/*.cpp"
+  "csrc/filter/*.h"
   "csrc/reader/*.cpp"
   "csrc/reader/*.h"
   "csrc/reader/*.hpp"

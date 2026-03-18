@@ -20,6 +20,7 @@
 #include <vrs/os/Platform.h>
 
 #include "VrsBindings.h"
+#include "filter/Filter.h"
 #include "reader/Reader.h"
 #include "utils/Utils.h"
 #include "writer/Writer.h"
@@ -28,7 +29,6 @@
 #include "archive/Archive.h"
 #include "fb/FbInternal.h"
 #include "fb/dataset_snapshot/PyDatasetSnapshot.h"
-#include "filter/Filter.h" // Disable filter internally until AsyncImageFilter is reworked.
 #endif
 
 #ifndef PYBIND_MODULE_NAME
@@ -60,8 +60,8 @@ PYBIND11_MODULE(PYBIND_MODULE_NAME, m) {
 #endif
   pyvrs::pybind_reader(m);
   pyvrs::pybind_writer(m);
+  pyvrs::pybind_filter(m);
 #if IS_VRS_FB_INTERNAL()
-  pyvrs::pybind_filter(m); // Disable filter internally until AsyncImageFilter is reworked.
   pyvrs::pybind_archive(m);
   pyvrs::pybind_dataset_snapshot(m);
 #endif

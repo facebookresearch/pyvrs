@@ -14,6 +14,8 @@
 # limitations under the License.
 
 from vrsbindings import (
+    AsyncImageFilter,
+    AsyncImageFilterIterator,
     AsyncMultiReader,
     AsyncReader,
     AudioSpec,
@@ -24,9 +26,11 @@ from vrsbindings import (
     ContentBuffer,
     extract_audio_track,
     FileSpec,
+    FilteredFileReader,
     ImageBuffer,
     ImageConversion,
     ImageFormat,
+    ImageRecordInfo,
     ImageSpec,
     MultiReader,
     PixelFormat,
@@ -49,6 +53,8 @@ from vrsbindings import (
 from .reader import AsyncVRSReader, SyncVRSReader
 
 __all__ = [
+    "AsyncImageFilter",
+    "AsyncImageFilterIterator",
     "AsyncVRSReader",
     "SyncVRSReader",
     "AsyncReader",
@@ -60,10 +66,12 @@ __all__ = [
     "ContentBlock",
     "ContentBuffer",
     "extract_audio_track",
+    "FilteredFileReader",
     "FileSpec",
     "ImageBuffer",
     "ImageConversion",
     "ImageFormat",
+    "ImageRecordInfo",
     "ImageSpec",
     "MultiReader",
     "PixelFormat",
