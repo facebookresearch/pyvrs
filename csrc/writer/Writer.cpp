@@ -33,7 +33,10 @@
 #include <pybind11/stl.h>
 
 #include <vrs/os/Platform.h>
+#include <vrs/utils/FilterCopy.h>
 
+#include "../VrsBindings.h"
+#include "../reader/VRSReader.h"
 #include "PyRecordable.h"
 #include "VRSWriter.h"
 
@@ -73,6 +76,38 @@ using namespace vrs;
       }));
 
 void pybind_writer(py::module& m) {
+  m.def(
+      "verbatim_copy",
+      [](const std::string& inputPath,
+         const std::string& outputPath,
+         const std::vector<std::string>& streamIds) {
+        initVrsBindings();
+        vrs::utils::FilteredFileReader filteredReader(inputPath);
+        int status = filteredReader.openFile();
+        if (status != 0) {
+          throw py::value_error("Failed to open input file: " + inputPath);
+        }
+        if (!streamIds.empty()) {
+          filteredReader.filter.streams.clear();
+          for (const auto& sid : streamIds) {
+            auto id = StreamId::fromNumericName(sid);
+            if (!id.isValid()) {
+              throw py::value_error("Invalid stream ID: " + sid);
+            }
+            filteredReader.filter.streams.insert(id);
+          }
+        }
+        vrs::utils::CopyOptions copyOptions(false);
+        status = vrs::utils::filterCopy(filteredReader, outputPath, copyOptions);
+        if (status != 0) {
+          throw std::runtime_error("verbatim_copy failed with error code " + to_string(status));
+        }
+        return status;
+      },
+      py::arg("input_path"),
+      py::arg("output_path"),
+      py::arg("stream_ids") = std::vector<std::string>{});
+
   py::class_<pyvrs::PyRecordFormat, std::unique_ptr<pyvrs::PyRecordFormat, py::nodelete>>(
       m, "RecordFormat")
       .def("getMembers", &pyvrs::PyRecordFormat::getMembers)
@@ -112,6 +147,16 @@ void pybind_writer(py::module& m) {
       .def("writeRecords", &pyvrs::VRSWriter::writeRecords)
       .def("getBackgroundThreadQueueByteSize", &pyvrs::VRSWriter::getBackgroundThreadQueueByteSize)
       .def("close", &pyvrs::VRSWriter::close)
+      .def(
+          "addVerbatimCopyStreams",
+          [](pyvrs::VRSWriter& self,
+             PyVRSReader& reader,
+             const std::vector<std::string>& streamIds) {
+            return self.addVerbatimCopyStreams(reader.getRecordFileReader(), streamIds);
+          },
+          py::arg("reader"),
+          py::arg("stream_ids"))
+      .def("copyVerbatimRecords", &pyvrs::VRSWriter::copyVerbatimRecords)
 #if IS_VRS_FB_INTERNAL()
 #include "Writer_fb.hpp"
 #endif
