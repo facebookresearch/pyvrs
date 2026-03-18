@@ -14,6 +14,8 @@
 # limitations under the License.
 
 from vrsbindings import (
+    AsyncImageFilter,
+    AsyncImageFilterIterator,
     AsyncMultiReader,
     AsyncReader,
     AudioSpec,
@@ -24,9 +26,11 @@ from vrsbindings import (
     ContentBuffer,
     extract_audio_track,
     FileSpec,
+    FilteredFileReader,
     ImageBuffer,
     ImageConversion,
     ImageFormat,
+    ImageRecordInfo,
     ImageSpec,
     MultiReader,
     PixelFormat,
@@ -35,17 +39,22 @@ from vrsbindings import (
     recordable_type_id_name,
     RecordableId,
     RecordableTypeId,
+    RecordFormat,
     records_checksum,
     RecordType,
+    Stream,
     StreamNotFoundError,
     TimestampNotFoundError,
     verbatim_checksum,
     VRSRecord,
+    Writer,
 )
 
 from .reader import AsyncVRSReader, SyncVRSReader
 
 __all__ = [
+    "AsyncImageFilter",
+    "AsyncImageFilterIterator",
     "AsyncVRSReader",
     "SyncVRSReader",
     "AsyncReader",
@@ -57,10 +66,12 @@ __all__ = [
     "ContentBlock",
     "ContentBuffer",
     "extract_audio_track",
+    "FilteredFileReader",
     "FileSpec",
     "ImageBuffer",
     "ImageConversion",
     "ImageFormat",
+    "ImageRecordInfo",
     "ImageSpec",
     "MultiReader",
     "PixelFormat",
@@ -69,10 +80,13 @@ __all__ = [
     "recordable_type_id_name",
     "RecordableId",
     "RecordableTypeId",
+    "RecordFormat",
     "records_checksum",
     "RecordType",
+    "Stream",
     "StreamNotFoundError",
     "TimestampNotFoundError",
     "verbatim_checksum",
     "VRSRecord",
+    "Writer",
 ]
