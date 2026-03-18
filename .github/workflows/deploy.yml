@@ -35,9 +35,9 @@ jobs:
           python3 -m pip install setuptools wheel twine
           python3 setup.py sdist
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-sdist
           path: dist/*.tar.gz
 
   build-wheels:
@@ -54,10 +54,32 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
       - name: Upgrade pip
         run: |
           python3 -m pip install --upgrade pip
+
+      - name: Pre-download virtualenv to avoid GitHub rate limits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VIRTUALENV_VERSION=20.21.1
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            CACHE_DIR="$HOME/Library/Caches/cibuildwheel"
+          else
+            CACHE_DIR="$HOME/.cache/cibuildwheel"
+          fi
+          mkdir -p "$CACHE_DIR"
+          DEST="$CACHE_DIR/virtualenv-${VIRTUALENV_VERSION}.pyz"
+          if [ ! -f "$DEST" ]; then
+            # Use GitHub API (authenticated, 5000 req/hr) instead of raw blob URL (unauthenticated, 60 req/hr)
+            curl -sL --retry 5 --retry-delay 10 --retry-all-errors \
+              -H "Authorization: token ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github.v3.raw" \
+              -o "$DEST" \
+              "https://api.github.com/repos/pypa/get-virtualenv/contents/public/virtualenv.pyz?ref=${VIRTUALENV_VERSION}"
+          fi
+          ls -la "$DEST"
 
       - name: Install cibuildwheel
         run: |
@@ -73,9 +95,11 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
           CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
           CIBW_SKIP: "*-manylinux_i686 *musllinux*"
-      - uses: actions/upload-artifact@v2
+          # Target macOS 14 (Sonoma) so wheels work on 14+.
+          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=14.0
+      - uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-${{ matrix.os }}
           path: dist
 
   publish-to-pypi:
@@ -84,13 +108,13 @@ jobs:
       - build-wheels
       - create-sdist
     steps:
-    - name: Download wheels from previous jobs
+    - name: Download all artifacts
       # by default this will download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: python-package-distributions
         # PyPI publish action uploads everything under dist/* by default
         path: dist
+        merge-multiple: true
 
     - name: Display the list of artifacts
       run: ls -R dist

@@ -40,6 +40,7 @@
 #include "StreamFactory.h"
 
 // Open source DataLayout definitions
+#include "datalayouts/AriaGen2ImageDataLayout.h"
 #include "datalayouts/SampleDataLayout.h"
 
 namespace py = pybind11;
@@ -74,6 +75,16 @@ void VRSWriter::init() {
       "sample_with_image", createSampleStreamWithImage);
   StreamFactory::getInstance().registerStreamCreationFunction(
       "sample_with_multiple_data_layout", createSampleStreamWithMultipleDataLayout);
+  // Aria Gen2 camera streams with correct RecordableTypeId + H.265 content block
+  StreamFactory::getInstance().registerFlavoredStreamCreationFunction(
+      "aria_gen2_rgb_camera", [](const string& flavor) {
+        return createAriaGen2ImageStream(
+            flavor, RecordableTypeId::RgbCameraRecordableClass, "H.265");
+      });
+  StreamFactory::getInstance().registerFlavoredStreamCreationFunction(
+      "aria_gen2_slam_camera", [](const string& flavor) {
+        return createAriaGen2ImageStream(flavor, RecordableTypeId::SlamCameraData, "H.265");
+      });
   /// Register open source stream writers (end)
 
 #if IS_VRS_FB_INTERNAL()
@@ -125,6 +136,39 @@ uint64_t VRSWriter::getBackgroundThreadQueueByteSize() {
 
 int VRSWriter::close() {
   return writer_.waitForFileClosed();
+}
+
+int VRSWriter::addVerbatimCopyStreams(
+    RecordFileReader& reader,
+    const std::vector<std::string>& streamIds) {
+  verbatimReader_ = &reader;
+  verbatimCopyOptions_ = std::make_unique<vrs::utils::CopyOptions>(false);
+  for (const auto& sidStr : streamIds) {
+    auto sid = StreamId::fromNumericName(sidStr);
+    if (!sid.isValid()) {
+      throw py::value_error("Invalid stream ID: " + sidStr);
+    }
+    verbatimCopiers_.push_back(
+        std::make_unique<vrs::utils::Copier>(reader, writer_, sid, *verbatimCopyOptions_));
+    verbatimStreamIds_.insert(sid);
+  }
+  return 0;
+}
+
+int VRSWriter::copyVerbatimRecords() {
+  if (!verbatimReader_ || verbatimStreamIds_.empty()) {
+    return 0;
+  }
+  const auto& index = verbatimReader_->getIndex();
+  for (const auto& record : index) {
+    if (verbatimStreamIds_.count(record.streamId) > 0) {
+      int status = verbatimReader_->readRecord(record);
+      if (status != 0) {
+        return status;
+      }
+    }
+  }
+  return 0;
 }
 
 } // namespace pyvrs

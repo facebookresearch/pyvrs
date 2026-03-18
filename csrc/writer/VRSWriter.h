@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -29,8 +30,10 @@
 #endif
 
 #include <vrs/DataLayout.h>
+#include <vrs/RecordFileReader.h>
 #include <vrs/RecordFileWriter.h>
 #include <vrs/Recordable.h>
+#include <vrs/utils/FilterCopyHelpers.h>
 
 #include "PyDataPiece.h"
 
@@ -76,6 +79,18 @@ class VRSWriter {
 
   void addRecordable(Recordable* recordable);
 
+  /// Register streams from a RecordFileReader for verbatim copying.
+  /// Copiers are created that will copy records for the specified streams.
+  /// Must be called before create() / first writeRecords().
+  /// WARNING: The reader must remain alive until after copyVerbatimRecords() is called.
+  int addVerbatimCopyStreams(RecordFileReader& reader, const std::vector<std::string>& streamIds);
+
+  /// Copy all registered verbatim stream records into the writer.
+  /// Reads records from the reader for the registered streams and copies them verbatim.
+  /// Call after all processed records have been written.
+  /// NOTE: Assumes the reader passed to addVerbatimCopyStreams() is still valid.
+  int copyVerbatimRecords();
+
   int writeRecords(double maxTimestamp);
 
   uint64_t getBackgroundThreadQueueByteSize();
@@ -89,6 +104,11 @@ class VRSWriter {
  private:
   RecordFileWriter writer_;
   std::vector<std::unique_ptr<PyStream>> streams_;
+  // Non-owning pointer; caller must keep reader alive until after copyVerbatimRecords() is called.
+  RecordFileReader* verbatimReader_ = nullptr;
+  std::vector<std::unique_ptr<vrs::utils::Copier>> verbatimCopiers_;
+  std::set<StreamId> verbatimStreamIds_;
+  std::unique_ptr<vrs::utils::CopyOptions> verbatimCopyOptions_;
 };
 
 } // namespace pyvrs
