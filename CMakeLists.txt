@@ -37,10 +37,12 @@ string(REGEX REPLACE "\n$" "" VRS_DEFAULT_VERSION "${VRS_DEFAULT_VERSION}")
 if ("${VRS_DEFAULT_VERSION}x" STREQUAL "x")
   message(FATAL_ERROR "Could not get version number from file 'version.txt'")
 endif()
+# Extract numeric portion for CMake (strip PEP 440 pre-release suffixes like a1, b2, rc1)
+string(REGEX REPLACE "[a-zA-Z].*$" "" VRS_CMAKE_VERSION "${VRS_DEFAULT_VERSION}")
 
 # Declare the project, make cmake chose/test the compiler, etc
 project(vrsbindings
-  VERSION ${VRS_DEFAULT_VERSION}
+  VERSION ${VRS_CMAKE_VERSION}
   DESCRIPTION "Meta VRS File Format Project"
   LANGUAGES CXX
 )
