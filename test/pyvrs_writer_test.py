@@ -22,6 +22,83 @@ import pyvrs
 from pyvrs.writer import VRSWriter
 
 
+class TestWriterImports(unittest.TestCase):
+    """Verify that writer-related symbols are importable from pyvrs."""
+
+    def test_import_writer_symbols(self):
+        self.assertTrue(hasattr(pyvrs, "Writer"))
+        self.assertTrue(hasattr(pyvrs, "Stream"))
+        self.assertTrue(hasattr(pyvrs, "RecordFormat"))
+        self.assertTrue(hasattr(pyvrs, "CompressionPreset"))
+
+    def test_compression_preset_has_zstd_medium(self):
+        self.assertTrue(hasattr(pyvrs.CompressionPreset, "ZSTD_MEDIUM"))
+
+
+class TestSampleStreamWriter(unittest.TestCase):
+    """Test creating VRS files with sample streams."""
+
+    def test_create_sample_stream(self):
+        with tempfile.NamedTemporaryFile(suffix=".vrs", delete=True) as f:
+            filepath = f.name
+
+        writer = VRSWriter(filepath)
+        stream = writer.create_stream("sample")
+        self.assertIsNotNone(stream)
+
+        stream_id = stream.get_stream_id()
+        self.assertIsInstance(stream_id, str)
+        self.assertGreater(len(stream_id), 0)
+
+        metadata = stream.get_config_record_metadata()
+        self.assertIsNotNone(metadata)
+
+        metadata.image_width = 640
+        metadata.image_height = 480
+        metadata.image_pixel_format = 1
+
+        stream.create_config_record(0.0, metadata)
+        writer.flush_records(0.0)
+
+        data_meta = stream.get_data_record_metadata()
+        data_meta.room_temperature = 22.5
+        data_meta.camera_id = 1
+        stream.create_data_record(1.0, data_meta)
+        writer.flush_records(1.0)
+
+        writer.close()
+
+        self.assertTrue(os.path.exists(filepath))
+        self.assertGreater(os.path.getsize(filepath), 0)
+
+        # Verify we can read it back
+        reader = pyvrs.SyncVRSReader(filepath)
+        stream_ids = reader.stream_ids
+        self.assertGreater(len(stream_ids), 0)
+
+        os.unlink(filepath)
+
+    def test_create_sample_stream_with_flavor(self):
+        with tempfile.NamedTemporaryFile(suffix=".vrs", delete=True) as f:
+            filepath = f.name
+
+        writer = VRSWriter(filepath)
+        stream = writer.create_stream("flavored_sample", flavor="test_flavor")
+        self.assertIsNotNone(stream)
+
+        metadata = stream.get_config_record_metadata()
+        metadata.image_width = 320
+        metadata.image_height = 240
+        metadata.image_pixel_format = 1
+        stream.create_config_record(0.0, metadata)
+
+        writer.flush_records(0.0)
+        writer.close()
+
+        self.assertTrue(os.path.exists(filepath))
+        os.unlink(filepath)
+
+
 class TestAriaGen2StreamWriter(unittest.TestCase):
     """Test creating VRS files with Aria Gen2 camera streams."""
 
@@ -132,6 +209,34 @@ class TestAriaGen2StreamWriter(unittest.TestCase):
 
         self.assertTrue(os.path.exists(filepath))
         os.unlink(filepath)
+
+
+class TestWriterErrors(unittest.TestCase):
+    """Test error handling in the writer."""
+
+    def test_unsupported_stream_name_raises(self):
+        with tempfile.NamedTemporaryFile(suffix=".vrs", delete=True) as f:
+            filepath = f.name
+
+        writer = VRSWriter(filepath)
+        with self.assertRaises(ValueError):
+            writer.create_stream("nonexistent_stream_type")
+
+        writer.close()
+
+    def test_data_before_config_raises(self):
+        with tempfile.NamedTemporaryFile(suffix=".vrs", delete=True) as f:
+            filepath = f.name
+
+        writer = VRSWriter(filepath)
+        stream = writer.create_stream("sample")
+
+        data_meta = stream.get_data_record_metadata()
+        data_meta.room_temperature = 20.0
+        with self.assertRaises(Exception):
+            stream.create_data_record(1.0, data_meta)
+
+        writer.close()
 
 
 if __name__ == "__main__":

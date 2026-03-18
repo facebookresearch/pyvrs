@@ -161,6 +161,11 @@ class OssVRSReader : public VRSReaderBase {
   /// Initialize the module by calling initVrsBindings()
   void init();
 
+  /// Get a reference to the underlying RecordFileReader.
+  RecordFileReader& getRecordFileReader() {
+    return reader_;
+  }
+
   void open(const string& path);
   void open(const PyFileSpec& spec);
 

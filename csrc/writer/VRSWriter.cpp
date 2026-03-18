@@ -138,4 +138,37 @@ int VRSWriter::close() {
   return writer_.waitForFileClosed();
 }
 
+int VRSWriter::addVerbatimCopyStreams(
+    RecordFileReader& reader,
+    const std::vector<std::string>& streamIds) {
+  verbatimReader_ = &reader;
+  verbatimCopyOptions_ = std::make_unique<vrs::utils::CopyOptions>(false);
+  for (const auto& sidStr : streamIds) {
+    auto sid = StreamId::fromNumericName(sidStr);
+    if (!sid.isValid()) {
+      throw py::value_error("Invalid stream ID: " + sidStr);
+    }
+    verbatimCopiers_.push_back(
+        std::make_unique<vrs::utils::Copier>(reader, writer_, sid, *verbatimCopyOptions_));
+    verbatimStreamIds_.insert(sid);
+  }
+  return 0;
+}
+
+int VRSWriter::copyVerbatimRecords() {
+  if (!verbatimReader_ || verbatimStreamIds_.empty()) {
+    return 0;
+  }
+  const auto& index = verbatimReader_->getIndex();
+  for (const auto& record : index) {
+    if (verbatimStreamIds_.count(record.streamId) > 0) {
+      int status = verbatimReader_->readRecord(record);
+      if (status != 0) {
+        return status;
+      }
+    }
+  }
+  return 0;
+}
+
 } // namespace pyvrs

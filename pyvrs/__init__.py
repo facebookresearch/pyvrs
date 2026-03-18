@@ -42,6 +42,7 @@ from vrsbindings import (
     StreamNotFoundError,
     TimestampNotFoundError,
     verbatim_checksum,
+    verbatim_copy,
     VRSRecord,
     Writer,
 )
@@ -79,6 +80,7 @@ __all__ = [
     "StreamNotFoundError",
     "TimestampNotFoundError",
     "verbatim_checksum",
+    "verbatim_copy",
     "VRSRecord",
     "Writer",
 ]
