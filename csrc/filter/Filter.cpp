@@ -16,8 +16,6 @@
 
 #include "Filter.h"
 
-#include <memory>
-
 namespace pyvrs {
 namespace py = pybind11;
 

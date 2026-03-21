@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#include "PyImageFilter.h"
+#include "OssPyImageFilter.h"
 
 #include "../reader/VRSReader.h"
+#include "../utils/PyUtils.h"
 
 namespace pyvrs {
 
@@ -30,7 +31,7 @@ ImageBuffer OssPyAsyncImageFilter::getNextImage() {
   }
   size_t recordIndex;
   ImageBuffer imageBuffer;
-  if (AsyncImageFilter::getNextImage(
+  if (OssAsyncImageFilter::getNextImage(
           recordIndex, imageBuffer.spec.getImageContentBlockSpec(), imageBuffer.bytes)) {
     imageBuffer.recordIndex = static_cast<int64_t>(recordIndex);
   }
@@ -60,7 +61,7 @@ bool OssPyAsyncImageFilter::writeProcessedImage(ImageBuffer& imageBuffer) {
     unique_lock<mutex> lock(mutex_);
     metadata_.erase(imageBuffer.recordIndex);
   }
-  return AsyncImageFilter::writeProcessedImage(
+  return OssAsyncImageFilter::writeProcessedImage(
       static_cast<size_t>(imageBuffer.recordIndex), std::move(imageBuffer.bytes));
 }
 
@@ -69,7 +70,7 @@ bool OssPyAsyncImageFilter::discardRecord(ImageBuffer& imageBuffer) {
     unique_lock<mutex> lock(mutex_);
     metadata_.erase(imageBuffer.recordIndex);
   }
-  return AsyncImageFilter::discardRecord(static_cast<size_t>(imageBuffer.recordIndex));
+  return OssAsyncImageFilter::discardRecord(static_cast<size_t>(imageBuffer.recordIndex));
 }
 
 void OssPyAsyncImageFilter::doDataLayoutEdits(

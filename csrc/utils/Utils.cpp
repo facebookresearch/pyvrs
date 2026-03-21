@@ -55,6 +55,7 @@ void pybind_utils(py::module& m) {
   pybind_exception(m);
   pybind_record(m);
   pybind_buffer(m);
+  pybind_vrsrecord(m);
   pybind_filespec(m);
 }
 #endif

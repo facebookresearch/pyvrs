@@ -21,7 +21,7 @@
 #include <vrs/os/Platform.h>
 
 #if IS_VRS_OSS_CODE()
-#include "PyImageFilter.h"
+#include "OssPyImageFilter.h"
 using PyAsyncImageFilter = pyvrs::OssPyAsyncImageFilter;
 using PyAsyncImageFilterIterator = pyvrs::OssPyAsyncImageFilterIterator;
 #else
