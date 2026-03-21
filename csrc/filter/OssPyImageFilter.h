@@ -24,6 +24,7 @@
 
 #include "OssAsyncImageFilter.h"
 
+#include "../reader/FilteredFileReader.h"
 #include "../utils/PyBuffer.h"
 #include "../utils/PyRecord.h"
 
@@ -31,8 +32,7 @@ namespace py = pybind11;
 
 namespace pyvrs {
 
-using std::mutex;
-using std::unique_lock;
+class FilteredFileReader;
 
 struct ImageRecordInfo {
   ImageRecordInfo() = default;
@@ -56,7 +56,7 @@ class OssPyAsyncImageFilter : public OssAsyncImageFilter {
   }
 
   void needRecordMetadata() {
-    unique_lock<mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     collectMetadata_ = true;
   }
 
@@ -82,7 +82,7 @@ class OssPyAsyncImageFilter : public OssAsyncImageFilter {
   void doDataLayoutEdits(const CurrentRecord& record, size_t blockIndex, DataLayout& dl) override;
 
   bool initialized_;
-  mutex mutex_;
+  std::mutex mutex_;
   bool collectMetadata_{false};
   map<int64_t, PyRecord> metadata_;
   std::shared_ptr<pyvrs::FilteredFileReader> filteredReader_;

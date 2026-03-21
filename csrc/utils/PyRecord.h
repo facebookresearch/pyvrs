@@ -19,8 +19,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <vector>
-
 #include <pybind11/pybind11.h>
 
 #include <vrs/IndexRecord.h>
@@ -31,8 +29,6 @@
 namespace pyvrs {
 
 namespace py = pybind11;
-using namespace vrs;
-using namespace std;
 
 /// \brief Cache for VRS Record's content.
 ///
@@ -85,6 +81,8 @@ struct PyRecord {
   map<string, py::object> attributesMap;
 };
 
-/// Binds methods and classes for PyRecord.
+/// Binds enums and basic types (no buffer type references).
 void pybind_record(py::module& m);
+/// Binds the VRSRecord class (references buffer types, must be called after pybind_buffer).
+void pybind_vrsrecord(py::module& m);
 } // namespace pyvrs

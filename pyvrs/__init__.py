@@ -14,6 +14,8 @@
 # limitations under the License.
 
 from vrsbindings import (
+    AsyncImageFilter as OssAsyncImageFilter,
+    AsyncImageFilterIterator as OssAsyncImageFilterIterator,
     AsyncMultiReader,
     AsyncReader,
     AudioSpec,
@@ -63,6 +65,8 @@ __all__ = [
     "ImageFormat",
     "ImageSpec",
     "MultiReader",
+    "OssAsyncImageFilter",
+    "OssAsyncImageFilterIterator",
     "PixelFormat",
     "Reader",
     "Record",

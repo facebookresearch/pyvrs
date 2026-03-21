@@ -73,6 +73,29 @@ using namespace vrs;
       }));
 
 void pybind_writer(py::module& m) {
+  py::class_<pyvrs::DataPieceWrapper>(m, "DataPieceWrapper").def(py::init<>());
+
+  py::class_<pyvrs::DataPieceStringWrapper, pyvrs::DataPieceWrapper>(m, "DataPieceStringWrapper")
+      .def(py::init<>())
+      .def("set", &pyvrs::DataPieceStringWrapper::set);
+
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix2Dd, double, 2)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix2Df, float, 2)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix2Di, int, 2)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix3Dd, double, 3)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix3Df, float, 3)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix3Di, int, 3)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix4Dd, double, 4)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix4Df, float, 4)
+  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix4Di, int, 4)
+
+// Define & generate the code for each POD type supported.
+#define POD_MACRO DEFINE_ALL_DATA_PIECE_PYBIND
+#include <vrs/helpers/PODMacro.inc>
+
+  DEFINE_DATA_PIECE_PYBIND(Vector, string)
+  DEFINE_DATA_PIECE_PYBIND(StringMap, string)
+
   py::class_<pyvrs::PyRecordFormat, std::unique_ptr<pyvrs::PyRecordFormat, py::nodelete>>(
       m, "RecordFormat")
       .def("getMembers", &pyvrs::PyRecordFormat::getMembers)
@@ -116,28 +139,5 @@ void pybind_writer(py::module& m) {
 #include "Writer_fb.hpp"
 #endif
       ;
-
-  py::class_<pyvrs::DataPieceWrapper>(m, "DataPieceWrapper").def(py::init<>());
-
-  py::class_<pyvrs::DataPieceStringWrapper, pyvrs::DataPieceWrapper>(m, "DataPieceStringWrapper")
-      .def(py::init<>())
-      .def("set", &pyvrs::DataPieceStringWrapper::set);
-
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix2Dd, double, 2)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix2Df, float, 2)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix2Di, int, 2)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix3Dd, double, 3)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix3Df, float, 3)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix3Di, int, 3)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix4Dd, double, 4)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix4Df, float, 4)
-  DEFINE_MATRIX_DATA_PIECE_PYBIND(Matrix4Di, int, 4)
-
-// Define & generate the code for each POD type supported.
-#define POD_MACRO DEFINE_ALL_DATA_PIECE_PYBIND
-#include <vrs/helpers/PODMacro.inc>
-
-  DEFINE_DATA_PIECE_PYBIND(Vector, string)
-  DEFINE_DATA_PIECE_PYBIND(StringMap, string)
 }
 } // namespace pyvrs

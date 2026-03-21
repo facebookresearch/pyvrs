@@ -186,6 +186,19 @@ void pybind_record(py::module& m) {
       .value("DATA", vrs::Record::Type::DATA)
       .export_values();
 
+  py::class_<vrs::Bool>(m, "Bool").def(py::init<bool>());
+  py::class_<vrs::Point2Dd>(m, "Point2Dd").def(py::init<double, double>());
+  py::class_<vrs::Point2Df>(m, "Point2Df").def(py::init<float, float>());
+  py::class_<vrs::Point2Di>(m, "Point2Di").def(py::init<int, int>());
+  py::class_<vrs::Point3Dd>(m, "Point3Dd").def(py::init<double, double, double>());
+  py::class_<vrs::Point3Df>(m, "Point3Df").def(py::init<float, float, float>());
+  py::class_<vrs::Point3Di>(m, "Point3Di").def(py::init<int, int, int>());
+  py::class_<vrs::Point4Dd>(m, "Point4Dd").def(py::init<double, double, double, double>());
+  py::class_<vrs::Point4Df>(m, "Point4Df").def(py::init<float, float, float, float>());
+  py::class_<vrs::Point4Di>(m, "Point4Di").def(py::init<int, int, int, int>());
+}
+
+void pybind_vrsrecord(py::module& m) {
   auto record =
       py::class_<pyvrs::PyRecord, std::unique_ptr<pyvrs::PyRecord>>(m, "VRSRecord")
           .def_readonly("record_index", &pyvrs::PyRecord::recordIndex)
@@ -265,17 +278,6 @@ void pybind_record(py::module& m) {
           });
 
   DEF_DICT_FUNC(record, PyRecord);
-
-  py::class_<vrs::Bool>(m, "Bool").def(py::init<bool>());
-  py::class_<vrs::Point2Dd>(m, "Point2Dd").def(py::init<double, double>());
-  py::class_<vrs::Point2Df>(m, "Point2Df").def(py::init<float, float>());
-  py::class_<vrs::Point2Di>(m, "Point2Di").def(py::init<int, int>());
-  py::class_<vrs::Point3Dd>(m, "Point3Dd").def(py::init<double, double, double>());
-  py::class_<vrs::Point3Df>(m, "Point3Df").def(py::init<float, float, float>());
-  py::class_<vrs::Point3Di>(m, "Point3Di").def(py::init<int, int, int>());
-  py::class_<vrs::Point4Dd>(m, "Point4Dd").def(py::init<double, double, double, double>());
-  py::class_<vrs::Point4Df>(m, "Point4Df").def(py::init<float, float, float, float>());
-  py::class_<vrs::Point4Di>(m, "Point4Di").def(py::init<int, int, int, int>());
 }
 #endif
 } // namespace pyvrs
