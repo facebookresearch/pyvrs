@@ -57,8 +57,10 @@ void pybind_reader(py::module& m) {
   pybind_multivrsreader(m);
   pybind_asyncvrsreaders(m);
 
-#if IS_VRS_FB_INTERNAL()
+  // Expose FilteredFileReader in OSS builds
   pybind_filtered_filereader(m);
+
+#if IS_VRS_FB_INTERNAL()
   m.def("extract_audio", &extractAudio, "Extract all audio tracks from given FilteredFileReader");
 #endif
 
