@@ -68,7 +68,8 @@ jobs:
           python3 -m cibuildwheel --output-dir dist
         env:
           CIBW_ARCHS_LINUX: x86_64
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ARCHS_MACOS: "arm64"
+          CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0"
           CIBW_BUILD: "cp39-*64 cp310-*64 cp311-*64 cp312-*64"
           CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
           CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
