@@ -35,9 +35,9 @@ jobs:
           python3 -m pip install setuptools wheel twine
           python3 setup.py sdist
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-sdist
           path: dist/*.tar.gz
 
   build-wheels:
@@ -54,7 +54,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
       - name: Upgrade pip
         run: |
           python3 -m pip install --upgrade pip
@@ -73,9 +73,9 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
           CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
           CIBW_SKIP: "*-manylinux_i686 *musllinux*"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-${{ matrix.os }}
           path: dist
 
   publish-to-pypi:
@@ -84,13 +84,13 @@ jobs:
       - build-wheels
       - create-sdist
     steps:
-    - name: Download wheels from previous jobs
+    - name: Download all artifacts
       # by default this will download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: python-package-distributions
         # PyPI publish action uploads everything under dist/* by default
         path: dist
+        merge-multiple: true
 
     - name: Display the list of artifacts
       run: ls -R dist
