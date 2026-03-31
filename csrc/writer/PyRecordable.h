@@ -122,12 +122,12 @@ class PyRecordable : public Recordable {
   bool addRecordFormat(const PyRecordFormat* recordFormat);
 
   const Record* createConfigurationRecord() override {
-    // PYBIND11_OVERLOAD_PURE(const Record*, Recordable, createConfigurationRecord, );
+    // PYBIND11_OVERRIDE_PURE(const Record*, Recordable, createConfigurationRecord, );
     return NULL;
   }
 
   const Record* createStateRecord() override {
-    // PYBIND11_OVERLOAD_PURE(const Record*, Recordable, createStateRecord, );
+    // PYBIND11_OVERRIDE_PURE(const Record*, Recordable, createStateRecord, );
     return NULL;
   }
 };
