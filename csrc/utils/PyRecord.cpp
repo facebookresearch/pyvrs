@@ -163,7 +163,8 @@ void pybind_record(py::module& m) {
       int(vrs::AudioSampleFormat::COUNT) == 21,
       "vrs::AudioSampleFormat Python bindings incomplete");
 
-  py::enum_<vrs::RecordableTypeId>(m, "RecordableTypeId");
+  py::enum_<vrs::RecordableTypeId>(m, "RecordableTypeId")
+      .value("Undefined", vrs::RecordableTypeId::Undefined);
   py::class_<vrs::StreamId>(m, "RecordableId")
       .def("get_type_id", &vrs::StreamId::getTypeId)
       .def("get_instance_id", &vrs::StreamId::getInstanceId)
