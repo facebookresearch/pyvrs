@@ -224,6 +224,7 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
       case vrs::PixelFormat::GREY16:
       case vrs::PixelFormat::RGB10:
       case vrs::PixelFormat::RGB12:
+      case vrs::PixelFormat::BAYER10_GBRG:
         pixelFormat = py::format_descriptor<uint16_t>::format();
         break;
       case vrs::PixelFormat::YUV_I420_SPLIT:
@@ -477,6 +478,7 @@ py::buffer_info convertImageBlockBuffer(ImageBuffer& block) {
       case PixelFormat::GREY16:
       case PixelFormat::RGB10:
       case PixelFormat::RGB12:
+      case PixelFormat::BAYER10_GBRG:
         pixelFormat = py::format_descriptor<uint16_t>::format();
         break;
       case PixelFormat::YUV_I420_SPLIT:
