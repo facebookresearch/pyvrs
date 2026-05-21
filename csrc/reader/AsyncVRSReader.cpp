@@ -66,7 +66,7 @@ void AsyncReadHandler::asyncThreadActivity() {
 }
 
 void AsyncReadJob::performJob(VRSReaderBase& reader) {
-  py::object record = reader.readRecord(index_);
+  auto record = py::cast(reader.readRecord(index_));
   loop_.attr("call_soon_threadsafe")(future_.attr("set_result"), record);
 }
 
@@ -297,8 +297,15 @@ void pybind_asyncvrsreaders(py::module& m) {
       .def("get_next_index", &PyAsyncMultiReader::getNextIndex)
       .def("get_prev_index", &PyAsyncMultiReader::getPrevIndex);
 
-  py::class_<AwaitableRecord>(m, "AwaitableRecord")
-      .def("__await__", [](const AwaitableRecord& awaitable) { return awaitable.await(); });
+  {
+    py::options options;
+    options.disable_function_signatures();
+    py::class_<AwaitableRecord>(m, "AwaitableRecord")
+        .def(
+            "__await__",
+            [](const AwaitableRecord& awaitable) { return awaitable.await(); },
+            "__await__(self) -> typing.Generator[object, None, VRSRecord]\n--\n\n");
+  }
 }
 #endif
 } // namespace pyvrs

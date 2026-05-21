@@ -21,6 +21,8 @@
 
 #include <pybind11/pybind11.h>
 
+#include "../utils/PyRecord.h"
+
 namespace pyvrs {
 
 namespace py = pybind11;
@@ -33,7 +35,7 @@ class VRSReaderBase {
  public:
   virtual ~VRSReaderBase() = default;
 
-  virtual py::object readRecord(int index) = 0;
+  virtual PyRecord readRecord(int index) = 0;
 };
 
 } // namespace pyvrs

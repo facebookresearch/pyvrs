@@ -697,20 +697,20 @@ py::object OssVRSReader::getNextRecordInfo(const char* errorMessage) {
       getRecordInfo(reader_, index[nextRecordIndex_], static_cast<int32_t>(nextRecordIndex_)));
 }
 
-py::object OssVRSReader::readNextRecord() {
+PyRecord OssVRSReader::readNextRecord() {
   skipIgnoredRecords();
   return readNextRecordInternal();
 }
 
-py::object OssVRSReader::readNextRecord(const string& streamId) {
+PyRecord OssVRSReader::readNextRecord(const string& streamId) {
   return readNextRecord(streamId, "any");
 }
 
-py::object OssVRSReader::readNextRecord(RecordableTypeId recordableTypeId) {
+PyRecord OssVRSReader::readNextRecord(RecordableTypeId recordableTypeId) {
   return readNextRecord(recordableTypeId, "any");
 }
 
-py::object OssVRSReader::readNextRecord(const string& streamId, const string& recordType) {
+PyRecord OssVRSReader::readNextRecord(const string& streamId, const string& recordType) {
   const vector<IndexRecord::RecordInfo>& index = reader_.getIndex();
   StreamId id = getStreamId(streamId);
   if (enabledStreams_.find(id) == enabledStreams_.end()) {
@@ -726,7 +726,7 @@ py::object OssVRSReader::readNextRecord(const string& streamId, const string& re
   }
   return readNextRecordInternal();
 }
-py::object OssVRSReader::readNextRecord(RecordableTypeId typeId, const string& recordType) {
+PyRecord OssVRSReader::readNextRecord(RecordableTypeId typeId, const string& recordType) {
   const vector<IndexRecord::RecordInfo>& index = reader_.getIndex();
   Record::Type type = toEnum<Record::Type>(recordType);
   if (type == Record::Type::UNDEFINED && helpers::strcasecmp(recordType.c_str(), "any") != 0) {
@@ -748,7 +748,7 @@ py::object OssVRSReader::readNextRecord(RecordableTypeId typeId, const string& r
   return readNextRecordInternal();
 }
 
-py::object OssVRSReader::readRecord(int index) {
+PyRecord OssVRSReader::readRecord(int index) {
   if (static_cast<uint32_t>(index) >= reader_.getIndex().size()) {
     throw py::index_error("No record at index: " + to_string(index));
   }
@@ -756,7 +756,7 @@ py::object OssVRSReader::readRecord(int index) {
   return readNextRecordInternal();
 }
 
-py::object OssVRSReader::readRecord(const string& streamId, const string& recordType, int index) {
+PyRecord OssVRSReader::readRecord(const string& streamId, const string& recordType, int index) {
   StreamId id = getStreamId(streamId);
   if (enabledStreams_.find(id) == enabledStreams_.end()) {
     throw py::value_error(
@@ -780,7 +780,7 @@ py::object OssVRSReader::readRecord(const string& streamId, const string& record
   return readNextRecordInternal();
 }
 
-py::object OssVRSReader::readNextRecordInternal() {
+PyRecord OssVRSReader::readNextRecordInternal() {
   const vector<IndexRecord::RecordInfo>& index = reader_.getIndex();
   if (nextRecordIndex_ >= index.size()) {
     throw py::stop_iteration("No more records");
@@ -799,7 +799,7 @@ py::object OssVRSReader::readNextRecordInternal() {
     throw runtime_error("Read error: " + errorCodeToMessageWithCode(status));
   }
 
-  return py::cast(PyRecord(record, nextRecordIndex_++, lastRecord_));
+  return PyRecord(record, nextRecordIndex_++, lastRecord_);
 }
 
 void OssVRSReader::readConfigurationRecord(const StreamId& streamId, uint32_t idx) {

@@ -370,14 +370,14 @@ class OssVRSReader : public VRSReaderBase {
 
   /// Read the next record of any stream enabled for reading.
   /// If there are no more records to read, throws a StopIteration exception.
-  py::object readNextRecord();
+  PyRecord readNextRecord();
 
   /// Read the next record of a specific stream.
   /// The stream must have been enabled for reading before.
   /// @param streamId: VRS stream id to read.
   /// @return Record details (see readRecord(int index)).
   /// If there are no more records to read, throws a StopIteration exception.
-  py::object readNextRecord(const string& streamId);
+  PyRecord readNextRecord(const string& streamId);
 
   /// Read the next record of a specific stream and of a specific type.
   /// The stream must have been enabled for reading before.
@@ -385,13 +385,13 @@ class OssVRSReader : public VRSReaderBase {
   /// @param recordType: record type to read (or "any" for any record of that stream).
   /// @return Record details (see readRecord(int index)).
   /// If there are no more records to read, throws a StopIteration exception.
-  py::object readNextRecord(const string& streamId, const string& recordType);
+  PyRecord readNextRecord(const string& streamId, const string& recordType);
 
   /// Read the next record from any stream of a specific recordable type id (device type).
   /// @param recordableTypeId: Device type of the streams to read.
   /// @return Record details (see readRecord(int index)).
   /// If there are no more records to read, throws a StopIteration exception.
-  py::object readNextRecord(RecordableTypeId recordableTypeId);
+  PyRecord readNextRecord(RecordableTypeId recordableTypeId);
 
   /// Read the next record from any stream of a specific recordable type id (device type)
   /// and of a specific type.
@@ -399,14 +399,14 @@ class OssVRSReader : public VRSReaderBase {
   /// @param recordType: record type to read (or "any" for any record of that stream).
   /// @return Record details (see readRecord(int index)).
   /// If there are no more records to read, throws a StopIteration exception.
-  py::object readNextRecord(RecordableTypeId recordableTypeId, const string& recordType);
+  PyRecord readNextRecord(RecordableTypeId recordableTypeId, const string& recordType);
 
   /// Read a stream's record, by record type & index.
   /// @param streamId: VRS stream id to read.
   /// @param recordType: record type to read, or "any".
   /// @param index: the index of the record to read.
   /// @return Record details (see readRecord(int index)).
-  py::object readRecord(const string& streamId, const string& recordType, int index);
+  PyRecord readRecord(const string& streamId, const string& recordType, int index);
 
   /// Read a specifc record, by index.
   /// @param index: a record index.
@@ -424,7 +424,7 @@ class OssVRSReader : public VRSReaderBase {
   /// "unsupported_block_count": number of unrecognized blocks.
   /// This might happen if you read a data record containing an image,
   /// before reading the stream's configuration record describing the image format.
-  py::object readRecord(int index) override;
+  PyRecord readRecord(int index) override;
 
   // Skip reading content blocks of the record after reading preset number of them
   /// @param recordableTypeId: Device type of the stream to skip trailing blocks.
@@ -558,7 +558,7 @@ class OssVRSReader : public VRSReaderBase {
  protected:
   void open(const FileSpec& spec);
   // Similar to readNextRecord() except that this does not invoke skipIgnoredRecords()
-  py::object readNextRecordInternal();
+  PyRecord readNextRecordInternal();
 
   // When we read data record, most of the time we want to read configuration record corresponds to
   // that record first. This method builds a map of data record to configuration record and read the

@@ -560,20 +560,20 @@ py::object OssMultiVRSReader::getNextRecordInfo(const char* errorMessage) {
   return pyWrap(getRecordInfo(*record, static_cast<int32_t>(nextRecordIndex_)));
 }
 
-py::object OssMultiVRSReader::readNextRecord() {
+PyRecord OssMultiVRSReader::readNextRecord() {
   skipIgnoredRecords();
   return readNextRecordInternal();
 }
 
-py::object OssMultiVRSReader::readNextRecord(const string& streamId) {
+PyRecord OssMultiVRSReader::readNextRecord(const string& streamId) {
   return readNextRecord(streamId, "any");
 }
 
-py::object OssMultiVRSReader::readNextRecord(RecordableTypeId recordableTypeId) {
+PyRecord OssMultiVRSReader::readNextRecord(RecordableTypeId recordableTypeId) {
   return readNextRecord(recordableTypeId, "any");
 }
 
-py::object OssMultiVRSReader::readNextRecord(const string& streamId, const string& recordType) {
+PyRecord OssMultiVRSReader::readNextRecord(const string& streamId, const string& recordType) {
   StreamId id = getStreamId(streamId);
   if (enabledStreams_.find(id) == enabledStreams_.end()) {
     throw py::value_error(
@@ -590,7 +590,7 @@ py::object OssMultiVRSReader::readNextRecord(const string& streamId, const strin
   return readNextRecordInternal();
 }
 
-py::object OssMultiVRSReader::readNextRecord(RecordableTypeId typeId, const string& recordType) {
+PyRecord OssMultiVRSReader::readNextRecord(RecordableTypeId typeId, const string& recordType) {
   Record::Type type = toEnum<Record::Type>(recordType);
   if (type == Record::Type::UNDEFINED && vrs::helpers::strcasecmp(recordType.c_str(), "any") != 0) {
     throw py::value_error("Unsupported record type filter: " + recordType);
@@ -612,7 +612,7 @@ py::object OssMultiVRSReader::readNextRecord(RecordableTypeId typeId, const stri
   return readNextRecordInternal();
 }
 
-py::object
+PyRecord
 OssMultiVRSReader::readRecord(const string& streamId, const string& recordType, int index) {
   StreamId id = getStreamId(streamId);
   if (enabledStreams_.find(id) == enabledStreams_.end()) {
@@ -638,7 +638,7 @@ OssMultiVRSReader::readRecord(const string& streamId, const string& recordType, 
   return readNextRecordInternal();
 }
 
-py::object OssMultiVRSReader::readRecord(int index) {
+PyRecord OssMultiVRSReader::readRecord(int index) {
   if (index < 0 || static_cast<uint32_t>(index) >= reader_.getRecordCount()) {
     throw py::index_error("No record at index: " + to_string(index));
   }
@@ -646,7 +646,7 @@ py::object OssMultiVRSReader::readRecord(int index) {
   return readNextRecordInternal();
 }
 
-py::object OssMultiVRSReader::readNextRecordInternal() {
+PyRecord OssMultiVRSReader::readNextRecordInternal() {
   if (nextRecordIndex_ >= reader_.getRecordCount()) {
     throw py::stop_iteration("No more records");
   }
@@ -669,7 +669,7 @@ py::object OssMultiVRSReader::readNextRecordInternal() {
   // the stream ID in record is the file's stream ID, not the unique stream ID
   r.streamId = reader_.getUniqueStreamId(&record).getNumericName();
   nextRecordIndex_++;
-  return py::cast(r);
+  return r;
 }
 
 void OssMultiVRSReader::skipTrailingBlocks(
