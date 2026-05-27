@@ -289,7 +289,11 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
         shapes, // Buffer dimensions
         stridesInBytes); // Strides (in bytes)
   }
-  if (block.structuredArray && block.spec.getContentType() == vrs::ContentType::AUDIO) {
+  if (block.structuredArray && block.spec.getContentType() == vrs::ContentType::AUDIO &&
+      XR_VERIFY(
+          block.bytes.size() ==
+          static_cast<size_t>(block.spec.audio().getSampleFrameStride()) *
+              static_cast<size_t>(block.spec.audio().getSampleCount()))) {
     const vrs::AudioContentBlockSpec& audioSpec = block.spec.audio();
     std::string sampleFormat;
     uint32_t audioSampleStride = audioSpec.getSampleFrameStride();
@@ -321,7 +325,9 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
         if (!block.bytesAdjusted) {
           bool needsEndianSwap = !audioSpec.isLittleEndian();
           std::vector<uint8_t> newBuffer;
-          newBuffer.resize(4 * audioSpec.getSampleCount() * audioSpec.getChannelCount());
+          newBuffer.resize(
+              size_t{4} * static_cast<size_t>(audioSpec.getSampleCount()) *
+              static_cast<size_t>(audioSpec.getChannelCount()));
           const uint8_t* src = block.bytes.data();
           int32_t* dst = reinterpret_cast<int32_t*>(newBuffer.data());
           // Sample reconstruction buffer
