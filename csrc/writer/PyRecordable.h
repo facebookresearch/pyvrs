@@ -85,6 +85,16 @@ class PyRecordFormat {
     formatVersion_ = other.formatVersion_;
   }
 
+  PyRecordFormat& operator=(PyRecordFormat&& other) noexcept {
+    if (this != &other) {
+      dataLayouts_ = std::move(other.dataLayouts_);
+      additionalContentBlocks_ = std::move(other.additionalContentBlocks_);
+      recordType_ = other.recordType_;
+      formatVersion_ = other.formatVersion_;
+    }
+    return *this;
+  }
+
   const std::vector<const vrs::DataLayout*> getDataLayouts() const;
 
   Record::Type getRecordType() const {
