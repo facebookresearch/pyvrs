@@ -86,6 +86,7 @@ class AwaitableRecord {
  public:
   AwaitableRecord(uint32_t index, AsyncReadHandler& readHandler);
   AwaitableRecord(const AwaitableRecord& other);
+  AwaitableRecord& operator=(const AwaitableRecord&) = delete;
 
   py::object await() const;
 
