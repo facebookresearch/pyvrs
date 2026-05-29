@@ -173,6 +173,7 @@ class PyStream {
   }
 
   PyStream(PyStream&& other) noexcept;
+  PyStream& operator=(PyStream&& other) noexcept;
 
   PyRecordable* getRecordable() {
     return recordable_.get();

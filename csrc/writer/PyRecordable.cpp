@@ -156,6 +156,14 @@ PyStream::PyStream(PyStream&& other) noexcept {
   }
 }
 
+PyStream& PyStream::operator=(PyStream&& other) noexcept {
+  if (this != &other) {
+    recordable_ = std::move(other.recordable_);
+    recordFormatMap_ = std::move(other.recordFormatMap_);
+  }
+  return *this;
+}
+
 PyRecordFormat* PyStream::createRecordFormat(Record::Type recordType) {
   PyRecordFormat* recordFormat = nullptr;
   auto iter = recordFormatMap_.find(recordType);
