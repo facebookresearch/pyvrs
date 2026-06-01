@@ -86,7 +86,7 @@ class VRSReader(BaseVRSReader, ABC):
     only done when record state is queried, so it remains performant even for larger
     VRS files.
 
-    The methods in child classes of VRSReader operates against all records. When user call
+    The methods in child classes of VRSReader operate against all records. When a user calls the
     filtered_by_fields method, that call creates FilteredVRSReader that represents a slice of the file.
 
     Example:
@@ -316,7 +316,7 @@ class VRSReader(BaseVRSReader, ABC):
 
     @property
     def n_records(self) -> int:
-        """Return a number of records in this VRS file."""
+        """Return the number of records in this VRS file."""
         return self._n_records
 
     @property
@@ -331,17 +331,17 @@ class VRSReader(BaseVRSReader, ABC):
 
     @property
     def min_timestamp(self) -> float:
-        """Return a minimum timestamp of this VRS file."""
+        """Return the minimum timestamp of this VRS file."""
         return self._min_timestamp
 
     @property
     def max_timestamp(self) -> float:
-        """Return a maximum timestamp of this VRS file."""
+        """Return the maximum timestamp of this VRS file."""
         return self._max_timestamp
 
     @property
     def time_range(self) -> float:
-        """Return a timestamp range of this VRS file."""
+        """Return the timestamp range of this VRS file."""
         return self.max_timestamp - self.min_timestamp
 
     def find_stream(
@@ -364,15 +364,14 @@ class VRSReader(BaseVRSReader, ABC):
 
     def find_streams(self, recordable_type_id: int, flavor: str = "") -> List[str]:
         """
-        Find streams matching recordable type and flavor, and return sets of stream ids.
+        Find streams matching recordable type and flavor, and return their stream IDs.
 
         Args:
             recordable_type_id: stream_id is `<recordable_type_id>-<instance_id>`
-            tag_name: tag name that you are interested in
-            tag_value: tag value that you are interested in
+            flavor: Flavor string to filter by.
 
         Returns:
-            A set of stream IDs that start with recordable_type_id and has a given flavor.
+            A list of stream IDs that start with recordable_type_id and have a given flavor.
         """
         if recordable_type_id == 0:
             recordable_type_id = 65535  # "Undefined", to filter by flavor only
@@ -398,8 +397,7 @@ class VRSReader(BaseVRSReader, ABC):
 
         When streams are created, they are assigned a unique serial number by their Recordable object.
         That serial number is universally unique and it will be preserved during file copies, file
-        processing, and other manipulations that preserve stream tags. id for a specific recordable
-        type id (device type), flavor and index number.
+        processing, and other manipulations that preserve stream tags.
 
         Args:
             stream_id: stream_id you are interested in.
@@ -422,7 +420,7 @@ class VRSReader(BaseVRSReader, ABC):
             stream_id: stream_id you are interested in.
 
         Returns:
-            An information about the stream in a dictionary.
+            Information about the stream in a dictionary.
         """
         return self._reader.get_stream_info(stream_id)
 
@@ -459,7 +457,7 @@ class VRSReader(BaseVRSReader, ABC):
             indices: the list of indices we want to get the timestamp.
 
         Returns:
-            A list of timestamps correspond to the indices, if indices are None, we get the full timestamp list.
+            A list of timestamps corresponding to the indices. If indices are None, the full timestamp list is returned.
         """
         if indices is None:
             indices = range(self.n_records)
@@ -473,7 +471,7 @@ class VRSReader(BaseVRSReader, ABC):
             index: the index for the record
 
         Returns:
-            A timestamp corresponds to the index
+            The timestamp corresponding to the index
         """
         if index >= self.n_records:
             raise IndexError("Index {} is out of range.".format(index))
@@ -544,25 +542,25 @@ class VRSReader(BaseVRSReader, ABC):
 
     def might_contain_images(self, stream_id: str) -> bool:
         """
-        Check if the given stream_id contains an image data.
+        Check if the given stream_id contains image data.
 
         Args:
             stream_id: stream_id that you are interested in.
 
         Returns:
-            Based on the config record, return if the stream contains an image data.
+            Based on the config record, return whether the stream contains image data.
         """
         return self._reader.might_contain_images(stream_id)
 
     def might_contain_audio(self, stream_id: str) -> bool:
         """
-        Check if the given stream_id contains an audio data.
+        Check if the given stream_id contains audio data.
 
         Args:
             stream_id: stream_id that you are interested in.
 
         Returns:
-            Based on the config record, return if the stream contains an audio data.
+            Based on the config record, return whether the stream contains audio data.
         """
         return self._reader.might_contain_audio(stream_id)
 
@@ -596,7 +594,7 @@ class VRSReader(BaseVRSReader, ABC):
             record_type: Optional argument. If specified we search for record with the record_type.
 
         Returns:
-            The absolute index of the record corresponds to the stream_id & timestamp.
+            The absolute index of the record corresponding to the stream_id & timestamp.
 
         Raises:
             TimestampNotFoundError: If epsilon is not None and the record doesn't exist within the time range.
@@ -638,7 +636,7 @@ class VRSReader(BaseVRSReader, ABC):
             record_type: Optional argument. If specified we search for record with the record_type.
 
         Returns:
-            VRSRecord corresponds to the stream_id & timestamp.
+            The VRSRecord corresponding to the stream_id & timestamp.
 
         Raises:
             TimestampNotFoundError: If epsilon is not None and the record doesn't exist within the time range.
@@ -696,7 +694,7 @@ class VRSReader(BaseVRSReader, ABC):
         Args:
             stream_id: stream_id that you are interested in.
             record_type: record_type that you are interested in.
-            index: the absolute index in the file. Based on this index, try to find the previous record that matches stream_id & record_type
+            index: the absolute index in the file. Based on this index, try to find the next record that matches stream_id & record_type
 
         Returns:
             VRSRecord if there is a record, otherwise None

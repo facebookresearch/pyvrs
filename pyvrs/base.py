@@ -42,13 +42,13 @@ class BaseVRSReader(ABC):
     Note:
         - BaseVRSReader: Base abstract class that defines the common functions across all child classes.
         - VRSReader: Abstract class that represents entire file (e.g. file without any filters).
-          The methods in child classes of this operations against all records.
-          When user call filtered_by_fields method, that call will create FilteredVRSReader that represents slice of the file.
+          The methods in child classes of this class operate against all records.
+          When a user calls the filtered_by_fields method, that call will create FilteredVRSReader that represents a slice of the file.
         - FilteredVRSReader: Abstract class that represents the slice of the original file (After applying filter).
-          This class essentially has the exact same methods as VRSReader but operate against subset of the file.
+          This class essentially has the exact same methods as VRSReader but operates against a subset of the file.
           Note that you can't 're-filter' an already filtered VRSReader.
         - SyncVRSReader: Synchronous version of VRSReader.
-        - AsyncVRSReader: Asynchronous version of VRSReader, only difference between SyncVRSReader is AsyncVRSReader supports
+        - AsyncVRSReader: Asynchronous version of VRSReader, the only difference from SyncVRSReader is that AsyncVRSReader supports
           __aiter__, __anext__ for async iteration as well as __getitem__ operates asynchronously.
         - SyncFilteredVRSReader: Synchronous version of FilteredVRSReader.
         - AsyncFilteredVRSReader: Asynchronous version of FilteredVRSReader, same difference as SyncVRSReader vs AsyncVRSReader.
@@ -107,7 +107,7 @@ class BaseVRSReader(ABC):
     @property
     @abstractmethod
     def n_records(self) -> int:
-        """Return a number of records in this VRS file."""
+        """Return the number of records in this VRS file."""
         raise NotImplementedError()
 
     @property
@@ -159,15 +159,14 @@ class BaseVRSReader(ABC):
     @abstractmethod
     def find_streams(self, recordable_type_id: int, flavor: str = "") -> List[str]:
         """
-        Find streams matching recordable type and flavor, and return sets of stream ids.
+        Find streams matching recordable type and flavor, and return their stream IDs.
 
         Args:
             recordable_type_id: stream_id is `<recordable_type_id>-<instance_id>`
-            tag_name: tag name that you are interested in
-            tag_value: tag value that you are interested in
+            flavor: Flavor string to filter by.
 
         Returns:
-            A set of stream IDs that start with recordable_type_id and has a given flavor.
+            A list of stream IDs that start with recordable_type_id and have a given flavor.
         """
         raise NotImplementedError()
 
@@ -180,7 +179,7 @@ class BaseVRSReader(ABC):
             stream_id: stream_id you are interested in.
 
         Returns:
-            An information about the stream in a dictionary.
+            Information about the stream in a dictionary.
         """
         raise NotImplementedError()
 
@@ -207,7 +206,7 @@ class BaseVRSReader(ABC):
             indices: the list of indices we want to get the timestamp.
 
         Returns:
-            A list of timestamps correspond to the indices, if indices are None, we get the full timestamp list.
+            A list of timestamps corresponding to the indices. If indices are None, the full timestamp list is returned.
         """
         raise NotImplementedError()
 
@@ -220,7 +219,7 @@ class BaseVRSReader(ABC):
             index: the index for the record
 
         Returns:
-            A timestamp corresponds to the index
+            The timestamp corresponding to the index
         """
         raise NotImplementedError()
 
@@ -267,26 +266,26 @@ class BaseVRSReader(ABC):
     @abstractmethod
     def might_contain_images(self, stream_id: str) -> bool:
         """
-        Check if the given stream_id contains an image data.
+        Check if the given stream_id contains image data.
 
         Args:
             stream_id: stream_id that you are interested in.
 
         Returns:
-            Based on the config record, return if the stream contains an image data.
+            Based on the config record, return whether the stream contains image data.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def might_contain_audio(self, stream_id: str) -> bool:
         """
-        Check if the given stream_id contains an audio data.
+        Check if the given stream_id contains audio data.
 
         Args:
             stream_id: stream_id that you are interested in.
 
         Returns:
-            Based on the config record, return if the stream contains an audio data.
+            Based on the config record, return whether the stream contains audio data.
         """
         raise NotImplementedError()
 
@@ -322,7 +321,7 @@ class BaseVRSReader(ABC):
             record_type: Optional argument. If specified we search for record with the record_type.
 
         Returns:
-            The absolute index of the record corresponds to the stream_id & timestamp.
+            The absolute index of the record corresponding to the stream_id & timestamp.
 
         Raises:
             TimestampNotFoundError: If epsilon is not None and the record doesn't exist within the time range.
@@ -349,7 +348,7 @@ class BaseVRSReader(ABC):
             record_type: Optional argument. If specified we search for record with the record_type.
 
         Returns:
-            VRSRecord corresponds to the stream_id & timestamp.
+            The VRSRecord corresponding to the stream_id & timestamp.
 
         Raises:
             TimestampNotFoundError: If epsilon is not None and the record doesn't exist within the time range.
@@ -384,7 +383,7 @@ class BaseVRSReader(ABC):
         Args:
             stream_id: stream_id that you are interested in.
             record_type: record_type that you are interested in.
-            index: the absolute index in the file. Based on this index, try to find the previous record that matches stream_id & record_type
+            index: the absolute index in the file. Based on this index, try to find the next record that matches stream_id & record_type
 
         Returns:
             VRSRecord if there is a record, otherwise None

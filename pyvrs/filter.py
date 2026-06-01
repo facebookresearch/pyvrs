@@ -126,14 +126,14 @@ class FilteredVRSReader(BaseVRSReader, ABC):
     @property
     def min_timestamp(self) -> float:
         """The timestamp for the first record that this reader is configured to read, given current filters.
-        Return 0 if there are no record.
+        Return 0 if there are no records.
         """
         return self._min_timestamp
 
     @property
     def max_timestamp(self) -> float:
         """The timestamp for the last record that this reader is configured to read, given current filters.
-        Return 0 if there are no record.
+        Return 0 if there are no records.
         """
         return self._max_timestamp
 
@@ -166,16 +166,15 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     def find_streams(self, recordable_type_id: int, flavor: str = "") -> List[str]:
         """
-        Find streams matching recordable type and flavor, and return sets of stream ids.
+        Find streams matching recordable type and flavor, and return their stream IDs.
         This call isn't affected by the filter.
 
         Args:
             recordable_type_id: stream_id is `<recordable_type_id>-<instance_id>`
-            tag_name: tag name that you are interested in
-            tag_value: tag value that you are interested in
+            flavor: Flavor string to filter by.
 
         Returns:
-            A set of stream IDs that start with recordable_type_id and has a given flavor.
+            A list of stream IDs that start with recordable_type_id and have a given flavor.
         """
         return self._reader.find_streams(recordable_type_id, flavor)
 
@@ -187,7 +186,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
             stream_id: stream_id you are interested in.
 
         Returns:
-            An information about the stream in a dictionary.
+            Information about the stream in a dictionary.
         """
         return self._reader.get_stream_info(stream_id)
 
@@ -206,13 +205,10 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     def get_timestamp_list(self) -> List[float]:
         """
-        Get the list of timestamps corresponding to the given indices.
-
-        Args:
-            indices: the list of indices we want to get the timestamp.
+        Get the list of timestamps for this filtered reader's records.
 
         Returns:
-            A list of timestamps correspond to the indices, if indices are None, we get the full timestamp list.
+            A list of timestamps corresponding to the filtered indices.
         """
         return self._reader.get_timestamp_list(self._filtered_indices)
 
@@ -224,7 +220,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
             index: the index for the record
 
         Returns:
-            A timestamp corresponds to the index
+            The timestamp corresponding to the index
         """
         if index >= len(self._filtered_indices):
             raise IndexError("Index {} is out of range.".format(index))
@@ -275,25 +271,25 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     def might_contain_images(self, stream_id: str) -> bool:
         """
-        Check if the given stream_id contains an image data.
+        Check if the given stream_id contains image data.
 
         Args:
             stream_id: stream_id that you are interested in.
 
         Returns:
-            Based on the config record, return if the stream contains an image data.
+            Based on the config record, return whether the stream contains image data.
         """
         return self._reader.might_contain_images(stream_id)
 
     def might_contain_audio(self, stream_id: str) -> bool:
         """
-        Check if the given stream_id contains an audio data.
+        Check if the given stream_id contains audio data.
 
         Args:
             stream_id: stream_id that you are interested in.
 
         Returns:
-            Based on the config record, return if the stream contains an audio data.
+            Based on the config record, return whether the stream contains audio data.
         """
         return self._reader.might_contain_audio(stream_id)
 
@@ -353,7 +349,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
             record_type: Optional argument. If specified we search for record with the record_type.
 
         Returns:
-            VRSRecord corresponds to the stream_id & timestamp.
+            The VRSRecord corresponding to the stream_id & timestamp.
 
         Raises:
             TimestampNotFoundError: If epsilon is not None and the record doesn't exist within the time range.
@@ -389,7 +385,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         Args:
             stream_id: stream_id that you are interested in.
             record_type: record_type that you are interested in.
-            index: the absolute index in the file. Based on this index, try to find the previous record that matches stream_id & record_type
+            index: the absolute index in the file. Based on this index, try to find the next record that matches stream_id & record_type
 
         Returns:
             VRSRecord if there is a record, otherwise None
