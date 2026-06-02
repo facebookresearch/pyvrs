@@ -245,13 +245,13 @@ class VRSRecordFormat:
     def __init__(
         self, record_format: RecordFormat, data_layout_type: RecordType
     ) -> None:
-        self.__dict__["record_format"] = record_format
-        self.__dict__["data_layout_type"] = data_layout_type
+        self.record_format: RecordFormat = record_format
+        self.data_layout_type: RecordType = data_layout_type
         members = record_format.getMembers()
         json_data_layouts = record_format.getJsonDataLayouts()
         if len(members) != len(json_data_layouts):
             raise ValueError
-        self.__dict__["data_layouts"] = [
+        self.data_layouts: List[VRSDataLayout] = [
             VRSDataLayout(member, json_data_layout, data_layout_type, idx)
             for idx, (member, json_data_layout) in enumerate(
                 zip(members, json_data_layouts)
