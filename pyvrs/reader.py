@@ -18,12 +18,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import (
     Any,
-    AsyncIterable,
+    AsyncIterator,
     Dict,
     List,
     Mapping,
     Optional,
     overload,
+    Sequence,
     Set,
     Union,
 )
@@ -178,6 +179,7 @@ class VRSReader(BaseVRSReader, ABC):
             encoding: set encoding to use for strings while reading the records
             multi_path: set True if you want to read multiple VRS files simultaneously
         """
+        self._path = ""
         self._init_reader(path, auto_read_configuration_records, multi_path)
         self._reader.set_encoding(encoding)
         # Read all streams so we can index absolutely for the lifetime of
@@ -499,7 +501,7 @@ class VRSReader(BaseVRSReader, ABC):
         self._reader.set_image_conversion(stream_id, conversion)
 
     def set_stream_type_image_conversion(
-        self, recordable_type_id: str, conversion: ImageConversion
+        self, recordable_type_id: Union[int, str], conversion: ImageConversion
     ) -> int:
         """
         Set image conversion policy for streams of a specific device type.
@@ -513,7 +515,7 @@ class VRSReader(BaseVRSReader, ABC):
             The number of streams affected.
         """
         return self._reader.set_image_conversion(
-            RecordableTypeId(recordable_type_id), conversion
+            RecordableTypeId(int(recordable_type_id)), conversion
         )
 
     def skip_trailing_blocks(
@@ -708,7 +710,7 @@ class VRSReader(BaseVRSReader, ABC):
         return VRSRecord(record)
 
     def _read_record(
-        self, indices: List[int], i: Union[int, slice]
+        self, indices: Sequence[int], i: Union[int, slice]
     ) -> Union[VRSRecord, VRSReaderSlice]:
         return index_or_slice_records(self._path, self._reader, indices, i)
 
@@ -736,7 +738,9 @@ class VRSReader(BaseVRSReader, ABC):
 
     def _open_files(self, multi_path: bool, specs: Union[FileSpec, List[FileSpec]]):
         # self._path is used only in __str__ method, we use get_easy_path because it provides a good enough summary of the file.
-        if multi_path:
+        # Branch on the concrete type of specs rather than the multi_path flag so
+        # the path summary stays correct even if the two ever disagree.
+        if isinstance(specs, list):
             self._path = specs[0].get_easy_path()
         else:
             self._path = specs.get_easy_path()
@@ -841,7 +845,9 @@ class SyncVRSReader(VRSReader):
         return SyncFilteredVRSReader(self, record_filter)
 
 
-class AsyncVRSReader(VRSReader, AsyncIterable[VRSRecord]):
+class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
+    _index: int = 0
+
     def _get_reader_class(self, multi_path: bool):
         if multi_path:
             return AsyncMultiReader
@@ -903,14 +909,15 @@ class AsyncVRSReader(VRSReader, AsyncIterable[VRSRecord]):
         )
         return AsyncFilteredVRSReader(self, record_filter)
 
-    def __aiter__(self) -> "AsyncVRSReader":
+    def __aiter__(self) -> AsyncIterator[VRSRecord]:
         self._index = 0
         return self
 
-    async def __anext__(self) -> Union[VRSRecord, AsyncVRSReaderSlice]:
+    async def __anext__(self) -> VRSRecord:
         if self._index == len(self):
             raise StopAsyncIteration
         result = await self[self._index]
+        assert isinstance(result, VRSRecord)
         self._index += 1
         return result
 
@@ -925,5 +932,5 @@ class AsyncVRSReader(VRSReader, AsyncIterable[VRSRecord]):
     ) -> Union[VRSRecord, AsyncVRSReaderSlice]:
         return await self._async_read_record(range(self.n_records), i)
 
-    async def _async_read_record(self, indices: List[int], i: Union[int, slice]):
+    async def _async_read_record(self, indices: Sequence[int], i: Union[int, slice]):
         return await async_index_or_slice_records(self._path, self._reader, indices, i)

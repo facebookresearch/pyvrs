@@ -25,8 +25,8 @@ from . import RecordType
 class VRSDataLayout:
     def __init__(
         self,
-        members: Dict[str, Any],
-        data_layout: str,
+        members: Dict[str, Any] | None,
+        data_layout: str | None,
         data_layout_type: RecordType,
         index: int,
     ) -> None:
@@ -100,6 +100,8 @@ def type_conversion(value: str) -> str:
         "Point4Df": "(float, float, float, float)",
     }
     m = re.match(r"(?P<datapiece_typename>\w+)<(?P<typename>\w+)>", value)
+    if m is None:
+        raise ValueError(f"Unexpected type format: {value!r}")
     datapiece_typename = m.group("datapiece_typename")
     typename = m.group("typename")
 

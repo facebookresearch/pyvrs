@@ -14,10 +14,22 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Mapping, Optional, overload, Set, Union
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    overload,
+    Sequence,
+    Set,
+    Union,
+)
 
 from . import ImageConversion, RecordType
 from .record import VRSRecord
+from .record_filter import RecordFilter
 from .slice import VRSReaderSlice
 
 
@@ -248,7 +260,7 @@ class BaseVRSReader(ABC):
 
     @abstractmethod
     def set_stream_type_image_conversion(
-        self, recordable_type_id: str, conversion: ImageConversion
+        self, recordable_type_id: Union[int, str], conversion: ImageConversion
     ) -> int:
         """
         Set image conversion policy for streams of a specific device type.
@@ -391,7 +403,7 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _read_record(self, indices: List[int], i: Union[int, slice]):
+    def _read_record(self, indices: Sequence[int], i: Union[int, slice]):
         raise NotImplementedError()
 
     @abstractmethod
@@ -400,5 +412,5 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _generate_filtered_indices(self) -> List[int]:
+    def _generate_filtered_indices(self, record_filter: RecordFilter) -> List[int]:
         raise NotImplementedError()

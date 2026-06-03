@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Callable, overload, Sequence, TypeVar, Union
+from typing import Callable, Generic, overload, Sequence, TypeVar, Union
 
 import numpy as np
 
@@ -151,7 +151,7 @@ class VRSRecord:
         )
 
 
-class VRSBlocks(Sequence):
+class VRSBlocks(Sequence[T], Generic[T]):
     """A representation of a list of Record blocks (image, metadata, audio or custom).
     Accessing elements returns the type directly.
     """
@@ -164,14 +164,13 @@ class VRSBlocks(Sequence):
     def __getitem__(self, i: int) -> T: ...
 
     @overload
-    def __getitem__(self, i: slice) -> "VRSBlocks": ...
+    def __getitem__(self, i: slice) -> "VRSBlocks[T]": ...
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[T, "VRSBlocks"]:
-        if isinstance(i, int) or hasattr(i, "__index__"):
-            return self._get_func(self._range[i])
-        else:
-            # A slice or unknown type is passed. Let list handle it directly.
+    def __getitem__(self, i: Union[int, slice]) -> Union[T, "VRSBlocks[T]"]:
+        if isinstance(i, slice):
             return VRSBlocks(self._get_func, self._range[i])
+        else:
+            return self._get_func(self._range[i])
 
     def __len__(self) -> int:
         return len(self._range)

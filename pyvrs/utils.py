@@ -57,7 +57,9 @@ def filter_by_stream_ids(
     Returns:
         A set of stream_ids in available_stream_ids that matches the one of the regex in regex_stream_ids.
     """
-    return _filter_set_on_condition(available_stream_ids, regex_stream_ids, fnmatch)
+    return _filter_set_on_condition(
+        available_stream_ids, regex_stream_ids, lambda a, b: fnmatch(a, b)
+    )
 
 
 def filter_by_record_type(

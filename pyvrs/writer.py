@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import time
-from typing import Dict, List, Union
+from typing import Dict, List, Sequence, Union
 
 import numpy as np
 
@@ -98,7 +98,7 @@ class VRSWriter:
             if self._writer.create(self.filepath) != 0:
                 raise Exception(f"Failed to create file at {self.filepath}")
 
-    def close(self) -> None:
+    def close(self) -> int:
         return self._writer.close()
 
     # Recordable instance ids are automatically assigned when Recordable objects are created.
@@ -152,7 +152,7 @@ class VRSStream:
     def parse_create_record_params(
         self,
         record_type: RecordType,
-        srcs: List[Union[VRSDataLayout, np.ndarray, np.generic]],
+        srcs: Sequence[Union[VRSDataLayout, np.ndarray, np.generic]],
     ) -> List[Union[np.ndarray, np.generic]]:
         data_layouts = []
         data_srcs = []

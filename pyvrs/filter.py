@@ -15,12 +15,12 @@
 
 from abc import ABC, abstractmethod
 from bisect import bisect
-from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional, overload, Set, Union
+from typing import Any, List, Mapping, Optional, overload, Sequence, Set, Union
 
 from . import ImageConversion, RecordType
 from .base import BaseVRSReader
 from .record import VRSRecord
+from .record_filter import RecordFilter
 from .slice import AsyncVRSReaderSlice, VRSReaderSlice
 from .utils import (
     get_recordable_type_id_name,
@@ -33,16 +33,6 @@ __all__ = [
     "SyncFilteredVRSReader",
     "RecordFilter",
 ]
-
-
-@dataclass
-class RecordFilter:
-    """RecordFilter represents a filter that's applied to the VRS file."""
-
-    record_types: Set[str]
-    stream_ids: Set[str]
-    min_timestamp: float
-    max_timestamp: float
 
 
 class FilteredVRSReader(BaseVRSReader, ABC):
@@ -178,7 +168,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         """
         return self._reader.find_streams(recordable_type_id, flavor)
 
-    def get_stream_info(self, stream_id: str) -> Mapping[str, str]:
+    def get_stream_info(self, stream_id: str) -> dict[str, str]:
         """
         Get details about a stream.
 
@@ -203,13 +193,26 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         """
         return self._reader.get_records_count(stream_id, record_type)
 
-    def get_timestamp_list(self) -> List[float]:
+    def get_timestamp_list(self, indices: Optional[List[int]] = None) -> List[float]:
         """
         Get the list of timestamps for this filtered reader's records.
 
+        Args:
+            indices: must be None for filtered readers, which always operate on
+                their own filtered indices. Passing an explicit list is
+                ambiguous (filtered vs. underlying index space) and raises.
+
         Returns:
             A list of timestamps corresponding to the filtered indices.
+
+        Raises:
+            ValueError: if ``indices`` is provided.
         """
+        if indices is not None:
+            raise ValueError(
+                "FilteredVRSReader.get_timestamp_list does not accept explicit "
+                "indices; it always uses the reader's filtered indices."
+            )
         return self._reader.get_timestamp_list(self._filtered_indices)
 
     def get_timestamp_for_index(self, index: int) -> float:
@@ -252,7 +255,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         )
 
     def set_stream_type_image_conversion(
-        self, recordable_type_id: str, conversion: ImageConversion
+        self, recordable_type_id: Union[int, str], conversion: ImageConversion
     ) -> int:
         """
         Set image conversion policy for streams of a specific device type.
@@ -399,15 +402,19 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     @abstractmethod
     def _read_record(
-        self, indices: List[int], i: Union[int, slice]
+        self, indices: Sequence[int], i: Union[int, slice]
     ) -> Union[VRSRecord, VRSReaderSlice]:
         raise NotImplementedError()
 
     def _record_count_by_type_from_stream_id(self, stream_id: str) -> Mapping[str, int]:
         return self._reader._record_count_by_type_from_stream_id(stream_id)
 
-    def _generate_filtered_indices(self) -> List[int]:
-        return self._reader._generate_filtered_indices(self._record_filter)
+    def _generate_filtered_indices(
+        self, record_filter: Optional[RecordFilter] = None
+    ) -> List[int]:
+        return self._reader._generate_filtered_indices(
+            record_filter or self._record_filter
+        )
 
 
 class SyncFilteredVRSReader(FilteredVRSReader):
@@ -477,16 +484,15 @@ class SyncFilteredVRSReader(FilteredVRSReader):
             )
         return s
 
-    def _read_record(self, indices: List[int], i: Union[int, slice]):
+    def _read_record(self, indices: Sequence[int], i: Union[int, slice]):
         return self._reader._read_record(indices, i)
 
 
 class AsyncFilteredVRSReader(FilteredVRSReader):
     def __init__(self, reader: BaseVRSReader, record_filter: RecordFilter):
         super().__init__(reader, record_filter)
-
-        _async_read_record_op = getattr(self._reader, "_async_read_record", None)
-        if not callable(_async_read_record_op):
+        self._async_read_record = getattr(self._reader, "_async_read_record", None)
+        if not callable(self._async_read_record):
             raise NotImplementedError(
                 "AsyncFilteredVRSReader._reader doesn't have method _async_read_record."
                 " You should only construct AsyncFilteredVRSReader via AsyncVRSReader.filtered_by_fields method."
@@ -512,7 +518,7 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
     async def __getitem__(
         self, i: Union[int, slice]
     ) -> Union[VRSRecord, AsyncVRSReaderSlice]:
-        return await self._reader._async_read_record(self._filtered_indices, i)
+        return await self._async_read_record(self._filtered_indices, i)
 
     def __repr__(self) -> str:
         return (
@@ -528,7 +534,9 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
                 tags_to_justified_table_str(self.file_tags),
                 f"{len(self)}/{len(self._reader)} records are enabled (based on filters)",
                 "Automatic configuration record reading is {}".format(
-                    "enabled" if self._auto_read_configuration_records else "disabled"
+                    "enabled"
+                    if self._reader._auto_read_configuration_records
+                    else "disabled"
                 ),
                 "Available Stream IDs: {}".format(
                     string_of_set(self._reader.stream_ids)
@@ -565,5 +573,5 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
             )
         return s
 
-    def _read_record(self, indices: List[int], i: Union[int, slice]):
+    def _read_record(self, indices: Sequence[int], i: Union[int, slice]):
         raise NotImplementedError()

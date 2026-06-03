@@ -14,11 +14,9 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import List, overload, Sequence, TYPE_CHECKING, Union
+from typing import overload, Sequence, Union
 
-if TYPE_CHECKING:
-    from .reader import AsyncVRSReader, VRSReader
-
+from . import AsyncMultiReader, AsyncReader, MultiReader, Reader
 from .record import VRSRecord
 
 
@@ -28,7 +26,7 @@ class VRSReaderSlice(Sequence):
     filter) and some richer properties like temporal information.
     """
 
-    def __init__(self, path: Union[str, Path], r, indices: List[int]) -> None:
+    def __init__(self, path: Union[str, Path], r, indices: Sequence[int]) -> None:
         self._path = Path(path)
         self._reader = r
         self._indices = indices
@@ -61,7 +59,7 @@ class AsyncVRSReaderSlice(Sequence):
     This should be created only via AsyncVRSReader.async_read_record call.
     """
 
-    def __init__(self, path: Union[str, Path], r, indices: List[int]) -> None:
+    def __init__(self, path: Union[str, Path], r, indices: Sequence[int]) -> None:
         self._path = Path(path)
         self._reader = r
         self._indices = indices
@@ -105,9 +103,9 @@ class AsyncVRSReaderSlice(Sequence):
 
 
 def index_or_slice_records(
-    path: Path,
-    reader: "VRSReader",
-    vrs_indices: List[int],
+    path: Union[str, Path],
+    reader: Union[Reader, MultiReader],
+    vrs_indices: Sequence[int],
     indices: Union[int, slice],
 ) -> Union[VRSRecord, VRSReaderSlice]:
     """Shared logic to index or slice into a VRSReader or VRSReaderSlice. Returns either a
@@ -123,18 +121,17 @@ def index_or_slice_records(
     Returns:
         VRSReaderSlice if the given indices is a slice, otherwise read a record and returns VRSRecord object.
     """
-    if isinstance(indices, int) or hasattr(indices, "__index__"):
+    if isinstance(indices, slice):
+        return VRSReaderSlice(path, reader, vrs_indices[indices])
+    else:
         record = reader.read_record(vrs_indices[indices])
         return VRSRecord(record)
-    else:
-        # A slice or unknown type is passed. Let list handle it directly.
-        return VRSReaderSlice(path, reader, vrs_indices[indices])
 
 
 async def async_index_or_slice_records(
-    path: Path,
-    reader: "AsyncVRSReader",
-    vrs_indices: List[int],
+    path: Union[str, Path],
+    reader: Union[AsyncReader, AsyncMultiReader],
+    vrs_indices: Sequence[int],
     indices: Union[int, slice],
 ) -> Union[VRSRecord, AsyncVRSReaderSlice]:
     """Shared logic to index or slice into a AsyncVRSReader or AsyncVRSReaderSlice. Returns either a
@@ -150,9 +147,8 @@ async def async_index_or_slice_records(
     Returns:
         AsyncVRSReaderSlice if the given indices is a slice, otherwise read a record and returns VRSRecord object.
     """
-    if isinstance(indices, int) or hasattr(indices, "__index__"):
+    if isinstance(indices, slice):
+        return AsyncVRSReaderSlice(path, reader, vrs_indices[indices])
+    else:
         record = await reader.async_read_record(vrs_indices[indices])
         return VRSRecord(record)
-    else:
-        # A slice or unknown type is passed. Let list handle it directly.
-        return AsyncVRSReaderSlice(path, reader, vrs_indices[indices])
