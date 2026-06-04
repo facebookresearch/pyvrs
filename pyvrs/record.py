@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Callable, Generic, overload, Sequence, TypeVar, Union
+from typing import Any, Callable, Generic, overload, Sequence, TypeVar, Union
 
 import numpy as np
 
@@ -92,7 +92,7 @@ class VRSRecord:
         return self._record.timestamp
 
     @property
-    def audio_blocks(self) -> "VRSBlocks":
+    def audio_blocks(self) -> "VRSBlocks[np.ndarray]":
         """The list of audio blocks associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: np.asarray(x[idx]), self._record.audio_blocks),
@@ -100,7 +100,7 @@ class VRSRecord:
         )
 
     @property
-    def audio_specs(self) -> "VRSBlocks":
+    def audio_specs(self) -> "VRSBlocks[Any]":
         """The list of audio block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.audio_specs),
@@ -108,7 +108,7 @@ class VRSRecord:
         )
 
     @property
-    def custom_blocks(self) -> "VRSBlocks":
+    def custom_blocks(self) -> "VRSBlocks[np.ndarray]":
         """The list of custom blocks associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: np.asarray(x[idx]), self._record.custom_blocks),
@@ -116,7 +116,7 @@ class VRSRecord:
         )
 
     @property
-    def custom_block_specs(self) -> "VRSBlocks":
+    def custom_block_specs(self) -> "VRSBlocks[Any]":
         """The list of custom block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.custom_block_specs),
@@ -124,7 +124,7 @@ class VRSRecord:
         )
 
     @property
-    def image_blocks(self) -> "VRSBlocks":
+    def image_blocks(self) -> "VRSBlocks[np.ndarray]":
         """The list of image blocks associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: np.asarray(x[idx]), self._record.image_blocks),
@@ -132,7 +132,7 @@ class VRSRecord:
         )
 
     @property
-    def image_specs(self) -> "VRSBlocks":
+    def image_specs(self) -> "VRSBlocks[Any]":
         """The list of image block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.image_specs),
@@ -140,7 +140,7 @@ class VRSRecord:
         )
 
     @property
-    def metadata_blocks(self) -> "VRSBlocks":
+    def metadata_blocks(self) -> "VRSBlocks[dict[str, Any]]":
         """The list of metadata blocks associated with this record."""
         return VRSBlocks(
             partial(
