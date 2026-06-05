@@ -187,10 +187,7 @@ DEFINE_DATA_PIECE(StringMap, string)
 
 } // namespace
 
-namespace pyvrs {
-// To prevent the inclusion of this expensive header in more than one file, this function exists to
-// trigger a linker error when included more than once. DO NOT MAKE IT INLINE!
-NOINLINE int singleIncludeBreakCheck() {
-  return 0;
-}
-} // namespace pyvrs
+#ifdef PYVRS_INCLUDE_ME_AT_MOST_ONCE
+#error "This expensive header should not be included more than once"
+#endif
+#define PYVRS_INCLUDE_ME_AT_MOST_ONCE
