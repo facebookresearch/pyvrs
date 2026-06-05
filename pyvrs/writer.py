@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import time
-from typing import Dict, List, Sequence, Union
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -92,7 +92,7 @@ class VRSWriter:
             time.sleep(0.1)
         return self._writer.writeRecords(timestamp)
 
-    def _create(self):
+    def _create(self) -> None:
         if not self.file_created:
             self.file_created = True
             if self._writer.create(self.filepath) != 0:
@@ -113,7 +113,7 @@ class VRSWriter:
     # ATTENTION! if you call this API at the wrong time, you can end up with multiple devices with
     # the same id, and end up in a messy situation. Avoid this API if you can!
     def resetNewInstanceIds(self) -> None:
-        return self._writer.resetNewInstanceIds()
+        self._writer.resetNewInstanceIds()
 
 
 class VRSStream:
@@ -125,7 +125,7 @@ class VRSStream:
     ) -> None:
         self.stream = stream
         self.stream.setCompression(compression)
-        self.record_formats: Dict[RecordType, VRSRecordFormat] = {
+        self.record_formats: dict[RecordType, VRSRecordFormat] = {
             RecordType.DATA: VRSRecordFormat(
                 self.stream.createRecordFormat(RecordType.DATA), RecordType.DATA
             ),
@@ -152,8 +152,8 @@ class VRSStream:
     def parse_create_record_params(
         self,
         record_type: RecordType,
-        srcs: Sequence[Union[VRSDataLayout, np.ndarray, np.generic]],
-    ) -> List[Union[np.ndarray, np.generic]]:
+        srcs: Sequence[VRSDataLayout | np.ndarray | np.generic],
+    ) -> list[np.ndarray | np.generic]:
         data_layouts = []
         data_srcs = []
         for src in srcs:
@@ -185,7 +185,7 @@ class VRSStream:
         return data_srcs
 
     def create_config_record(
-        self, timestamp: float, *srcs: Union[VRSDataLayout, np.ndarray, np.generic]
+        self, timestamp: float, *srcs: VRSDataLayout | np.ndarray | np.generic
     ) -> None:
         self.writer.assert_timestamp(timestamp)
         data_srcs = self.parse_create_record_params(RecordType.CONFIGURATION, srcs)
@@ -196,7 +196,7 @@ class VRSStream:
         self.config_record_created = True
 
     def create_data_record(
-        self, timestamp: float, *srcs: Union[VRSDataLayout, np.ndarray, np.generic]
+        self, timestamp: float, *srcs: VRSDataLayout | np.ndarray | np.generic
     ) -> None:
         self.writer.assert_timestamp(timestamp)
 
@@ -209,7 +209,7 @@ class VRSStream:
         )
 
     def create_state_record(
-        self, timestamp: float, *srcs: Union[VRSDataLayout, np.ndarray, np.generic]
+        self, timestamp: float, *srcs: VRSDataLayout | np.ndarray | np.generic
     ) -> None:
         self.writer.assert_timestamp(timestamp)
 
@@ -251,7 +251,7 @@ class VRSRecordFormat:
         json_data_layouts = record_format.getJsonDataLayouts()
         if len(members) != len(json_data_layouts):
             raise ValueError
-        self.data_layouts: List[VRSDataLayout] = [
+        self.data_layouts: list[VRSDataLayout] = [
             VRSDataLayout(member, json_data_layout, data_layout_type, idx)
             for idx, (member, json_data_layout) in enumerate(
                 zip(members, json_data_layouts)

@@ -14,18 +14,8 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    Dict,
-    Iterator,
-    List,
-    Mapping,
-    Optional,
-    overload,
-    Sequence,
-    Set,
-    Union,
-)
+from collections.abc import Iterator, Mapping, Sequence
+from typing import Any, overload
 
 from . import ImageConversion, RecordType
 from .record import VRSRecord
@@ -73,7 +63,7 @@ class BaseVRSReader(ABC):
     def __getitem__(self, i: slice) -> VRSReaderSlice: ...
 
     @abstractmethod
-    def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
+    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
 
     def __iter__(self) -> Iterator[VRSRecord]:
@@ -124,13 +114,13 @@ class BaseVRSReader(ABC):
 
     @property
     @abstractmethod
-    def record_types(self) -> Set[str]:
+    def record_types(self) -> set[str]:
         """Return a set of record types in this VRS file."""
         raise NotImplementedError()
 
     @property
     @abstractmethod
-    def stream_ids(self) -> Set[str]:
+    def stream_ids(self) -> set[str]:
         """Return a set of stream ids in this VRS file."""
         raise NotImplementedError()
 
@@ -169,7 +159,7 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def find_streams(self, recordable_type_id: int, flavor: str = "") -> List[str]:
+    def find_streams(self, recordable_type_id: int, flavor: str = "") -> list[str]:
         """
         Find streams matching recordable type and flavor, and return their stream IDs.
 
@@ -183,7 +173,7 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_stream_info(self, stream_id: str) -> Dict[str, str]:
+    def get_stream_info(self, stream_id: str) -> dict[str, str]:
         """
         Get details about a stream.
 
@@ -210,7 +200,7 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_timestamp_list(self, indices: Optional[List[int]] = None) -> List[float]:
+    def get_timestamp_list(self, indices: list[int] | None = None) -> list[float]:
         """
         Get the list of timestamps corresponding to the given indices.
 
@@ -260,7 +250,7 @@ class BaseVRSReader(ABC):
 
     @abstractmethod
     def set_stream_type_image_conversion(
-        self, recordable_type_id: Union[int, str], conversion: ImageConversion
+        self, recordable_type_id: int | str, conversion: ImageConversion
     ) -> int:
         """
         Set image conversion policy for streams of a specific device type.
@@ -319,8 +309,8 @@ class BaseVRSReader(ABC):
         self,
         stream_id: str,
         timestamp: float,
-        epsilon: Optional[float] = None,
-        record_type: Optional[RecordType] = None,
+        epsilon: float | None = None,
+        record_type: RecordType | None = None,
     ) -> int:
         """
         Get index in filtered records by timestamp.
@@ -346,8 +336,8 @@ class BaseVRSReader(ABC):
         self,
         stream_id: str,
         timestamp: float,
-        epsilon: Optional[float] = None,
-        record_type: Optional[RecordType] = None,
+        epsilon: float | None = None,
+        record_type: RecordType | None = None,
     ) -> VRSRecord:
         """
         Read record by timestamp.
@@ -371,7 +361,7 @@ class BaseVRSReader(ABC):
     @abstractmethod
     def read_prev_record(
         self, stream_id: str, record_type: str, index: int
-    ) -> Optional[VRSRecord]:
+    ) -> VRSRecord | None:
         """
         Read the last record that matches stream_id and record_type and its index is smaller or equal than given index.
 
@@ -388,7 +378,7 @@ class BaseVRSReader(ABC):
     @abstractmethod
     def read_next_record(
         self, stream_id: str, record_type: str, index: int
-    ) -> Optional[VRSRecord]:
+    ) -> VRSRecord | None:
         """
         Read the first record that matches stream_id and record_type and its index is greater or equal than given index.
 
@@ -403,7 +393,7 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _read_record(self, indices: Sequence[int], i: Union[int, slice]):
+    def _read_record(self, indices: Sequence[int], i: int | slice):
         raise NotImplementedError()
 
     @abstractmethod
@@ -412,5 +402,5 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _generate_filtered_indices(self, record_filter: RecordFilter) -> List[int]:
+    def _generate_filtered_indices(self, record_filter: RecordFilter) -> list[int]:
         raise NotImplementedError()

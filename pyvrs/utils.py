@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Callable, Iterable, Mapping
 from fnmatch import fnmatch
-from typing import Any, Callable, Dict, Iterable, Mapping, Set, Tuple, TypeVar
+from typing import Any, TypeVar
 
 from . import recordable_type_id_name
 
@@ -32,8 +33,8 @@ def get_recordable_type_id_name(stream_id: str) -> str:
 
 
 def _filter_set_on_condition(
-    s: Set[T], items: Iterable[T], cond_func: Callable[[T, T], bool]
-) -> Set[T]:
+    s: set[T], items: Iterable[T], cond_func: Callable[[T, T], bool]
+) -> set[T]:
     """Restrict down a set by a list of items and a comparator. For each element in the set, if for
     any item in the items the comparator returns True, the element is retained in the filtered set
     that is returned. Note that this does not mutate the original set, it returns a filtered copy.
@@ -48,8 +49,8 @@ def _filter_set_on_condition(
 
 
 def filter_by_stream_ids(
-    available_stream_ids: Set[str], regex_stream_ids: Iterable[str]
-) -> Set[str]:
+    available_stream_ids: set[str], regex_stream_ids: Iterable[str]
+) -> set[str]:
     """Filter a set of stream_ids based on the provided regex stream_ids.
     Args:
         available_stream_ids: A set of stream_ids in a file.
@@ -63,8 +64,8 @@ def filter_by_stream_ids(
 
 
 def filter_by_record_type(
-    available_record_types: Set[str], requested_record_types: Iterable[str]
-) -> Set[str]:
+    available_record_types: set[str], requested_record_types: Iterable[str]
+) -> set[str]:
     """Filter a set record types based on the provided record types. Filter only succeeds on
     exact matches.
     Args:
@@ -78,7 +79,7 @@ def filter_by_record_type(
     )
 
 
-def string_of_set(s: Set) -> str:
+def string_of_set(s: set) -> str:
     """Return a pretty string representation of a set (with elements ordered)."""
     return "{" + ", ".join(sorted(s)) + "}"
 
@@ -88,7 +89,7 @@ def tags_to_justified_table_str(tags: Mapping[str, Any]) -> str:
     if len(tags) == 0:
         return "File contains no file tags."
     tag_width = max(len(t) for t in tags)
-    table_content = ["{}| {}".format(k.rjust(tag_width), tags[k]) for k in sorted(tags)]
+    table_content = [f"{k.rjust(tag_width)}| {tags[k]}" for k in sorted(tags)]
     table_width = max(len(content) for content in table_content)
     return "\n".join(
         [" FILE TAGS ".center(table_width, "-"), *table_content, "-" * table_width]
@@ -107,13 +108,13 @@ def _unique_string_for_key(name: str, type_: str, dict_: Mapping[str, Any]) -> s
 
 
 def stringify_metadata_keys(
-    metadata_dict: Dict[Tuple[str, str], Any],
-) -> Dict[str, Any]:
+    metadata_dict: dict[tuple[str, str], Any],
+) -> dict[str, Any]:
     r"""remove unambiguous types from metadata dicts. If the type is overloaded, converts to a
     key<type> string representation."""
-    filtered: Dict[str, Any] = {}
-    ambiguous_names: Set[str] = set()
-    removed_types: Dict[str, str] = {}
+    filtered: dict[str, Any] = {}
+    ambiguous_names: set[str] = set()
+    removed_types: dict[str, str] = {}
 
     for (name, type_), value in metadata_dict.items():
         if name in ambiguous_names:

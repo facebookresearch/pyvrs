@@ -15,19 +15,9 @@
 
 import json
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator, Mapping, Sequence
 from pathlib import Path
-from typing import (
-    Any,
-    AsyncIterator,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    overload,
-    Sequence,
-    Set,
-    Union,
-)
+from typing import Any, overload
 
 from . import (
     AsyncMultiReader,
@@ -69,15 +59,15 @@ __all__ = [
 ]
 
 
-PathType = Union[
-    Path,
-    str,
-    List[Path],
-    List[str],
-    Dict[str, Union[int, str, List[str]]],
-    FileSpec,
-    List[FileSpec],
-]
+PathType = (
+    Path
+    | str
+    | list[Path]
+    | list[str]
+    | dict[str, int | str | list[str]]
+    | FileSpec
+    | list[FileSpec]
+)
 
 
 class VRSReader(BaseVRSReader, ABC):
@@ -215,10 +205,10 @@ class VRSReader(BaseVRSReader, ABC):
 
     def _path_to_file_spec(
         self, path: PathType, multi_path: bool
-    ) -> Union[FileSpec, List[FileSpec]]:
+    ) -> FileSpec | list[FileSpec]:
         if multi_path:
-            specs: List[FileSpec] = []
-            if isinstance(path, List):
+            specs: list[FileSpec] = []
+            if isinstance(path, list):
                 for p in path:
                     if isinstance(p, FileSpec):
                         specs.append(p)
@@ -226,18 +216,18 @@ class VRSReader(BaseVRSReader, ABC):
                         specs.append(FileSpec(str(p)))
             elif isinstance(path, FileSpec):
                 specs.append(path)
-            elif isinstance(path, Dict):
+            elif isinstance(path, dict):
                 specs.append(FileSpec(json.dumps(path)))
             else:
                 specs.append(FileSpec(str(path)))
             return specs
         else:
-            if isinstance(path, List):
+            if isinstance(path, list):
                 assert len(path) > 0 and (
                     isinstance(path[0], str) or isinstance(path[0], Path)
                 )
                 return FileSpec(json.dumps({"chunks": path}))
-            elif isinstance(path, Dict):
+            elif isinstance(path, dict):
                 return FileSpec(json.dumps(path))
             elif isinstance(path, str) or isinstance(path, Path):
                 return FileSpec(str(path))
@@ -253,7 +243,7 @@ class VRSReader(BaseVRSReader, ABC):
     @overload
     def __getitem__(self, i: slice) -> VRSReaderSlice: ...
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
+    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
         return self._read_record(range(self.n_records), i)
 
     def __len__(self) -> int:
@@ -272,8 +262,8 @@ class VRSReader(BaseVRSReader, ABC):
                 "Automatic configuration record reading is {}".format(
                     "enabled" if self._auto_read_configuration_records else "disabled"
                 ),
-                "Available Stream IDs: {}".format(string_of_set(self.stream_ids)),
-                "Available Record Types: {}".format(string_of_set(self.record_types)),
+                f"Available Stream IDs: {string_of_set(self.stream_ids)}",
+                f"Available Record Types: {string_of_set(self.record_types)}",
             ]
         )
         if len(self) > 0:
@@ -322,12 +312,12 @@ class VRSReader(BaseVRSReader, ABC):
         return self._n_records
 
     @property
-    def record_types(self) -> Set[str]:
+    def record_types(self) -> set[str]:
         """Return a set of record types in this VRS file."""
         return self._record_types
 
     @property
-    def stream_ids(self) -> Set[str]:
+    def stream_ids(self) -> set[str]:
         """Return a set of stream ids in this VRS file."""
         return self._stream_ids
 
@@ -364,7 +354,7 @@ class VRSReader(BaseVRSReader, ABC):
             RecordableTypeId(recordable_type_id), tag_name, tag_value
         )
 
-    def find_streams(self, recordable_type_id: int, flavor: str = "") -> List[str]:
+    def find_streams(self, recordable_type_id: int, flavor: str = "") -> list[str]:
         """
         Find streams matching recordable type and flavor, and return their stream IDs.
 
@@ -414,7 +404,7 @@ class VRSReader(BaseVRSReader, ABC):
         """
         return self._reader.get_stream_for_serial_number(serial_number)
 
-    def get_stream_info(self, stream_id: str) -> Dict[str, str]:
+    def get_stream_info(self, stream_id: str) -> dict[str, str]:
         """
         Get details about a stream.
 
@@ -451,7 +441,7 @@ class VRSReader(BaseVRSReader, ABC):
         """
         return self._reader.get_records_count(stream_id, record_type)
 
-    def get_timestamp_list(self, indices: Optional[List[int]] = None) -> List[float]:
+    def get_timestamp_list(self, indices: list[int] | None = None) -> list[float]:
         """
         Get the list of timestamps corresponding to the given indices.
 
@@ -476,7 +466,7 @@ class VRSReader(BaseVRSReader, ABC):
             The timestamp corresponding to the index
         """
         if index >= self.n_records:
-            raise IndexError("Index {} is out of range.".format(index))
+            raise IndexError(f"Index {index} is out of range.")
         return self._reader.get_timestamp_for_index(index)
 
     def set_image_conversion(self, conversion: ImageConversion) -> None:
@@ -501,7 +491,7 @@ class VRSReader(BaseVRSReader, ABC):
         self._reader.set_image_conversion(stream_id, conversion)
 
     def set_stream_type_image_conversion(
-        self, recordable_type_id: Union[int, str], conversion: ImageConversion
+        self, recordable_type_id: int | str, conversion: ImageConversion
     ) -> int:
         """
         Set image conversion policy for streams of a specific device type.
@@ -582,8 +572,8 @@ class VRSReader(BaseVRSReader, ABC):
         self,
         stream_id: str,
         timestamp: float,
-        epsilon: Optional[float] = None,
-        record_type: Optional[RecordType] = None,
+        epsilon: float | None = None,
+        record_type: RecordType | None = None,
     ) -> int:
         """
         Get index in filtered records by timestamp.
@@ -624,8 +614,8 @@ class VRSReader(BaseVRSReader, ABC):
         self,
         stream_id: str,
         timestamp: float,
-        epsilon: Optional[float] = None,
-        record_type: Optional[RecordType] = None,
+        epsilon: float | None = None,
+        record_type: RecordType | None = None,
     ) -> VRSRecord:
         """
         Read record by timestamp.
@@ -667,7 +657,7 @@ class VRSReader(BaseVRSReader, ABC):
 
     def read_prev_record(
         self, stream_id: str, record_type: str, index: int
-    ) -> Optional[VRSRecord]:
+    ) -> VRSRecord | None:
         """
         Read the last record that matches stream_id and record_type and its index is smaller or equal than given index.
 
@@ -689,7 +679,7 @@ class VRSReader(BaseVRSReader, ABC):
 
     def read_next_record(
         self, stream_id: str, record_type: str, index: int
-    ) -> Optional[VRSRecord]:
+    ) -> VRSRecord | None:
         """
         Read the first record that matches stream_id and record_type and its index is greater or equal than given index.
 
@@ -710,8 +700,8 @@ class VRSReader(BaseVRSReader, ABC):
         return VRSRecord(record)
 
     def _read_record(
-        self, indices: Sequence[int], i: Union[int, slice]
-    ) -> Union[VRSRecord, VRSReaderSlice]:
+        self, indices: Sequence[int], i: int | slice
+    ) -> VRSRecord | VRSReaderSlice:
         return index_or_slice_records(self._path, self._reader, indices, i)
 
     def _record_count_by_type_from_stream_id(self, stream_id: str) -> Mapping[str, int]:
@@ -724,7 +714,7 @@ class VRSReader(BaseVRSReader, ABC):
         )
         return self._record_counts_by_type[stream_id]
 
-    def _generate_filtered_indices(self, record_filter: RecordFilter) -> List[int]:
+    def _generate_filtered_indices(self, record_filter: RecordFilter) -> list[int]:
         return self._reader.regenerate_enabled_indices(
             record_filter.record_types,
             record_filter.stream_ids,
@@ -736,7 +726,7 @@ class VRSReader(BaseVRSReader, ABC):
     def _get_reader_class(self, multi_path: bool):
         raise NotImplementedError()
 
-    def _open_files(self, multi_path: bool, specs: Union[FileSpec, List[FileSpec]]):
+    def _open_files(self, multi_path: bool, specs: FileSpec | list[FileSpec]):
         # self._path is used only in __str__ method, we use get_easy_path because it provides a good enough summary of the file.
         # Branch on the concrete type of specs rather than the multi_path flag so
         # the path summary stays correct even if the two ever disagree.
@@ -750,10 +740,10 @@ class VRSReader(BaseVRSReader, ABC):
     def filtered_by_fields(
         self,
         *,
-        stream_ids: Optional[Union[Set[str], str]] = None,
-        record_types: Optional[Union[Set[str], str]] = None,
-        min_timestamp: Optional[float] = None,
-        max_timestamp: Optional[float] = None,
+        stream_ids: set[str] | str | None = None,
+        record_types: set[str] | str | None = None,
+        min_timestamp: float | None = None,
+        max_timestamp: float | None = None,
     ) -> "FilteredVRSReader":
         """Filter this reader to only read records with given condition.
 
@@ -797,10 +787,10 @@ class SyncVRSReader(VRSReader):
     def filtered_by_fields(
         self,
         *,
-        stream_ids: Optional[Union[Set[str], str]] = None,
-        record_types: Optional[Union[Set[str], str]] = None,
-        min_timestamp: Optional[float] = None,
-        max_timestamp: Optional[float] = None,
+        stream_ids: set[str] | str | None = None,
+        record_types: set[str] | str | None = None,
+        min_timestamp: float | None = None,
+        max_timestamp: float | None = None,
     ) -> SyncFilteredVRSReader:
         """Filter this reader to only read records with given condition.
 
@@ -862,10 +852,10 @@ class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
 
     def filtered_by_fields(
         self,
-        stream_ids: Optional[Union[Set[str], str]] = None,
-        record_types: Optional[Union[Set[str], str]] = None,
-        min_timestamp: Optional[float] = None,
-        max_timestamp: Optional[float] = None,
+        stream_ids: set[str] | str | None = None,
+        record_types: set[str] | str | None = None,
+        min_timestamp: float | None = None,
+        max_timestamp: float | None = None,
     ) -> AsyncFilteredVRSReader:
         """Filter this reader to only read records with given condition.
 
@@ -927,10 +917,8 @@ class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
     @overload
     async def __getitem__(self, i: slice) -> AsyncVRSReaderSlice: ...
 
-    async def __getitem__(
-        self, i: Union[int, slice]
-    ) -> Union[VRSRecord, AsyncVRSReaderSlice]:
+    async def __getitem__(self, i: int | slice) -> VRSRecord | AsyncVRSReaderSlice:
         return await self._async_read_record(range(self.n_records), i)
 
-    async def _async_read_record(self, indices: Sequence[int], i: Union[int, slice]):
+    async def _async_read_record(self, indices: Sequence[int], i: int | slice):
         return await async_index_or_slice_records(self._path, self._reader, indices, i)

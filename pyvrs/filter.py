@@ -15,7 +15,8 @@
 
 from abc import ABC, abstractmethod
 from bisect import bisect
-from typing import Any, List, Mapping, Optional, overload, Sequence, Set, Union
+from collections.abc import Mapping, Sequence
+from typing import Any, overload
 
 from . import ImageConversion, RecordType
 from .base import BaseVRSReader
@@ -62,7 +63,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
             else self._reader.get_timestamp_for_index(self._filtered_indices[-1])
         )
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
+    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
 
     def __len__(self) -> int:
@@ -100,14 +101,14 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         return len(self._filtered_indices)
 
     @property
-    def record_types(self) -> Set[str]:
+    def record_types(self) -> set[str]:
         """The set of record types that this reader is configured to read, given current
         filters.
         """
         return self._record_filter.record_types
 
     @property
-    def stream_ids(self) -> Set[str]:
+    def stream_ids(self) -> set[str]:
         """The set of stream ids that this reader is configured to read, given current
         filters.
         """
@@ -154,7 +155,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         """
         return self._reader.find_stream(recordable_type_id, tag_name, tag_value)
 
-    def find_streams(self, recordable_type_id: int, flavor: str = "") -> List[str]:
+    def find_streams(self, recordable_type_id: int, flavor: str = "") -> list[str]:
         """
         Find streams matching recordable type and flavor, and return their stream IDs.
         This call isn't affected by the filter.
@@ -193,7 +194,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         """
         return self._reader.get_records_count(stream_id, record_type)
 
-    def get_timestamp_list(self, indices: Optional[List[int]] = None) -> List[float]:
+    def get_timestamp_list(self, indices: list[int] | None = None) -> list[float]:
         """
         Get the list of timestamps for this filtered reader's records.
 
@@ -226,7 +227,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
             The timestamp corresponding to the index
         """
         if index >= len(self._filtered_indices):
-            raise IndexError("Index {} is out of range.".format(index))
+            raise IndexError(f"Index {index} is out of range.")
         return self._reader.get_timestamp_for_index(self._filtered_indices[index])
 
     def set_image_conversion(self, conversion: ImageConversion) -> None:
@@ -255,7 +256,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         )
 
     def set_stream_type_image_conversion(
-        self, recordable_type_id: Union[int, str], conversion: ImageConversion
+        self, recordable_type_id: int | str, conversion: ImageConversion
     ) -> int:
         """
         Set image conversion policy for streams of a specific device type.
@@ -312,8 +313,8 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         self,
         stream_id: str,
         timestamp: float,
-        epsilon: Optional[float] = None,
-        record_type: Optional[RecordType] = None,
+        epsilon: float | None = None,
+        record_type: RecordType | None = None,
     ) -> int:
         """
         Get index in filtered records by timestamp.
@@ -338,8 +339,8 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         self,
         stream_id: str,
         timestamp: float,
-        epsilon: Optional[float] = None,
-        record_type: Optional[RecordType] = None,
+        epsilon: float | None = None,
+        record_type: RecordType | None = None,
     ) -> VRSRecord:
         """
         Read record by timestamp.
@@ -364,7 +365,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     def read_prev_record(
         self, stream_id: str, record_type: str, index: int
-    ) -> Optional[VRSRecord]:
+    ) -> VRSRecord | None:
         """
         Read the last record that matches stream_id and record_type and its index is smaller or equal than given index.
 
@@ -381,7 +382,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     def read_next_record(
         self, stream_id: str, record_type: str, index: int
-    ) -> Optional[VRSRecord]:
+    ) -> VRSRecord | None:
         """
         Read the first record that matches stream_id and record_type and its index is greater or equal than given index.
 
@@ -402,16 +403,16 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     @abstractmethod
     def _read_record(
-        self, indices: Sequence[int], i: Union[int, slice]
-    ) -> Union[VRSRecord, VRSReaderSlice]:
+        self, indices: Sequence[int], i: int | slice
+    ) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
 
     def _record_count_by_type_from_stream_id(self, stream_id: str) -> Mapping[str, int]:
         return self._reader._record_count_by_type_from_stream_id(stream_id)
 
     def _generate_filtered_indices(
-        self, record_filter: Optional[RecordFilter] = None
-    ) -> List[int]:
+        self, record_filter: RecordFilter | None = None
+    ) -> list[int]:
         return self._reader._generate_filtered_indices(
             record_filter or self._record_filter
         )
@@ -428,7 +429,7 @@ class SyncFilteredVRSReader(FilteredVRSReader):
     @overload
     def __getitem__(self, i: slice) -> VRSReaderSlice: ...
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[VRSRecord, VRSReaderSlice]:
+    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
         return self._read_record(self._filtered_indices, i)
 
     def __repr__(self) -> str:
@@ -452,11 +453,11 @@ class SyncFilteredVRSReader(FilteredVRSReader):
                 "Available Stream IDs: {}".format(
                     string_of_set(self._reader.stream_ids)
                 ),
-                "  Enabled Stream IDs: {}".format(string_of_set(self.stream_ids)),
+                f"  Enabled Stream IDs: {string_of_set(self.stream_ids)}",
                 "Available Record Types: {}".format(
                     string_of_set(self._reader.record_types)
                 ),
-                "  Enabled Record Types: {}".format(string_of_set(self.record_types)),
+                f"  Enabled Record Types: {string_of_set(self.record_types)}",
             ]
         )
         if len(self) > 0:
@@ -484,7 +485,7 @@ class SyncFilteredVRSReader(FilteredVRSReader):
             )
         return s
 
-    def _read_record(self, indices: Sequence[int], i: Union[int, slice]):
+    def _read_record(self, indices: Sequence[int], i: int | slice):
         return self._reader._read_record(indices, i)
 
 
@@ -515,9 +516,7 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
     @overload
     async def __getitem__(self, i: slice) -> AsyncVRSReaderSlice: ...
 
-    async def __getitem__(
-        self, i: Union[int, slice]
-    ) -> Union[VRSRecord, AsyncVRSReaderSlice]:
+    async def __getitem__(self, i: int | slice) -> VRSRecord | AsyncVRSReaderSlice:
         return await self._async_read_record(self._filtered_indices, i)
 
     def __repr__(self) -> str:
@@ -541,11 +540,11 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
                 "Available Stream IDs: {}".format(
                     string_of_set(self._reader.stream_ids)
                 ),
-                "  Enabled Stream IDs: {}".format(string_of_set(self.stream_ids)),
+                f"  Enabled Stream IDs: {string_of_set(self.stream_ids)}",
                 "Available Record Types: {}".format(
                     string_of_set(self._reader.record_types)
                 ),
-                "  Enabled Record Types: {}".format(string_of_set(self.record_types)),
+                f"  Enabled Record Types: {string_of_set(self.record_types)}",
             ]
         )
         if len(self) > 0:
@@ -573,5 +572,5 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
             )
         return s
 
-    def _read_record(self, indices: Sequence[int], i: Union[int, slice]):
+    def _read_record(self, indices: Sequence[int], i: int | slice):
         raise NotImplementedError()

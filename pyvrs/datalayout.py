@@ -17,7 +17,7 @@
 import json
 import pprint
 import re
-from typing import Any, Dict
+from typing import Any
 
 from . import RecordType
 
@@ -25,7 +25,7 @@ from . import RecordType
 class VRSDataLayout:
     def __init__(
         self,
-        members: Dict[str, Any] | None,
+        members: dict[str, Any] | None,
         data_layout: str | None,
         data_layout_type: RecordType,
         index: int,
@@ -70,7 +70,7 @@ class VRSDataLayout:
         return self.__setattr__(name, value)
 
 
-def dict_to_str(d: Dict[str, str]) -> str:
+def dict_to_str(d: dict[str, str]) -> str:
     list = []
     if len(d) < 4:
         return "  " + pprint.pformat(d)
@@ -108,7 +108,7 @@ def type_conversion(value: str) -> str:
     if datapiece_typename == "DataPieceValue":
         return type_map[typename]
     if datapiece_typename in ["DataPieceVector", "DataPieceArray"]:
-        return f"List[{type_map[typename]}]"
+        return f"list[{type_map[typename]}]"
     if datapiece_typename == "DataPieceStringMap":
-        return f"Dict[str, {type_map[typename]}]"
+        return f"dict[str, {type_map[typename]}]"
     return "None"

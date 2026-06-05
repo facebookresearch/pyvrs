@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Callable, Sequence
 from functools import partial
-from typing import Any, Callable, Generic, overload, Sequence, TypeVar, Union
+from typing import Any, Generic, overload, TypeVar
 
 import numpy as np
 
@@ -166,7 +167,7 @@ class VRSBlocks(Sequence[T], Generic[T]):
     @overload
     def __getitem__(self, i: slice) -> "VRSBlocks[T]": ...
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[T, "VRSBlocks[T]"]:
+    def __getitem__(self, i: int | slice) -> "T | VRSBlocks[T]":
         if isinstance(i, slice):
             return VRSBlocks(self._get_func, self._range[i])
         else:
