@@ -40,7 +40,7 @@ def _get_sha():
 
 def get_version():
     path = os.path.join(ROOT_DIR, "version.txt")
-    version = open(path, "r").read().strip()
+    version = open(path).read().strip()
 
     if os.getenv("PYVRS_TEST_BUILD"):
         sha = _get_sha()

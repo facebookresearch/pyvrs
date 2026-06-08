@@ -13,17 +13,16 @@
 # limitations under the License.
 
 import argparse
-from typing import Tuple
 
 
-def get_current_version() -> Tuple[str, str]:
-    current_version = open("version.txt", "r").read().strip()
+def get_current_version() -> tuple[str, str]:
+    current_version = open("version.txt").read().strip()
     current_tag = "v" + current_version
     return current_version, current_tag
 
 
-def get_next_version(release_type) -> Tuple[Tuple[int, int, int], str, str]:
-    current_version = open("version.txt", "r").read().strip()
+def get_next_version(release_type) -> tuple[tuple[int, int, int], str, str]:
+    current_version = open("version.txt").read().strip()
     version_list = [int(x) for x in current_version.strip("'").split(".")]
     major, minor, patch = version_list[0], version_list[1], version_list[2]
     if release_type == "patch":
