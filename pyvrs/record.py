@@ -25,6 +25,31 @@ from .utils import stringify_metadata_keys
 T = TypeVar("T")
 
 
+class VRSBlocks(Sequence[T], Generic[T]):
+    """A representation of a list of Record blocks (image, metadata, audio or custom).
+    Accessing elements returns the type directly.
+    """
+
+    def __init__(self, get_func: Callable[[int], T], range_: range) -> None:
+        self._range = range_
+        self._get_func = get_func
+
+    @overload
+    def __getitem__(self, i: int) -> T: ...
+
+    @overload
+    def __getitem__(self, i: slice) -> "VRSBlocks[T]": ...
+
+    def __getitem__(self, i: int | slice) -> "T | VRSBlocks[T]":
+        if isinstance(i, slice):
+            return VRSBlocks(self._get_func, self._range[i])
+        else:
+            return self._get_func(self._range[i])
+
+    def __len__(self) -> int:
+        return len(self._range)
+
+
 class VRSRecord:
     """Represents a single VRS Record."""
 
@@ -93,7 +118,7 @@ class VRSRecord:
         return self._record.timestamp
 
     @property
-    def audio_blocks(self) -> "VRSBlocks[np.ndarray]":
+    def audio_blocks(self) -> VRSBlocks[np.ndarray]:
         """The list of audio blocks associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: np.asarray(x[idx]), self._record.audio_blocks),
@@ -101,7 +126,7 @@ class VRSRecord:
         )
 
     @property
-    def audio_specs(self) -> "VRSBlocks[Any]":
+    def audio_specs(self) -> VRSBlocks[Any]:
         """The list of audio block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.audio_specs),
@@ -109,7 +134,7 @@ class VRSRecord:
         )
 
     @property
-    def custom_blocks(self) -> "VRSBlocks[np.ndarray]":
+    def custom_blocks(self) -> VRSBlocks[np.ndarray]:
         """The list of custom blocks associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: np.asarray(x[idx]), self._record.custom_blocks),
@@ -117,7 +142,7 @@ class VRSRecord:
         )
 
     @property
-    def custom_block_specs(self) -> "VRSBlocks[Any]":
+    def custom_block_specs(self) -> VRSBlocks[Any]:
         """The list of custom block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.custom_block_specs),
@@ -125,7 +150,7 @@ class VRSRecord:
         )
 
     @property
-    def image_blocks(self) -> "VRSBlocks[np.ndarray]":
+    def image_blocks(self) -> VRSBlocks[np.ndarray]:
         """The list of image blocks associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: np.asarray(x[idx]), self._record.image_blocks),
@@ -133,7 +158,7 @@ class VRSRecord:
         )
 
     @property
-    def image_specs(self) -> "VRSBlocks[Any]":
+    def image_specs(self) -> VRSBlocks[Any]:
         """The list of image block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.image_specs),
@@ -141,7 +166,7 @@ class VRSRecord:
         )
 
     @property
-    def metadata_blocks(self) -> "VRSBlocks[dict[str, Any]]":
+    def metadata_blocks(self) -> VRSBlocks[dict[str, Any]]:
         """The list of metadata blocks associated with this record."""
         return VRSBlocks(
             partial(
@@ -150,28 +175,3 @@ class VRSRecord:
             ),
             range(self.n_metadata_blocks),
         )
-
-
-class VRSBlocks(Sequence[T], Generic[T]):
-    """A representation of a list of Record blocks (image, metadata, audio or custom).
-    Accessing elements returns the type directly.
-    """
-
-    def __init__(self, get_func: Callable[[int], T], range_: range) -> None:
-        self._range = range_
-        self._get_func = get_func
-
-    @overload
-    def __getitem__(self, i: int) -> T: ...
-
-    @overload
-    def __getitem__(self, i: slice) -> "VRSBlocks[T]": ...
-
-    def __getitem__(self, i: int | slice) -> "T | VRSBlocks[T]":
-        if isinstance(i, slice):
-            return VRSBlocks(self._get_func, self._range[i])
-        else:
-            return self._get_func(self._range[i])
-
-    def __len__(self) -> int:
-        return len(self._range)
