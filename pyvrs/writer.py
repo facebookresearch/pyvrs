@@ -38,7 +38,9 @@ MAX_QUEUE_BYTE_SIZE = 600 * 1024 * 1024  # 600MB
 
 
 class TimestampOrderWriteException(Exception):
-    def __init__(self, last_flushed_timestamp: float, provided_timestamp: float):
+    def __init__(
+        self, last_flushed_timestamp: float, provided_timestamp: float
+    ) -> None:
         self.message = f"""
             Timestamps must be greater than the timestamp of the last flush operation. Timestamp {provided_timestamp} is less than the last flushed timestamp of {last_flushed_timestamp}
         """

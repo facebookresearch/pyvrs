@@ -66,8 +66,8 @@ class VRSDataLayout:
     def __getitem__(self, name):
         return self.__getattr__(name)
 
-    def __setitem__(self, name, value):
-        return self.__setattr__(name, value)
+    def __setitem__(self, name: str, value: object) -> None:
+        self.__setattr__(name, value)
 
 
 def dict_to_str(d: dict[str, str]) -> str:
