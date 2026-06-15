@@ -60,20 +60,22 @@ class AsyncVRSReaderSlice(Sequence):
     This should be created only via AsyncVRSReader.async_read_record call.
     """
 
+    _index: int = 0
+
     def __init__(self, path: str | Path, r, indices: Sequence[int]) -> None:
         self._path = Path(path)
         self._reader = r
         self._indices = indices
 
     def __aiter__(self):
-        self.index = 0
+        self._index = 0
         return self
 
     async def __anext__(self):
-        if self.index == len(self):
+        if self._index == len(self):
             raise StopAsyncIteration
-        result = await self[self.index]
-        self.index += 1
+        result = await self[self._index]
+        self._index += 1
         return result
 
     @overload
