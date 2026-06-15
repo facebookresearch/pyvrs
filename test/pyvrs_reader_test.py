@@ -141,8 +141,8 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
         stream_id = "100-1"
         record_type = "configuration"
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids=[stream_id],
-            record_types=[record_type],
+            stream_ids={stream_id},
+            record_types={record_type},
             min_timestamp=min_timestamp,
         )
         for record in filtered_reader:
@@ -225,7 +225,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
 
     def test_get_record_index_by_time(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids="100-1", record_types=["data"]
+            stream_ids="100-1", record_types={"data"}
         )
         self.assertEqual(filtered_reader.get_record_index_by_time("100-1", 1.0), 0)
         self.assertEqual(filtered_reader.get_record_index_by_time("100-1", 1.2), 5)
@@ -283,7 +283,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
 
     def test_get_timestamp_list(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids=["100-1"], record_types=["data"]
+            stream_ids={"100-1"}, record_types={"data"}
         )
         timestamp_list = filtered_reader.get_timestamp_list()
         self.assertEqual(len(timestamp_list), 500)
@@ -293,7 +293,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
 
     def test_read_next_record(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids=["100-1"], record_types=["data"]
+            stream_ids={"100-1"}, record_types={"data"}
         )
         record = filtered_reader.read_next_record("100-2", "data", 1)
         self.assertEqual(record.stream_id, "100-2")
@@ -312,7 +312,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
 
     def test_get_image_spec(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids=["100-1"], record_types=["data"]
+            stream_ids={"100-1"}, record_types={"data"}
         )
         # 3rd record in 100-1 is the first record with image
         record = filtered_reader[3]
@@ -340,7 +340,7 @@ class TestReadMultiChannelImage(unittest.TestCase):
     def test_grayscale_images(self) -> None:
         stream_ids = self.reader.find_streams(100, "test/synthetic/grey8")
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids=stream_ids, record_types={"data"}
+            stream_ids=set(stream_ids), record_types={"data"}
         )
 
         for record in filtered_reader:
@@ -356,7 +356,7 @@ class TestReadMultiChannelImage(unittest.TestCase):
     def test_rgb8_images(self) -> None:
         stream_ids = self.reader.find_streams(100, "test/synthetic/rgb8")
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids=stream_ids, record_types={"data"}
+            stream_ids=set(stream_ids), record_types={"data"}
         )
         for record in filtered_reader:
             if not record.image_blocks:
@@ -372,7 +372,7 @@ class TestReadMultiChannelImage(unittest.TestCase):
     def test_depth32_images(self):
         stream_ids = self.reader.find_streams(100, "test/synthetic/depth32f")
         filtered_reader = self.reader.filtered_by_fields(
-            stream_ids=stream_ids, record_types={"data"}
+            stream_ids=set(stream_ids), record_types={"data"}
         )
         for record in filtered_reader:
             if not record.image_blocks:
