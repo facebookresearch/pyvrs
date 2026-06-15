@@ -19,7 +19,7 @@ from pyvrs.utils import stringify_metadata_keys
 
 
 class TestMetadataStringKeys(unittest.TestCase):
-    def test_basic_stringify_types(self):
+    def test_basic_stringify_types(self) -> None:
         self.assertEqual(
             stringify_metadata_keys(
                 {("varnamea", "typenamea"): "aval", ("varnameb", "typenameb"): "bval"}
@@ -27,7 +27,7 @@ class TestMetadataStringKeys(unittest.TestCase):
             {"varnamea": "aval", "varnameb": "bval"},
         )
 
-    def test_stringify_types_with_collision(self):
+    def test_stringify_types_with_collision(self) -> None:
         self.assertEqual(
             stringify_metadata_keys(
                 {
@@ -43,7 +43,7 @@ class TestMetadataStringKeys(unittest.TestCase):
             },
         )
 
-    def test_stringify_types_with_ambiguity(self):
+    def test_stringify_types_with_ambiguity(self) -> None:
         self.assertEqual(
             stringify_metadata_keys(
                 {

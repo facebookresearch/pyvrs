@@ -59,7 +59,7 @@ def rgbx_float_to_rgb8(block: np.ndarray, channel: int) -> np.ndarray:
 
 
 class TestVRSTestDataExists(unittest.TestCase):
-    def test_test_recording_path_is_file(self):
+    def test_test_recording_path_is_file(self) -> None:
         self.assertTrue(test_recording_path().is_file())
 
 
@@ -71,61 +71,61 @@ class TestVRSTestDataExists(unittest.TestCase):
     ],
 )
 class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
             auto_read_configuration_records=True,
             multi_path=self.multi_path,
         )
 
-    def test_len_of_reader_is_number_of_records(self):
+    def test_len_of_reader_is_number_of_records(self) -> None:
         self.assertEqual(len(self.reader), 9538)
 
-    def test_len_of_available_record_types(self):
+    def test_len_of_available_record_types(self) -> None:
         self.assertEqual(len(self.reader.record_types), 3)
 
-    def test_len_of_available_stream_ids(self):
+    def test_len_of_available_stream_ids(self) -> None:
         self.assertEqual(len(self.reader.stream_ids), 19)
 
-    def test_n_enabled_same_as_len(self):
+    def test_n_enabled_same_as_len(self) -> None:
         self.assertEqual(self.reader.n_records, len(self.reader))
 
-    def test_accessing_first_record_returns_VRSRecord(self):
+    def test_accessing_first_record_returns_VRSRecord(self) -> None:
         self.assertIsInstance(self.reader[0], VRSRecord)
 
-    def test_accessing_last_record_by_negative_one(self):
+    def test_accessing_last_record_by_negative_one(self) -> None:
         self.assertEqual(
             self.reader[-1].record_index, self.reader[len(self.reader) - 1].record_index
         )
 
-    def test_accessing_second_to_last_record_by_negative_two(self):
+    def test_accessing_second_to_last_record_by_negative_two(self) -> None:
         self.assertEqual(
             self.reader[-2].record_index, self.reader[len(self.reader) - 2].record_index
         )
 
-    def test_iterating_all_records_in_timestamp_order(self):
+    def test_iterating_all_records_in_timestamp_order(self) -> None:
         prev_timestamp = -9999999
         for record in self.reader:
             self.assertGreaterEqual(record.timestamp, prev_timestamp)
             prev_timestamp = record.timestamp
 
-    def test_filter_by_record_type_only_iterates_that_type(self):
+    def test_filter_by_record_type_only_iterates_that_type(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(record_types="configuration")
         for record in filtered_reader:
             self.assertEqual(record.record_type, "configuration")
 
-    def test_filter_by_stream_ids_only_iterates_that_id(self):
+    def test_filter_by_stream_ids_only_iterates_that_id(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(stream_ids="100-1")
         for record in filtered_reader:
             self.assertEqual(record.stream_id, "100-1")
 
-    def test_filter_by_timestamp_min_only_iterates_bigger_timestamps(self):
+    def test_filter_by_timestamp_min_only_iterates_bigger_timestamps(self) -> None:
         min_timestamp = 5.0
         filtered_reader = self.reader.filtered_by_fields(min_timestamp=min_timestamp)
         for record in filtered_reader:
             self.assertTrue(record.timestamp >= min_timestamp)
 
-    def test_filter_by_timestamps(self):
+    def test_filter_by_timestamps(self) -> None:
         min_timestamp = 5.0
         max_timestamp = 8.0
         filtered_reader = self.reader.filtered_by_fields(
@@ -136,7 +136,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
             self.assertTrue(record.timestamp >= min_timestamp)
             self.assertTrue(record.timestamp <= max_timestamp)
 
-    def test_filter_by_stream_id_record_type_and_timestamp(self):
+    def test_filter_by_stream_id_record_type_and_timestamp(self) -> None:
         min_timestamp = 5.0
         stream_id = "100-1"
         record_type = "configuration"
@@ -150,27 +150,27 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
             self.assertEqual(record.stream_id, stream_id)
             self.assertEqual(record.record_type, record_type)
 
-    def test_filter_by_stream_ids_by_recordable_type_id(self):
+    def test_filter_by_stream_ids_by_recordable_type_id(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(stream_ids="100*")
         expected_stream_ids = set()
         for i in range(1, 20):
             expected_stream_ids.add(f"100-{i}")
         self.assertEqual(filtered_reader.stream_ids, expected_stream_ids)
 
-    def test_filter_by_stream_ids_still_in_timestamp_order(self):
+    def test_filter_by_stream_ids_still_in_timestamp_order(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(stream_ids="100-1")
         prev_timestamp = -9999999
         for record in filtered_reader:
             self.assertGreaterEqual(record.timestamp, prev_timestamp)
             prev_timestamp = record.timestamp
 
-    def test_filtering_impacts_len(self):
+    def test_filtering_impacts_len(self) -> None:
         l1 = len(self.reader)
         filtered_reader = self.reader.filtered_by_fields(record_types="configuration")
         l2 = len(filtered_reader)
         self.assertLess(l2, l1)
 
-    def test_filtered_len_equal_to_iteration_count(self):
+    def test_filtered_len_equal_to_iteration_count(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(record_types="configuration")
         _i = 0
         for _i, _ in enumerate(filtered_reader):
@@ -182,48 +182,48 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
     #     with self.assertRaises(ValueError):
     #         self.reader.filtered_by_fields(record_types="notavalidtype")
 
-    def test_reset_filter_restores_len(self):
+    def test_reset_filter_restores_len(self) -> None:
         full_len = 9538
         config_len = 19
         self.assertEqual(len(self.reader), full_len)
         filtered_reader = self.reader.filtered_by_fields(record_types="configuration")
         self.assertEqual(len(filtered_reader), config_len)
 
-    def test_slicing_returns_VRSReaderSlice(self):
+    def test_slicing_returns_VRSReaderSlice(self) -> None:
         self.assertIsInstance(self.reader[:2], VRSReaderSlice)
 
-    def test_slicing_at_start(self):
+    def test_slicing_at_start(self) -> None:
         [a, b] = self.reader[:2]
         self.assertEqual(a.record_index, self.reader[0].record_index)
         self.assertEqual(b.record_index, self.reader[1].record_index)
 
-    def test_slicing_at_end(self):
+    def test_slicing_at_end(self) -> None:
         [c, d] = self.reader[-2:]
         self.assertEqual(c.record_index, self.reader[-2].record_index)
         self.assertEqual(d.record_index, self.reader[-1].record_index)
 
-    def test_reversing_always_decrements(self):
+    def test_reversing_always_decrements(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(stream_ids="100-1")
         prev_timestamp = 999999999
         for record in filtered_reader[::-1]:
             self.assertLessEqual(record.timestamp, prev_timestamp)
             prev_timestamp = record.timestamp
 
-    def test_filtering_by_stream_ids_still_in_timestamp_order(self):
+    def test_filtering_by_stream_ids_still_in_timestamp_order(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(stream_ids="100-1")
         prev_timestamp = -9999999
         for record in filtered_reader:
             self.assertGreaterEqual(record.timestamp, prev_timestamp)
             prev_timestamp = record.timestamp
 
-    def test_get_records_count(self):
+    def test_get_records_count(self) -> None:
         self.assertEqual(
             self.reader.get_records_count("100-1", RecordType.CONFIGURATION), 1
         )
         self.assertEqual(self.reader.get_records_count("100-1", RecordType.DATA), 500)
         self.assertEqual(self.reader.get_records_count("100-1", RecordType.STATE), 1)
 
-    def test_get_record_index_by_time(self):
+    def test_get_record_index_by_time(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
             stream_ids="100-1", record_types=["data"]
         )
@@ -253,7 +253,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
         with self.assertRaises(TimestampNotFoundError):
             filtered_reader.get_record_index_by_time("100-1", 5.18443736, 1e-6)
 
-    def test_read_recod_by_time(self):
+    def test_read_recod_by_time(self) -> None:
         record = self.reader.read_record_by_time("100-1", 4.52)
         self.assertEqual(record.record_index, 1710)
         self.assertEqual(record.stream_id, "100-1")
@@ -281,7 +281,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
         with self.assertRaises(TimestampNotFoundError):
             self.reader.read_record_by_time("100-1", 4.2011, 1e-3)
 
-    def test_get_timestamp_list(self):
+    def test_get_timestamp_list(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
             stream_ids=["100-1"], record_types=["data"]
         )
@@ -291,7 +291,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
         self.assertAlmostEqual(timestamp_list[1], 1.04, 3)
         self.assertAlmostEqual(timestamp_list[-1], 20.960, 3)
 
-    def test_read_next_record(self):
+    def test_read_next_record(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
             stream_ids=["100-1"], record_types=["data"]
         )
@@ -310,7 +310,7 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
         record = filtered_reader.read_next_record("100-1", "data", 500)
         self.assertEqual(record, None)
 
-    def test_get_image_spec(self):
+    def test_get_image_spec(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(
             stream_ids=["100-1"], record_types=["data"]
         )
@@ -330,14 +330,14 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
     ],
 )
 class TestReadMultiChannelImage(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
             auto_read_configuration_records=True,
             multi_path=self.multi_path,
         )
 
-    def test_grayscale_images(self):
+    def test_grayscale_images(self) -> None:
         stream_ids = self.reader.find_streams(100, "test/synthetic/grey8")
         filtered_reader = self.reader.filtered_by_fields(
             stream_ids=stream_ids, record_types={"data"}
@@ -353,7 +353,7 @@ class TestReadMultiChannelImage(unittest.TestCase):
             self.assertEqual(img.shape[1], 200)
             self.assertEqual(img.dtype, np.uint8)
 
-    def test_rgb8_images(self):
+    def test_rgb8_images(self) -> None:
         stream_ids = self.reader.find_streams(100, "test/synthetic/rgb8")
         filtered_reader = self.reader.filtered_by_fields(
             stream_ids=stream_ids, record_types={"data"}
@@ -393,14 +393,14 @@ class TestReadMultiChannelImage(unittest.TestCase):
     ],
 )
 class TestStreamTags(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
             auto_read_configuration_records=True,
             multi_path=self.multi_path,
         )
 
-    def test_find_stream(self):
+    def test_find_stream(self) -> None:
         self.assertEqual(
             self.reader.find_streams(100, "test/synthetic/grey8"), ["100-1"]
         )
@@ -412,7 +412,7 @@ class TestStreamTags(unittest.TestCase):
 
 
 class TestSyncVRSReader(unittest.TestCase):
-    def test_json_path(self):
+    def test_json_path(self) -> None:
         path = {"chunks": [str(test_recording_path())], "storage": "diskfile"}
         reader = SyncVRSReader(path, auto_read_configuration_records=True)
 
@@ -427,14 +427,14 @@ class TestSyncVRSReader(unittest.TestCase):
     ],
 )
 class TestImageConversion(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
             auto_read_configuration_records=True,
             multi_path=self.multi_path,
         )
 
-    def test_set_image_conversion_policy(self):
+    def test_set_image_conversion_policy(self) -> None:
         self.reader.set_image_conversion(ImageConversion.NORMALIZE)
         self.assertEqual(
             self.reader.set_stream_type_image_conversion(
@@ -446,10 +446,10 @@ class TestImageConversion(unittest.TestCase):
 
 
 class TestPixelFormat(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.reader = SyncVRSReader(test_recording_path())
 
-    def test_pixel_format_auto_conversion(self):
+    def test_pixel_format_auto_conversion(self) -> None:
         filtered_reader = self.reader.filtered_by_fields(record_types="data")
         self.assertEqual(len(filtered_reader), 9500)
         self.assertEqual(len(filtered_reader.stream_ids), 19)
