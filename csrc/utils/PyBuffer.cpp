@@ -257,6 +257,7 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
       case vrs::PixelFormat::RGBA8:
       case vrs::PixelFormat::BAYER8_RGGB:
       case vrs::PixelFormat::BAYER8_BGGR:
+      case vrs::PixelFormat::BAYER8_GBRG:
         pixelFormat = py::format_descriptor<uint8_t>::format();
         break;
       case vrs::PixelFormat::UNDEFINED:
@@ -518,6 +519,7 @@ py::buffer_info convertImageBlockBuffer(ImageBuffer& block) {
       case PixelFormat::RGB_IR_RAW_4X4:
       case PixelFormat::BAYER8_RGGB:
       case PixelFormat::BAYER8_BGGR:
+      case PixelFormat::BAYER8_GBRG:
         pixelFormat = py::format_descriptor<uint8_t>::format();
         break;
       case PixelFormat::UNDEFINED:
