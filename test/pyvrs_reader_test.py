@@ -71,6 +71,8 @@ class TestVRSTestDataExists(unittest.TestCase):
     ],
 )
 class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
+    multi_path: bool = False
+
     def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
@@ -330,6 +332,8 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
     ],
 )
 class TestReadMultiChannelImage(unittest.TestCase):
+    multi_path: bool = False
+
     def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
@@ -369,7 +373,7 @@ class TestReadMultiChannelImage(unittest.TestCase):
             self.assertEqual(img.shape[2], 3)
             self.assertEqual(img.dtype, np.uint8)
 
-    def test_depth32_images(self):
+    def test_depth32_images(self) -> None:
         stream_ids = self.reader.find_streams(100, "test/synthetic/depth32f")
         filtered_reader = self.reader.filtered_by_fields(
             stream_ids=set(stream_ids), record_types={"data"}
@@ -393,6 +397,8 @@ class TestReadMultiChannelImage(unittest.TestCase):
     ],
 )
 class TestStreamTags(unittest.TestCase):
+    multi_path: bool = False
+
     def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
@@ -427,6 +433,8 @@ class TestSyncVRSReader(unittest.TestCase):
     ],
 )
 class TestImageConversion(unittest.TestCase):
+    multi_path: bool = False
+
     def setUp(self) -> None:
         self.reader = SyncVRSReader(
             test_recording_path(),
