@@ -28,13 +28,13 @@ __all__ = [
     "VRSWriter",
 ]
 
-RECORD_TYPE_TO_STR = {
+RECORD_TYPE_TO_STR: dict[RecordType, str] = {
     RecordType.DATA: "Data",
     RecordType.CONFIGURATION: "Configuration",
     RecordType.STATE: "State",
 }
 
-MAX_QUEUE_BYTE_SIZE = 600 * 1024 * 1024  # 600MB
+MAX_QUEUE_BYTE_SIZE: int = 600 * 1024 * 1024  # 600MB
 
 
 class TimestampOrderWriteException(Exception):
@@ -53,7 +53,7 @@ class VRSWriter:
         self.filepath = filepath
         self.file_created = False
         # Timestamp is supposed to be positive value.
-        self.last_flushed_timestamp = -float("inf")
+        self.last_flushed_timestamp: float = -float("inf")
 
     def create_stream(
         self,
