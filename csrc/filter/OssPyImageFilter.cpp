@@ -44,14 +44,14 @@ ImageRecordInfo OssPyAsyncImageFilter::getImageRecordInfo(int64_t recordIndex) {
                            : ImageRecordInfo();
 }
 
-py::object OssPyAsyncImageFilter::getRecordMetadata(int64_t recordIndex) {
+std::optional<PyRecord> OssPyAsyncImageFilter::getRecordMetadata(int64_t recordIndex) {
   if (collectMetadata_) {
     unique_lock<mutex> lock(mutex_);
     const auto& iter = metadata_.find(recordIndex);
     if (iter != metadata_.end()) {
-      return py::cast(iter->second);
+      return iter->second;
     }
-    return py::none();
+    return std::nullopt;
   }
   throw std::runtime_error("need_record_metadata() has not been called to collect metadata.");
 }

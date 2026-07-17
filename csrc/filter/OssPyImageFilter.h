@@ -18,6 +18,7 @@
 
 #include <pybind11/detail/common.h>
 #include <mutex>
+#include <optional>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -64,7 +65,7 @@ class OssPyAsyncImageFilter : public OssAsyncImageFilter {
 
   ImageRecordInfo getImageRecordInfo(int64_t recordIndex);
 
-  py::object getRecordMetadata(int64_t recordIndex);
+  std::optional<PyRecord> getRecordMetadata(int64_t recordIndex);
 
   bool writeProcessedImage(ImageBuffer& imageBuffer);
 
