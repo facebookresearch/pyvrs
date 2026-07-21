@@ -79,7 +79,7 @@ def filter_by_record_type(
     )
 
 
-def string_of_set(s: set) -> str:
+def string_of_set(s: set[str]) -> str:
     """Return a pretty string representation of a set (with elements ordered)."""
     return "{" + ", ".join(sorted(s)) + "}"
 

@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import json
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Mapping, Sequence
 from pathlib import Path
+from types import TracebackType
 from typing import Any, overload
 
 from . import (
@@ -175,13 +178,13 @@ class VRSReader(BaseVRSReader, ABC):
         # Read all streams so we can index absolutely for the lifetime of
         # this reader
         self._reader.enable_all_streams()
-        self._n_records = self._reader.get_available_records_size()
-        self._record_types = self._reader.get_available_record_types()
-        self._stream_ids = self._reader.get_available_stream_ids()
-        self._min_timestamp = self._reader.get_min_available_timestamp()
-        self._max_timestamp = self._reader.get_max_available_timestamp()
+        self._n_records: int = self._reader.get_available_records_size()
+        self._record_types: set[str] = self._reader.get_available_record_types()
+        self._stream_ids: set[str] = self._reader.get_available_stream_ids()
+        self._min_timestamp: float = self._reader.get_min_available_timestamp()
+        self._max_timestamp: float = self._reader.get_max_available_timestamp()
 
-        self._record_counts_by_type = {}
+        self._record_counts_by_type: dict[str, Mapping[str, int]] = {}
         self._auto_read_configuration_records = auto_read_configuration_records
 
     def _init_reader(
@@ -189,7 +192,7 @@ class VRSReader(BaseVRSReader, ABC):
         path: PathType,
         auto_read_configuration_records: bool,
         multi_path: bool,
-    ):
+    ) -> None:
         file_spec = self._path_to_file_spec(path, multi_path)
         reader_cls = self._get_reader_class(multi_path=multi_path)
         self._reader = reader_cls(auto_read_configuration_records)
@@ -199,7 +202,12 @@ class VRSReader(BaseVRSReader, ABC):
         """Context manager entry point."""
         return self
 
-    def __exit__(self, type, value, traceback) -> None:
+    def __exit__(
+        self,
+        type: type[BaseException] | None,
+        value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         """Context manager exit point."""
         self.close()
 
@@ -233,7 +241,7 @@ class VRSReader(BaseVRSReader, ABC):
                 return FileSpec(str(path))
             return path
 
-    def close(self):
+    def close(self) -> None:
         """explicitly close the VRS reader without waiting for Python garbage collection."""
         return self._reader.close()
 
@@ -726,7 +734,7 @@ class VRSReader(BaseVRSReader, ABC):
     def _get_reader_class(self, multi_path: bool):
         raise NotImplementedError()
 
-    def _open_files(self, multi_path: bool, specs: FileSpec | list[FileSpec]):
+    def _open_files(self, multi_path: bool, specs: FileSpec | list[FileSpec]) -> None:
         # self._path is used only in __str__ method, we use get_easy_path because it provides a good enough summary of the file.
         # Branch on the concrete type of specs rather than the multi_path flag so
         # the path summary stays correct even if the two ever disagree.
