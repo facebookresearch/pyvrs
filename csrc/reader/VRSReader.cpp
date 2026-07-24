@@ -1118,12 +1118,21 @@ void pybind_vrsreader(py::module& m) {
   py::class_<PyVRSReader>(m, "Reader")
       .def(py::init<>())
       .def(py::init<bool>())
-      .def(py::init<const string&>())
-      .def(py::init<const PyFileSpec&>())
-      .def(py::init<const string&, bool>())
-      .def(py::init<const PyFileSpec&, bool>())
-      .def("open", py::overload_cast<const string&>(&PyVRSReader::open))
-      .def("open", py::overload_cast<const PyFileSpec&>(&PyVRSReader::open))
+      // Release the GIL for constructors and open() overloads that open a file:
+      // open() runs synchronous I/O purely in C++ and does
+      // not touch Python state, so holding the GIL serializes all concurrent opens.
+      .def(py::init<const string&>(), py::call_guard<py::gil_scoped_release>())
+      .def(py::init<const PyFileSpec&>(), py::call_guard<py::gil_scoped_release>())
+      .def(py::init<const string&, bool>(), py::call_guard<py::gil_scoped_release>())
+      .def(py::init<const PyFileSpec&, bool>(), py::call_guard<py::gil_scoped_release>())
+      .def(
+          "open",
+          py::overload_cast<const string&>(&PyVRSReader::open),
+          py::call_guard<py::gil_scoped_release>())
+      .def(
+          "open",
+          py::overload_cast<const PyFileSpec&>(&PyVRSReader::open),
+          py::call_guard<py::gil_scoped_release>())
       .def("close", &PyVRSReader::close)
       .def("set_encoding", &PyVRSReader::setEncoding)
       .def("get_encoding", &PyVRSReader::getEncoding)
