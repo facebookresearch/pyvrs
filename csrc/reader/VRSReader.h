@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include <pybind11/typing.h>
+
 #include <vrs/RecordFileReader.h>
 #include <vrs/RecordFormat.h>
 #include <vrs/os/Platform.h>
@@ -173,7 +175,7 @@ class OssVRSReader : public VRSReaderBase {
   string getEncoding();
 
   /// Get an array of chunks, as a pair of path & size in bytes.
-  py::object getFileChunks() const;
+  py::typing::List<py::typing::Dict<py::str, py::object>> getFileChunks() const;
 
   /// Get the last timestamp present on any data records in VRS file.
   /// @return Last timestamp for data records
@@ -197,12 +199,12 @@ class OssVRSReader : public VRSReaderBase {
   // ---------------------------------------------------------------------------
   /// Get the file's tags.
   /// @return The file's tags.
-  py::object getTags();
+  py::typing::Dict<py::str, py::str> getTags();
 
   /// Get a stream's tags.
   /// @param streamId: VRS stream id of the stream to get the tags of.
   /// @return The stream's tags.
-  py::object getTags(const string& streamId);
+  py::typing::Dict<py::str, py::str> getTags(const string& streamId);
 
   /// Get the list of recordable ids each representing a stream.
   /// @return Vector of recordable ids for each VRS stream.
@@ -320,7 +322,7 @@ class OssVRSReader : public VRSReaderBase {
   /// "stream_id": streamId of the record.
   /// "record_type": record type, either "configuration", "state" or "data".
   /// "serial_number": stream serial number.
-  py::object getAllRecordsInfo();
+  py::typing::List<py::typing::Dict<py::str, py::object>> getAllRecordsInfo();
 
   /// Get basic record information for a number of records in the file.
   /// @param firstIndex: index of the first record to provide information for
@@ -331,7 +333,9 @@ class OssVRSReader : public VRSReaderBase {
   /// "stream_id": streamId of the record.
   /// "record_type": record type, either "configuration", "state" or "data".
   /// "serial_number": stream serial number.
-  py::object getRecordsInfo(int32_t firstIndex, int32_t count);
+  py::typing::List<py::typing::Dict<py::str, py::object>> getRecordsInfo(
+      int32_t firstIndex,
+      int32_t count);
 
   /// Get basic record information for all the read enabled streams' records.
   /// @return a Python list of dictionaries, each including the following information:

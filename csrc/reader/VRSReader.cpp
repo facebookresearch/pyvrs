@@ -26,6 +26,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/typing.h>
 
 #define DEFAULT_LOG_CHANNEL "VRSReader"
 #include <logging/Log.h>
@@ -112,7 +113,7 @@ string OssVRSReader::getEncoding() {
   return encoding_;
 }
 
-py::object OssVRSReader::getFileChunks() const {
+py::typing::List<py::typing::Dict<py::str, py::object>> OssVRSReader::getFileChunks() const {
   vector<pair<string, int64_t>> chunks = reader_.getFileChunks();
   Py_ssize_t listSize = static_cast<Py_ssize_t>(chunks.size());
   PyObject* list = PyList_New(listSize);
@@ -123,7 +124,7 @@ py::object OssVRSReader::getFileChunks() const {
         index++,
         Py_BuildValue("{s:s,s:i}", "path", chunk.first.c_str(), "size", chunk.second));
   }
-  return pyWrap(list);
+  return py::reinterpret_steal<py::typing::List<py::typing::Dict<py::str, py::object>>>(list);
 }
 
 double OssVRSReader::getMaxAvailableTimestamp() {
@@ -362,7 +363,7 @@ bool BaseVRSReaderStreamPlayer::setBlock(
   return checkSkipTrailingBlocks(record, blockIndex);
 }
 
-py::object OssVRSReader::getTags() {
+py::typing::Dict<py::str, py::str> OssVRSReader::getTags() {
   const auto& tags = reader_.getTags();
   PyObject* dic = _PyDict_NewPresized(tags.size());
   string errors;
@@ -372,10 +373,10 @@ py::object OssVRSReader::getTags() {
         unicodeDecode(iter.first, encoding_, errors),
         unicodeDecode(iter.second, encoding_, errors));
   }
-  return pyWrap(dic);
+  return py::reinterpret_steal<py::typing::Dict<py::str, py::str>>(dic);
 }
 
-py::object OssVRSReader::getTags(const string& streamId) {
+py::typing::Dict<py::str, py::str> OssVRSReader::getTags(const string& streamId) {
   StreamId id = getStreamId(streamId);
   const auto& tags = reader_.getTags(id).user;
   PyObject* dic = _PyDict_NewPresized(tags.size());
@@ -386,7 +387,7 @@ py::object OssVRSReader::getTags(const string& streamId) {
         unicodeDecode(iter.first, encoding_, errors),
         unicodeDecode(iter.second, encoding_, errors));
   }
-  return pyWrap(dic);
+  return py::reinterpret_steal<py::typing::Dict<py::str, py::str>>(dic);
 }
 
 vector<string> OssVRSReader::getStreams() {
@@ -621,7 +622,7 @@ int OssVRSReader::getRecordsCount(const string& streamId, const Record::Type rec
   return recordCountsByTypeAndStreamIdMap_[id][lowercaseTypeName(recordType)];
 }
 
-py::object OssVRSReader::getAllRecordsInfo() {
+py::typing::List<py::typing::Dict<py::str, py::object>> OssVRSReader::getAllRecordsInfo() {
   const vector<IndexRecord::RecordInfo>& index = reader_.getIndex();
   Py_ssize_t listSize = static_cast<Py_ssize_t>(index.size());
   PyObject* list = PyList_New(listSize);
@@ -631,10 +632,12 @@ py::object OssVRSReader::getAllRecordsInfo() {
     PyList_SetItem(list, recordIndex, pyRecordInfo);
     recordIndex++;
   }
-  return pyWrap(list);
+  return py::reinterpret_steal<py::typing::List<py::typing::Dict<py::str, py::object>>>(list);
 }
 
-py::object OssVRSReader::getRecordsInfo(int32_t firstIndex, int32_t count) {
+py::typing::List<py::typing::Dict<py::str, py::object>> OssVRSReader::getRecordsInfo(
+    int32_t firstIndex,
+    int32_t count) {
   const vector<IndexRecord::RecordInfo>& index = reader_.getIndex();
   size_t first = static_cast<size_t>(firstIndex);
   if (first >= index.size()) {
@@ -650,7 +653,7 @@ py::object OssVRSReader::getRecordsInfo(int32_t firstIndex, int32_t count) {
     auto pyRecordInfo = getRecordInfo(reader_, index[sourceIndex], sourceIndex);
     PyList_SetItem(list, recordIndex, pyRecordInfo);
   }
-  return pyWrap(list);
+  return py::reinterpret_steal<py::typing::List<py::typing::Dict<py::str, py::object>>>(list);
 }
 
 py::object OssVRSReader::getEnabledStreamsRecordsInfo() {
