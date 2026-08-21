@@ -71,6 +71,9 @@ PathType = (
     | FileSpec
     | list[FileSpec]
 )
+ReaderClass = (
+    type[Reader] | type[MultiReader] | type[AsyncReader] | type[AsyncMultiReader]
+)
 
 
 class VRSReader(BaseVRSReader, ABC):
@@ -194,7 +197,7 @@ class VRSReader(BaseVRSReader, ABC):
         multi_path: bool,
     ) -> None:
         file_spec = self._path_to_file_spec(path, multi_path)
-        reader_cls = self._get_reader_class(multi_path=multi_path)
+        reader_cls = self._get_reader_class(multi_path)
         self._reader = reader_cls(auto_read_configuration_records)
         self._open_files(multi_path, file_spec)
 
@@ -249,9 +252,13 @@ class VRSReader(BaseVRSReader, ABC):
     def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
-    def __getitem__(self, i: slice) -> VRSReaderSlice: ...
+    def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> VRSReaderSlice: ...
 
-    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
+    def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         return self._read_record(range(self.n_records), i)
 
     def __len__(self) -> int:
@@ -708,7 +715,7 @@ class VRSReader(BaseVRSReader, ABC):
         return VRSRecord(record)
 
     def _read_record(
-        self, indices: Sequence[int], i: int | slice
+        self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
     ) -> VRSRecord | VRSReaderSlice:
         return index_or_slice_records(self._path, self._reader, indices, i)
 
@@ -731,7 +738,7 @@ class VRSReader(BaseVRSReader, ABC):
         )
 
     @abstractmethod
-    def _get_reader_class(self, multi_path: bool):
+    def _get_reader_class(self, multi_path: bool) -> ReaderClass:
         raise NotImplementedError()
 
     def _open_files(self, multi_path: bool, specs: FileSpec | list[FileSpec]) -> None:
@@ -777,14 +784,8 @@ class VRSReader(BaseVRSReader, ABC):
 
 
 class SyncVRSReader(VRSReader):
-    def _get_reader_class(self, multi_path: bool):
-        """Returns pybind reader class to construct based on the parameter.
-        This will return either, vrsbindings.Reader, MultiReader.
-        """
-        if multi_path:
-            return MultiReader
-        else:
-            return Reader
+    def _get_reader_class(self, multi_path: bool) -> type[Reader] | type[MultiReader]:
+        return MultiReader if multi_path else Reader
 
     def __repr__(self) -> str:
         return (
@@ -846,11 +847,10 @@ class SyncVRSReader(VRSReader):
 class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
     _index: int = 0
 
-    def _get_reader_class(self, multi_path: bool):
-        if multi_path:
-            return AsyncMultiReader
-        else:
-            return AsyncReader
+    def _get_reader_class(
+        self, multi_path: bool
+    ) -> type[AsyncReader] | type[AsyncMultiReader]:
+        return AsyncMultiReader if multi_path else AsyncReader
 
     def __repr__(self) -> str:
         return (
@@ -923,10 +923,16 @@ class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
     async def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
-    async def __getitem__(self, i: slice) -> AsyncVRSReaderSlice: ...
+    async def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> AsyncVRSReaderSlice: ...
 
-    async def __getitem__(self, i: int | slice) -> VRSRecord | AsyncVRSReaderSlice:
+    async def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | AsyncVRSReaderSlice:
         return await self._async_read_record(range(self.n_records), i)
 
-    async def _async_read_record(self, indices: Sequence[int], i: int | slice):
+    async def _async_read_record(
+        self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | AsyncVRSReaderSlice:
         return await async_index_or_slice_records(self._path, self._reader, indices, i)

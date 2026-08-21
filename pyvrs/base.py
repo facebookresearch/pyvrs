@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Mapping, Sequence
 from typing import Any, overload
@@ -24,7 +26,9 @@ from .slice import VRSReaderSlice
 
 
 class BaseVRSReader(ABC):
-    """A Pythonic reader for VRS files. Behaves as a filterable list - has a length
+    """Common interface for whole-file and filtered VRS readers.
+
+    A reader behaves as a filterable list - has a length
     (number of records), can be indexed to retrieve VRSRecords, and can be iterated
     over and sliced just like a regular Python list. Significant file reads are
     only done when record state is queried, so it remains performant even for larger
@@ -56,14 +60,23 @@ class BaseVRSReader(ABC):
         - AsyncFilteredVRSReader: Asynchronous version of FilteredVRSReader, same difference as SyncVRSReader vs AsyncVRSReader.
     """
 
+    _path: str
+    _auto_read_configuration_records: bool
+
     @overload
+    @abstractmethod
     def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
-    def __getitem__(self, i: slice) -> VRSReaderSlice: ...
+    @abstractmethod
+    def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> VRSReaderSlice: ...
 
     @abstractmethod
-    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
+    def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
 
     def __iter__(self) -> Iterator[VRSRecord]:
@@ -393,7 +406,9 @@ class BaseVRSReader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _read_record(self, indices: Sequence[int], i: int | slice):
+    def _read_record(
+        self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
 
     @abstractmethod

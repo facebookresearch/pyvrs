@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from bisect import bisect
-from collections.abc import Mapping, Sequence
-from typing import Any, overload
+from collections.abc import Awaitable, Callable, Mapping, Sequence
+from typing import Any, cast, overload
 
 from . import ImageConversion, RecordType
 from .base import BaseVRSReader
@@ -28,6 +30,11 @@ from .utils import (
     string_of_set,
     tags_to_justified_table_str,
 )
+
+type _AsyncReadRecord = Callable[
+    [Sequence[int], int | slice[int | None, int | None, int | None]],
+    Awaitable[VRSRecord | AsyncVRSReaderSlice],
+]
 
 __all__ = [
     "FilteredVRSReader",
@@ -42,7 +49,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
     Note that you can't `re-filter` an already filtered VRSReader.
     """
 
-    def __init__(self, reader: BaseVRSReader, record_filter: RecordFilter):
+    def __init__(self, reader: BaseVRSReader, record_filter: RecordFilter) -> None:
         """
         Args:
             reader: reader object for the whole VRS file (i.e. without any filters)
@@ -50,20 +57,26 @@ class FilteredVRSReader(BaseVRSReader, ABC):
         """
         self._reader = reader
         self._record_filter = record_filter
+        self._path: str = reader._path
+        self._auto_read_configuration_records: bool = (
+            reader._auto_read_configuration_records
+        )
 
-        self._filtered_indices = self._generate_filtered_indices()
-        self._min_timestamp = (
+        self._filtered_indices: list[int] = self._generate_filtered_indices()
+        self._min_timestamp: float = (
             0
             if len(self._filtered_indices) == 0
             else self._reader.get_timestamp_for_index(self._filtered_indices[0])
         )
-        self._max_timestamp = (
+        self._max_timestamp: float = (
             0
             if len(self._filtered_indices) == 0
             else self._reader.get_timestamp_for_index(self._filtered_indices[-1])
         )
 
-    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
+    def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
 
     def __len__(self) -> int:
@@ -403,7 +416,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
 
     @abstractmethod
     def _read_record(
-        self, indices: Sequence[int], i: int | slice
+        self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
     ) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
 
@@ -427,28 +440,30 @@ class SyncFilteredVRSReader(FilteredVRSReader):
     def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
-    def __getitem__(self, i: slice) -> VRSReaderSlice: ...
+    def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> VRSReaderSlice: ...
 
-    def __getitem__(self, i: int | slice) -> VRSRecord | VRSReaderSlice:
+    def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         return self._read_record(self._filtered_indices, i)
 
     def __repr__(self) -> str:
         return (
-            f"SyncFilteredVRSReader({self._reader._path!r}, "
-            f"auto_read_configuration_records={self._reader._auto_read_configuration_records!r})"
+            f"SyncFilteredVRSReader({self._path!r}, "
+            f"auto_read_configuration_records={self._auto_read_configuration_records!r})"
             f"filter={self._record_filter!r}"
         )
 
     def __str__(self) -> str:
         s = "\n".join(
             [
-                self._reader._path,
+                self._path,
                 tags_to_justified_table_str(self.file_tags),
                 f"{len(self)}/{len(self._reader)} records are enabled (based on filters)",
                 "Automatic configuration record reading is {}".format(
-                    "enabled"
-                    if self._reader._auto_read_configuration_records
-                    else "disabled"
+                    "enabled" if self._auto_read_configuration_records else "disabled"
                 ),
                 "Available Stream IDs: {}".format(
                     string_of_set(self._reader.stream_ids)
@@ -485,25 +500,31 @@ class SyncFilteredVRSReader(FilteredVRSReader):
             )
         return s
 
-    def _read_record(self, indices: Sequence[int], i: int | slice):
+    def _read_record(
+        self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         return self._reader._read_record(indices, i)
 
 
 class AsyncFilteredVRSReader(FilteredVRSReader):
-    def __init__(self, reader: BaseVRSReader, record_filter: RecordFilter):
+    _index: int = 0
+    _async_read_record: _AsyncReadRecord
+
+    def __init__(self, reader: BaseVRSReader, record_filter: RecordFilter) -> None:
         super().__init__(reader, record_filter)
-        self._async_read_record = getattr(self._reader, "_async_read_record", None)
-        if not callable(self._async_read_record):
+        async_read_record = getattr(self._reader, "_async_read_record", None)
+        if async_read_record is None or not callable(async_read_record):
             raise NotImplementedError(
                 "AsyncFilteredVRSReader._reader doesn't have method _async_read_record."
                 " You should only construct AsyncFilteredVRSReader via AsyncVRSReader.filtered_by_fields method."
             )
+        self._async_read_record = cast(_AsyncReadRecord, async_read_record)
 
-    def __aiter__(self):
+    def __aiter__(self) -> "AsyncFilteredVRSReader":
         self._index = 0
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> VRSRecord:
         if self._index == len(self):
             raise StopAsyncIteration
         result = await self[self._index]
@@ -514,28 +535,30 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
     async def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
-    async def __getitem__(self, i: slice) -> AsyncVRSReaderSlice: ...
+    async def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> AsyncVRSReaderSlice: ...
 
-    async def __getitem__(self, i: int | slice) -> VRSRecord | AsyncVRSReaderSlice:
+    async def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | AsyncVRSReaderSlice:
         return await self._async_read_record(self._filtered_indices, i)
 
     def __repr__(self) -> str:
         return (
-            f"AsyncFilteredVRSReader({self._reader._path!r}, "
-            f"auto_read_configuration_records={self._reader._auto_read_configuration_records!r})"
+            f"AsyncFilteredVRSReader({self._path!r}, "
+            f"auto_read_configuration_records={self._auto_read_configuration_records!r})"
             f"filter={self._record_filter!r}"
         )
 
     def __str__(self) -> str:
         s = "\n".join(
             [
-                self._reader._path,
+                self._path,
                 tags_to_justified_table_str(self.file_tags),
                 f"{len(self)}/{len(self._reader)} records are enabled (based on filters)",
                 "Automatic configuration record reading is {}".format(
-                    "enabled"
-                    if self._reader._auto_read_configuration_records
-                    else "disabled"
+                    "enabled" if self._auto_read_configuration_records else "disabled"
                 ),
                 "Available Stream IDs: {}".format(
                     string_of_set(self._reader.stream_ids)
@@ -572,5 +595,7 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
             )
         return s
 
-    def _read_record(self, indices: Sequence[int], i: int | slice):
+    def _read_record(
+        self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         raise NotImplementedError()
