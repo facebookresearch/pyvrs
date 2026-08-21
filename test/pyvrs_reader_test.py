@@ -298,14 +298,17 @@ class TestTestRecordingReadingWithAutoConfigTrue(unittest.TestCase):
             stream_ids={"100-1"}, record_types={"data"}
         )
         record = filtered_reader.read_next_record("100-2", "data", 1)
+        assert record is not None
         self.assertEqual(record.stream_id, "100-2")
         self.assertEqual(record.record_index, 58)
 
         record = filtered_reader.read_next_record("100-2", "data", 5)
+        assert record is not None
         self.assertEqual(record.stream_id, "100-2")
         self.assertEqual(record.record_index, 134)
 
         record = filtered_reader.read_next_record("100-2", "data", 10)
+        assert record is not None
         self.assertEqual(record.stream_id, "100-2")
         self.assertEqual(record.record_index, 229)
 
@@ -419,7 +422,10 @@ class TestStreamTags(unittest.TestCase):
 
 class TestSyncVRSReader(unittest.TestCase):
     def test_json_path(self) -> None:
-        path = {"chunks": [str(test_recording_path())], "storage": "diskfile"}
+        path: dict[str, list[str] | int | str] = {
+            "chunks": [str(test_recording_path())],
+            "storage": "diskfile",
+        }
         reader = SyncVRSReader(path, auto_read_configuration_records=True)
 
         self.assertEqual(len(reader), 9538)
@@ -467,7 +473,8 @@ class TestPixelFormat(unittest.TestCase):
             ).convert("RGB")
             for j in range(len(filtered_reader.stream_ids)):
                 idx = i * len(filtered_reader.stream_ids) + j
-                pixel_format = filtered_reader[idx].image_specs[0]["pixel_format"]
+                record = filtered_reader[idx]
+                pixel_format = record.image_specs[0].pixel_format
                 if (
                     "raw10" in pixel_format
                     or pixel_format == "rgb_ir_4x4"
@@ -475,22 +482,18 @@ class TestPixelFormat(unittest.TestCase):
                 ):
                     continue
                 elif "10" in pixel_format:
-                    img = Image.fromarray(
-                        np.uint8(filtered_reader[idx].image_blocks[0] // 4)
-                    )
+                    img = Image.fromarray(np.uint8(record.image_blocks[0] // 4))
                 elif "12" in pixel_format:
-                    img = Image.fromarray(
-                        np.uint8(filtered_reader[idx].image_blocks[0] // 16)
-                    )
+                    img = Image.fromarray(np.uint8(record.image_blocks[0] // 16))
                 elif pixel_format == "rgb32F":
-                    block = rgbx_float_to_rgb8(filtered_reader[idx].image_blocks[0], 3)
+                    block = rgbx_float_to_rgb8(record.image_blocks[0], 3)
                     img = Image.fromarray(block)
                 elif pixel_format == "rgba32F":
-                    block = rgbx_float_to_rgb8(filtered_reader[idx].image_blocks[0], 4)
+                    block = rgbx_float_to_rgb8(record.image_blocks[0], 4)
                     img = Image.fromarray(block)
 
                 else:
-                    img = Image.fromarray(filtered_reader[idx].image_blocks[0])
+                    img = Image.fromarray(record.image_blocks[0])
                 img = img.convert("RGB")
                 self.assertEqual(grey8, img)
 

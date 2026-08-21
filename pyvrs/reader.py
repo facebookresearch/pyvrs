@@ -785,7 +785,9 @@ class VRSReader(BaseVRSReader, ABC):
 
 class SyncVRSReader(VRSReader):
     def _get_reader_class(self, multi_path: bool) -> type[Reader] | type[MultiReader]:
-        return MultiReader if multi_path else Reader
+        if multi_path:
+            return MultiReader
+        return Reader
 
     def __repr__(self) -> str:
         return (
@@ -850,7 +852,9 @@ class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
     def _get_reader_class(
         self, multi_path: bool
     ) -> type[AsyncReader] | type[AsyncMultiReader]:
-        return AsyncMultiReader if multi_path else AsyncReader
+        if multi_path:
+            return AsyncMultiReader
+        return AsyncReader
 
     def __repr__(self) -> str:
         return (
