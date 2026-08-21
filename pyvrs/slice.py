@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 from pathlib import Path
 from typing import overload
@@ -27,7 +29,9 @@ class VRSReaderSlice(Sequence):
     filter) and some richer properties like temporal information.
     """
 
-    def __init__(self, path: str | Path, r, indices: Sequence[int]) -> None:
+    def __init__(
+        self, path: str | Path, r: Reader | MultiReader, indices: Sequence[int]
+    ) -> None:
         self._path = Path(path)
         self._reader = r
         self._indices = indices
@@ -36,9 +40,13 @@ class VRSReaderSlice(Sequence):
     def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
-    def __getitem__(self, i: slice) -> "VRSReaderSlice": ...
+    def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> VRSReaderSlice: ...
 
-    def __getitem__(self, i: int | slice) -> "VRSRecord | VRSReaderSlice":
+    def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | VRSReaderSlice:
         return index_or_slice_records(self._path, self._reader, self._indices, i)
 
     def __len__(self) -> int:
@@ -62,16 +70,21 @@ class AsyncVRSReaderSlice(Sequence):
 
     _index: int = 0
 
-    def __init__(self, path: str | Path, r, indices: Sequence[int]) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        r: AsyncReader | AsyncMultiReader,
+        indices: Sequence[int],
+    ) -> None:
         self._path = Path(path)
         self._reader = r
         self._indices = indices
 
-    def __aiter__(self):
+    def __aiter__(self) -> AsyncVRSReaderSlice:
         self._index = 0
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> VRSRecord:
         if self._index == len(self):
             raise StopAsyncIteration
         result = await self[self._index]
@@ -82,9 +95,13 @@ class AsyncVRSReaderSlice(Sequence):
     async def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
-    async def __getitem__(self, i: slice) -> "AsyncVRSReaderSlice": ...
+    async def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> AsyncVRSReaderSlice: ...
 
-    async def __getitem__(self, i: int | slice) -> "VRSRecord | AsyncVRSReaderSlice":
+    async def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> VRSRecord | AsyncVRSReaderSlice:
         return await async_index_or_slice_records(
             self._path, self._reader, self._indices, i
         )
@@ -107,7 +124,7 @@ def index_or_slice_records(
     path: str | Path,
     reader: Reader | MultiReader,
     vrs_indices: Sequence[int],
-    indices: int | slice,
+    indices: int | slice[int | None, int | None, int | None],
 ) -> VRSRecord | VRSReaderSlice:
     """Shared logic to index or slice into a VRSReader or VRSReaderSlice. Returns either a
     VRSReaderSlice (if i is a slice or iterable) or a VRSRecord (if i is an integer).
@@ -133,7 +150,7 @@ async def async_index_or_slice_records(
     path: str | Path,
     reader: AsyncReader | AsyncMultiReader,
     vrs_indices: Sequence[int],
-    indices: int | slice,
+    indices: int | slice[int | None, int | None, int | None],
 ) -> VRSRecord | AsyncVRSReaderSlice:
     """Shared logic to index or slice into a AsyncVRSReader or AsyncVRSReaderSlice. Returns either a
     AsyncVRSReaderSlice (if i is a slice or iterable) or a VRSRecord (if i is an integer).

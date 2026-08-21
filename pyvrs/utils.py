@@ -108,7 +108,7 @@ def _unique_string_for_key(name: str, type_: str, dict_: Mapping[str, Any]) -> s
 
 
 def stringify_metadata_keys(
-    metadata_dict: dict[tuple[str, str], Any],
+    metadata_dict: dict[tuple[str, str], object],
 ) -> dict[str, Any]:
     r"""remove unambiguous types from metadata dicts. If the type is overloaded, converts to a
     key<type> string representation."""

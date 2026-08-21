@@ -13,14 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from collections.abc import Callable, Sequence
 from functools import partial
-from typing import Any, Generic, overload, TypeVar
+from typing import Any, Generic, overload, TYPE_CHECKING, TypeVar
 
 import numpy as np
 
 from . import VRSRecord as _VRSRecord
 from .utils import stringify_metadata_keys
+
+if TYPE_CHECKING:
+    from vrsbindings import AudioContentBlockSpec, ContentBlock, ImageContentBlockSpec
 
 T = TypeVar("T")
 
@@ -38,9 +43,13 @@ class VRSBlocks(Sequence[T], Generic[T]):
     def __getitem__(self, i: int) -> T: ...
 
     @overload
-    def __getitem__(self, i: slice) -> "VRSBlocks[T]": ...
+    def __getitem__(
+        self, i: slice[int | None, int | None, int | None]
+    ) -> VRSBlocks[T]: ...
 
-    def __getitem__(self, i: int | slice) -> "T | VRSBlocks[T]":
+    def __getitem__(
+        self, i: int | slice[int | None, int | None, int | None]
+    ) -> T | VRSBlocks[T]:
         if isinstance(i, slice):
             return VRSBlocks(self._get_func, self._range[i])
         else:
@@ -62,7 +71,7 @@ class VRSRecord:
     def __str__(self) -> str:
         return self._record.__str__()
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str) -> object:
         return self._record[key]
 
     @property
@@ -126,7 +135,7 @@ class VRSRecord:
         )
 
     @property
-    def audio_specs(self) -> VRSBlocks[Any]:
+    def audio_specs(self) -> VRSBlocks[AudioContentBlockSpec]:
         """The list of audio block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.audio_specs),
@@ -142,7 +151,7 @@ class VRSRecord:
         )
 
     @property
-    def custom_block_specs(self) -> VRSBlocks[Any]:
+    def custom_block_specs(self) -> VRSBlocks[ContentBlock]:
         """The list of custom block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.custom_block_specs),
@@ -158,7 +167,7 @@ class VRSRecord:
         )
 
     @property
-    def image_specs(self) -> VRSBlocks[Any]:
+    def image_specs(self) -> VRSBlocks[ImageContentBlockSpec]:
         """The list of image block specs associated with this record."""
         return VRSBlocks(
             partial(lambda x, idx: x[idx], self._record.image_specs),
