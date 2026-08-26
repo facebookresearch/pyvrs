@@ -21,6 +21,9 @@
 namespace pyvrs {
 namespace py = pybind11;
 
+/// Register the writer API and its opaque native Recordable attachment type.
+///
+/// @param m Module receiving the bindings.
 void pybind_writer(py::module& m);
 
 } // namespace pyvrs

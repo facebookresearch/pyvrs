@@ -115,6 +115,10 @@ void VRSWriter::setTag(const std::string& tagName, const std::string& tagValue) 
   writer_.setTag(tagName, tagValue);
 }
 
+void VRSWriter::addRecordable(Recordable* recordable) {
+  writer_.addRecordable(recordable);
+}
+
 int VRSWriter::writeRecords(double maxTimestamp) {
   return writer_.writeRecordsAsync(maxTimestamp);
 }

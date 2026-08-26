@@ -74,6 +74,12 @@ class VRSWriter {
 
   void setTag(const std::string& tagName, const std::string& tagValue);
 
+  /// Attach a non-owned native recordable before creating the output file.
+  ///
+  /// The caller must keep recordable alive until this writer is closed. The
+  /// Python binding enforces that contract with py::keep_alive<1, 2>.
+  ///
+  /// @param recordable Recordable to include in the output file.
   void addRecordable(Recordable* recordable);
 
   int writeRecords(double maxTimestamp);

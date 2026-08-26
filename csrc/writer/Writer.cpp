@@ -73,6 +73,9 @@ using namespace vrs;
       }));
 
 void pybind_writer(py::module& m) {
+  py::class_<vrs::Recordable>(
+      m, "Recordable", "Opaque native VRS recordable. Instances are provided by native producers.");
+
   py::class_<pyvrs::DataPieceWrapper>(m, "DataPieceWrapper").def(py::init<>());
 
   py::class_<pyvrs::DataPieceStringWrapper, pyvrs::DataPieceWrapper>(m, "DataPieceStringWrapper")
@@ -132,6 +135,18 @@ void pybind_writer(py::module& m) {
           &pyvrs::VRSWriter::createFlavoredStream,
           py::return_value_policy::reference)
       .def("setTag", &pyvrs::VRSWriter::setTag)
+      .def(
+          "addRecordable",
+          [](pyvrs::VRSWriter& writer, vrs::Recordable& recordable) {
+            writer.addRecordable(&recordable);
+          },
+          py::arg("recordable"),
+          py::keep_alive<1, 2>(),
+          R"doc(Attach a native recordable before file creation and retain it through close.
+
+Args:
+    recordable: The native recordable to include in this writer's output.
+)doc")
       .def("writeRecords", &pyvrs::VRSWriter::writeRecords)
       .def("getBackgroundThreadQueueByteSize", &pyvrs::VRSWriter::getBackgroundThreadQueueByteSize)
       .def("close", &pyvrs::VRSWriter::close)

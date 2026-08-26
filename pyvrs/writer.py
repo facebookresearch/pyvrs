@@ -18,7 +18,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from . import CompressionPreset, RecordFormat, RecordType, Stream, Writer
+from . import CompressionPreset, Recordable, RecordFormat, RecordType, Stream, Writer
 from .datalayout import VRSDataLayout
 
 __all__ = [
@@ -72,6 +72,21 @@ class VRSWriter:
         if self.file_created:
             raise Exception("Tags should be set before file is created.")
         self._writer.setTag(tag_name, tag_value)
+
+    def add_recordable(self, recordable: Recordable) -> None:
+        """Attach a native recordable before the output file is created.
+
+        The writer retains the native recordable through ``close()``.
+
+        Args:
+            recordable: Opaque native recordable to include in this file.
+
+        Raises:
+            RuntimeError: If a flush has already created the output file.
+        """
+        if self.file_created:
+            raise RuntimeError("Recordables must be added before file creation.")
+        self._writer.addRecordable(recordable)
 
     def assert_timestamp(self, timestamp: float) -> None:
         if self.last_flushed_timestamp > timestamp:
