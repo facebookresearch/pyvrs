@@ -26,6 +26,7 @@
 #include <vrs/RecordFileReader.h>
 #include <vrs/RecordFormat.h>
 #include <vrs/os/Platform.h>
+#include <vrs/utils/PixelFrameOptions.h>
 #include <vrs/utils/VideoRecordFormatStreamPlayer.h>
 
 #include "VRSReaderBase.h"
@@ -60,10 +61,16 @@ PyObject* dataLayoutToPyDict(DataLayout& dl, const string& encoding);
 /// @brief BaseVRSReaderStreamPlayer class to factorize VRSReader and MultiVRSReader handling.
 class BaseVRSReaderStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlayer {
  protected:
+  struct CachedNormalizeOptions {
+    PixelFormat sourcePixelFormat{PixelFormat::UNDEFINED};
+    utils::NormalizeOptions options;
+  };
+
   virtual bool checkSkipTrailingBlocks(const CurrentRecord& record, size_t blockIndex) = 0;
   virtual ImageConversion getImageConversion(const CurrentRecord& record) = 0;
 
   static PyObject* readDataLayout(DataLayout& dl, const string& encoding);
+  void captureNormalizeOptionsConfig(const CurrentRecord& record, DataLayout& dl);
 
   /// Set the data we read from VRS record into ContentBlockBuffer (ContentBlockBuffer is a
   /// class that's exposed to Python via protocol_buffer).
@@ -81,6 +88,9 @@ class BaseVRSReaderStreamPlayer : public vrs::utils::VideoRecordFormatStreamPlay
   int recordReadComplete(RecordFileReader& reader, const IndexRecord::RecordInfo& rinfo) override {
     return readMissingFrames(reader, rinfo, true);
   }
+
+  map<StreamId, utils::NormalizeOptionsConfig> streamNormalizeConfigs_;
+  map<StreamId, CachedNormalizeOptions> streamNormalizeOptions_;
 };
 
 /// @brief The VRSReader class

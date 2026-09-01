@@ -214,10 +214,21 @@ PyObject* BaseVRSReaderStreamPlayer::readDataLayout(DataLayout& dl, const string
   return dataLayoutToPyDict(dl, encoding);
 }
 
+void BaseVRSReaderStreamPlayer::captureNormalizeOptionsConfig(
+    const CurrentRecord& record,
+    DataLayout& dl) {
+  streamNormalizeConfigs_[record.streamId] =
+      utils::PixelFrame::captureNormalizeOptionsConfig(*record.fileReader, record.streamId, dl);
+  streamNormalizeOptions_.erase(record.streamId);
+}
+
 bool OssVRSReader::VRSReaderStreamPlayer::onDataLayoutRead(
     const CurrentRecord& record,
     size_t blkIdx,
     DataLayout& dl) {
+  if (record.recordType == Record::Type::CONFIGURATION) {
+    captureNormalizeOptionsConfig(record, dl);
+  }
   reader_.lastRecord_.datalayoutBlocks.emplace_back(pyWrap(readDataLayout(dl, reader_.encoding_)));
   return checkSkipTrailingBlocks(record, blkIdx);
 }
@@ -346,7 +357,21 @@ bool BaseVRSReaderStreamPlayer::setBlock(
               imageConversion == ImageConversion::NormalizeGrey8) {
             shared_ptr<utils::PixelFrame> convertedFrame;
             bool grey16supported = (imageConversion == ImageConversion::Normalize);
-            utils::PixelFrame::normalizeFrame(frame, convertedFrame, grey16supported);
+            const PixelFormat pixelFormat = frame->getPixelFormat();
+            auto [optionsIt, inserted] = streamNormalizeOptions_.try_emplace(record.streamId);
+            if (inserted || optionsIt->second.sourcePixelFormat != pixelFormat) {
+              auto configIt = streamNormalizeConfigs_.find(record.streamId);
+              optionsIt->second = {
+                  pixelFormat,
+                  utils::PixelFrame::getStreamNormalizeOptions(
+                      *record.fileReader,
+                      record.streamId,
+                      pixelFormat,
+                      configIt != streamNormalizeConfigs_.end() ? configIt->second
+                                                                : utils::NormalizeOptionsConfig{})};
+            }
+            utils::PixelFrame::normalizeFrame(
+                frame, convertedFrame, grey16supported, optionsIt->second.options);
             block.spec = convertedFrame->getSpec();
             block.bytes.swap(convertedFrame->getBuffer());
           } else {

@@ -77,6 +77,9 @@ bool OssMultiVRSReader::MultiVRSReaderStreamPlayer::onDataLayoutRead(
     const CurrentRecord& record,
     size_t blkIdx,
     DataLayout& dl) {
+  if (record.recordType == Record::Type::CONFIGURATION) {
+    captureNormalizeOptionsConfig(record, dl);
+  }
   multiVRSReader_.lastRecord_.datalayoutBlocks.emplace_back(
       pyWrap(readDataLayout(dl, multiVRSReader_.encoding_)));
   return checkSkipTrailingBlocks(record, blkIdx);
