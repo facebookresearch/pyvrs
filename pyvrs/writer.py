@@ -59,7 +59,7 @@ class VRSWriter:
         self,
         name: str,
         flavor: str = "",
-        compression: CompressionPreset = CompressionPreset.Zmedium,
+        compression: CompressionPreset = CompressionPreset.ZSTD_MEDIUM,
     ) -> "VRSStream":
         if len(flavor) > 0:
             return VRSStream(
@@ -138,7 +138,7 @@ class VRSStream:
         self,
         stream: Stream,
         writer: VRSWriter,
-        compression: CompressionPreset = CompressionPreset.Zmedium,
+        compression: CompressionPreset = CompressionPreset.ZSTD_MEDIUM,
     ) -> None:
         self.stream = stream
         self.stream.setCompression(compression)
