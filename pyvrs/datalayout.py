@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# pyre-strict
+
 # import the native pybind11 VRS bindings (which pyvrs wraps)
 import json
 import pprint
