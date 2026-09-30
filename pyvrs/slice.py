@@ -92,6 +92,7 @@ class AsyncVRSReaderSlice(Sequence):
         return result
 
     @overload
+    # pyrefly: ignore [bad-override]
     async def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload

@@ -246,6 +246,7 @@ class VRSReader(BaseVRSReader, ABC):
 
     def close(self) -> None:
         """explicitly close the VRS reader without waiting for Python garbage collection."""
+        # pyrefly: ignore [bad-return]
         return self._reader.close()
 
     @overload
@@ -309,6 +310,7 @@ class VRSReader(BaseVRSReader, ABC):
         Returns:
             Dictionary of all file tags: {<tag>: <value>}
         """
+        # pyrefly: ignore [bad-return]
         return self._reader.get_tags()
 
     @property
@@ -319,6 +321,7 @@ class VRSReader(BaseVRSReader, ABC):
         Returns:
             Dictionary of all per-stream tags: {<stream_id>: {<tag>: <value>}}
         """
+        # pyrefly: ignore [bad-return]
         return {k: self._reader.get_tags(k) for k in self.stream_ids}
 
     @property
@@ -395,6 +398,7 @@ class VRSReader(BaseVRSReader, ABC):
             flavor: A flavor of device to look for.
             index_number: The number of the index of the stream. Defaults to 0.
         """
+        # pyrefly: ignore [missing-attribute]
         return self._reader.get_stream_for_flavor(
             RecordableTypeId(recordable_type_id), flavor, index_number
         )
@@ -429,6 +433,7 @@ class VRSReader(BaseVRSReader, ABC):
         Returns:
             Information about the stream in a dictionary.
         """
+        # pyrefly: ignore [bad-return]
         return self._reader.get_stream_info(stream_id)
 
     def get_stream_size(self, stream_id: str) -> int:
@@ -441,6 +446,7 @@ class VRSReader(BaseVRSReader, ABC):
         Returns:
             The number of file bytes used by the stream.
         """
+        # pyrefly: ignore [missing-attribute]
         return self._reader.get_stream_size(stream_id)
 
     def get_records_count(self, stream_id: str, record_type: RecordType) -> int:
@@ -467,7 +473,9 @@ class VRSReader(BaseVRSReader, ABC):
             A list of timestamps corresponding to the indices. If indices are None, the full timestamp list is returned.
         """
         if indices is None:
+            # pyrefly: ignore [bad-assignment]
             indices = range(self.n_records)
+        # pyrefly: ignore [bad-argument-type]
         return self._reader.get_timestamp_list_for_indices(indices)
 
     def get_timestamp_for_index(self, index: int) -> float:
@@ -557,6 +565,7 @@ class VRSReader(BaseVRSReader, ABC):
         Returns:
             Based on the config record, return whether the stream contains image data.
         """
+        # pyrefly: ignore [missing-attribute]
         return self._reader.might_contain_images(stream_id)
 
     def might_contain_audio(self, stream_id: str) -> bool:
@@ -569,6 +578,7 @@ class VRSReader(BaseVRSReader, ABC):
         Returns:
             Based on the config record, return whether the stream contains audio data.
         """
+        # pyrefly: ignore [missing-attribute]
         return self._reader.might_contain_audio(stream_id)
 
     def get_estimated_frame_rate(self, stream_id: str) -> float:
@@ -581,6 +591,7 @@ class VRSReader(BaseVRSReader, ABC):
         Returns:
             The estimated frame rate.
         """
+        # pyrefly: ignore [missing-attribute]
         return self._reader.get_estimated_frame_rate(stream_id)
 
     def get_record_index_by_time(
@@ -667,6 +678,7 @@ class VRSReader(BaseVRSReader, ABC):
                 index_in_all = self._reader.get_record_index_by_time(
                     stream_id, timestamp
                 )
+        # pyrefly: ignore [missing-attribute]
         record = self._reader.read_record(index_in_all)
         return VRSRecord(record)
 
@@ -689,6 +701,7 @@ class VRSReader(BaseVRSReader, ABC):
         except IndexError as e:
             print(e)
             return None
+        # pyrefly: ignore [missing-attribute]
         record = self._reader.read_record(prev_index)
         return VRSRecord(record)
 
@@ -711,12 +724,14 @@ class VRSReader(BaseVRSReader, ABC):
         except IndexError as e:
             print(e)
             return None
+        # pyrefly: ignore [missing-attribute]
         record = self._reader.read_record(next_index)
         return VRSRecord(record)
 
     def _read_record(
         self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
     ) -> VRSRecord | VRSReaderSlice:
+        # pyrefly: ignore [bad-argument-type]
         return index_or_slice_records(self._path, self._reader, indices, i)
 
     def _record_count_by_type_from_stream_id(self, stream_id: str) -> Mapping[str, int]:
@@ -749,6 +764,7 @@ class VRSReader(BaseVRSReader, ABC):
             self._path = specs[0].get_easy_path()
         else:
             self._path = specs.get_easy_path()
+        # pyrefly: ignore [no-matching-overload]
         self._reader.open(specs)
 
     @abstractmethod
@@ -924,6 +940,7 @@ class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
         return result
 
     @overload
+    # pyrefly: ignore [bad-override]
     async def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
@@ -939,4 +956,5 @@ class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
     async def _async_read_record(
         self, indices: Sequence[int], i: int | slice[int | None, int | None, int | None]
     ) -> VRSRecord | AsyncVRSReaderSlice:
+        # pyrefly: ignore [bad-argument-type]
         return await async_index_or_slice_records(self._path, self._reader, indices, i)

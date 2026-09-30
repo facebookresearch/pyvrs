@@ -74,6 +74,7 @@ class FilteredVRSReader(BaseVRSReader, ABC):
             else self._reader.get_timestamp_for_index(self._filtered_indices[-1])
         )
 
+    # pyrefly: ignore [bad-override]
     def __getitem__(
         self, i: int | slice[int | None, int | None, int | None]
     ) -> VRSRecord | VRSReaderSlice:
@@ -437,6 +438,7 @@ class SyncFilteredVRSReader(FilteredVRSReader):
     """
 
     @overload
+    # pyrefly: ignore [bad-override]
     def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
@@ -532,6 +534,7 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
         return result
 
     @overload
+    # pyrefly: ignore [bad-override]
     async def __getitem__(self, i: int) -> VRSRecord: ...
 
     @overload
