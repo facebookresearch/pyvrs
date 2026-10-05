@@ -21,6 +21,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+      # cibuildwheel needs >=3.11 to run, so it gets its own interpreter. 3.9
+      # stays the default because the editable install and tests below use it.
+      - name: Set up Python for cibuildwheel
+        id: cibw_python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -54,17 +61,35 @@ jobs:
           fi
           python -m pip install -U pip
           python -m pip install numpy typing dataclasses pytest parameterized Pillow
-          python -m pip install cibuildwheel==2.17.0
+          ${{ steps.cibw_python.outputs.python-path }} -m pip install --upgrade pip
+          ${{ steps.cibw_python.outputs.python-path }} -m pip install cibuildwheel==4.2.1
 
-      - name: Build wheels for CPython
+      # manylinux_image is pinned rather than left to the cibuildwheel default,
+      # which moved to manylinux_2_28 in 3.0. 3.9-3.12 keep manylinux2014's
+      # glibc 2.17 floor; 3.13 and 3.14 are not available on that EOL image.
+      - name: Build wheels for CPython 3.9-3.12
         run: |
-          python -m cibuildwheel --output-dir dist
+          ${{ steps.cibw_python.outputs.python-path }} -m cibuildwheel --output-dir dist
         env:
           CIBW_ARCHS_LINUX: x86_64
           # UPDATED: Changed to arm64 because macos-latest is now Apple Silicon
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0"
           CIBW_BUILD: "cp39-*64 cp310-*64 cp311-*64 cp312-*64"
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
+          CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
+          CIBW_SKIP: "*-manylinux_i686 *musllinux*"
+      - name: Build wheels for CPython 3.13-3.14
+        run: |
+          ${{ steps.cibw_python.outputs.python-path }} -m cibuildwheel --output-dir dist
+        env:
+          CIBW_ARCHS_LINUX: x86_64
+          # UPDATED: Changed to arm64 because macos-latest is now Apple Silicon
+          CIBW_ARCHS_MACOS: "arm64"
+          CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0"
+          CIBW_BUILD: "cp313-*64 cp314-*64"
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
           CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
           CIBW_SKIP: "*-manylinux_i686 *musllinux*"

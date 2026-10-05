@@ -79,6 +79,10 @@ class CMakeBuild(build_ext):
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
+            # pybind11's FindPython mode reads Python_EXECUTABLE, not the legacy
+            # PYTHON_EXECUTABLE; without it CMake can pick another interpreter.
+            f"-DPython_EXECUTABLE={sys.executable}",
+            f"-DPython3_EXECUTABLE={sys.executable}",
             "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
         ]
         build_args = ["--target", os.path.basename(ext.name)]

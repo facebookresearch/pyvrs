@@ -13,9 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Update the mirror list for Centos mirror deprecation
-sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+if ls /etc/yum.repos.d/CentOS-* >/dev/null 2>&1; then
+    # manylinux2014 (CentOS 7): update the mirror list for Centos mirror deprecation
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+else
+    # manylinux_2_28 (AlmaLinux 8): ninja-build and gtest-devel are in powertools,
+    # xxhash-devel in EPEL. One missing package fails the whole yum install below.
+    dnf install -y dnf-plugins-core epel-release
+    dnf config-manager --set-enabled powertools
+fi
 
 # Install VRS dependencies
 yum install -y cmake git ninja-build gtest-devel \
