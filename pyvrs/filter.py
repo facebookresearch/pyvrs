@@ -20,7 +20,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from bisect import bisect
 from collections.abc import Awaitable, Callable, Mapping, Sequence
-from typing import Any, cast, overload
+from typing import Any, cast, overload, TYPE_CHECKING
 
 from . import ImageConversion, RecordType
 from .base import BaseVRSReader
@@ -33,10 +33,15 @@ from .utils import (
     tags_to_justified_table_str,
 )
 
-type _AsyncReadRecord = Callable[
-    [Sequence[int], int | slice[int | None, int | None, int | None]],
-    Awaitable[VRSRecord | AsyncVRSReaderSlice],
-]
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    # Type-checker only: pyvrs supports 3.9+, and neither `type X = ...` (3.12+) nor a runtime
+    # `slice[...]` subscript (unsupported on every version) can be evaluated at import time.
+    _AsyncReadRecord: TypeAlias = Callable[
+        [Sequence[int], int | slice[int | None, int | None, int | None]],
+        Awaitable[VRSRecord | AsyncVRSReaderSlice],
+    ]
 
 __all__ = [
     "FilteredVRSReader",
@@ -522,7 +527,7 @@ class AsyncFilteredVRSReader(FilteredVRSReader):
                 "AsyncFilteredVRSReader._reader doesn't have method _async_read_record."
                 " You should only construct AsyncFilteredVRSReader via AsyncVRSReader.filtered_by_fields method."
             )
-        self._async_read_record = cast(_AsyncReadRecord, async_read_record)
+        self._async_read_record = cast("_AsyncReadRecord", async_read_record)
 
     def __aiter__(self) -> "AsyncFilteredVRSReader":
         self._index = 0
