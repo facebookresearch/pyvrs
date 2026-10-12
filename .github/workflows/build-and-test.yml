@@ -12,8 +12,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # UPDATED: Replaced macos-13 with macos-latest
-        os: [ubuntu-latest, macos-latest]
+        # Keep the macOS runner equal to MACOSX_DEPLOYMENT_TARGET: Homebrew's
+        # dylibs target the runner's OS, and delocate-wheel rejects any newer
+        # than the wheel's target.
+        os: [ubuntu-latest, macos-14]
       fail-fast: false
 
     steps:
@@ -72,7 +74,7 @@ jobs:
           ${{ steps.cibw_python.outputs.python-path }} -m cibuildwheel --output-dir dist
         env:
           CIBW_ARCHS_LINUX: x86_64
-          # UPDATED: Changed to arm64 because macos-latest is now Apple Silicon
+          # macos-14 runners are Apple Silicon.
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0"
           CIBW_BUILD: "cp39-*64 cp310-*64 cp311-*64 cp312-*64"
@@ -85,7 +87,7 @@ jobs:
           ${{ steps.cibw_python.outputs.python-path }} -m cibuildwheel --output-dir dist
         env:
           CIBW_ARCHS_LINUX: x86_64
-          # UPDATED: Changed to arm64 because macos-latest is now Apple Silicon
+          # macos-14 runners are Apple Silicon.
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0"
           CIBW_BUILD: "cp313-*64 cp314-*64"

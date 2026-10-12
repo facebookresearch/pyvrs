@@ -46,7 +46,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        # Keep the macOS runner equal to MACOSX_DEPLOYMENT_TARGET: Homebrew's
+        # dylibs target the runner's OS, and delocate-wheel rejects any newer
+        # than the wheel's target.
+        os: [macos-14, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
         with:
