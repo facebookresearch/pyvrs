@@ -19,7 +19,6 @@ import unittest
 from pathlib import Path
 
 import numpy as np
-import pkg_resources
 from parameterized import parameterized_class
 from PIL import Image
 from pyvrs import ImageConversion, RecordType, SyncVRSReader, TimestampNotFoundError
@@ -28,7 +27,7 @@ from pyvrs.slice import VRSReaderSlice
 
 
 def test_recording_path() -> Path:
-    return Path(pkg_resources.resource_filename(__name__, "test_data/synthetic.vrs"))
+    return Path(__file__).resolve().parent / "test_data" / "synthetic.vrs"
 
 
 def rgbx_float_to_rgb8(block: np.ndarray, channel: int) -> np.ndarray:

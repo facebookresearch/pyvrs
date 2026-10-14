@@ -15,6 +15,8 @@
 
 # pyre-strict
 
+from __future__ import annotations
+
 # import the native pybind11 VRS bindings (which pyvrs wraps)
 import json
 import pprint

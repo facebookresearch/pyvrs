@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Mapping, Sequence
 from pathlib import Path
 from types import TracebackType
-from typing import Any, overload
+from typing import Any, overload, TYPE_CHECKING
 
 from . import (
     AsyncMultiReader,
@@ -57,25 +57,28 @@ from .utils import (
 )
 
 
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    # Type-checker only: pyvrs supports 3.9+, where a runtime `X | Y` union raises TypeError.
+    PathType: TypeAlias = (
+        Path
+        | str
+        | list[Path]
+        | list[str]
+        | dict[str, int | str | list[str]]
+        | FileSpec
+        | list[FileSpec]
+    )
+    ReaderClass: TypeAlias = (
+        type[Reader] | type[MultiReader] | type[AsyncReader] | type[AsyncMultiReader]
+    )
+
 __all__ = [
     "AsyncVRSReader",
     "SyncVRSReader",
     "VRSReader",
 ]
-
-
-PathType = (
-    Path
-    | str
-    | list[Path]
-    | list[str]
-    | dict[str, int | str | list[str]]
-    | FileSpec
-    | list[FileSpec]
-)
-ReaderClass = (
-    type[Reader] | type[MultiReader] | type[AsyncReader] | type[AsyncMultiReader]
-)
 
 
 class VRSReader(BaseVRSReader, ABC):

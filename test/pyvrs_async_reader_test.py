@@ -20,12 +20,11 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import pkg_resources
 from pyvrs import AsyncVRSReader, SyncVRSReader
 
 
 def test_recording_path() -> Path:
-    return Path(pkg_resources.resource_filename(__name__, "test_data/synthetic.vrs"))
+    return Path(__file__).resolve().parent / "test_data" / "synthetic.vrs"
 
 
 def async_test(func):
