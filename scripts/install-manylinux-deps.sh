@@ -36,13 +36,24 @@ cd /tmp && curl -kOL http://downloads.xiph.org/releases/opus/opus-1.5.2.tar.gz \
     && make install \
     && rm -rf /tmp/opus-1.5.2.tar.gz /tmp/opus-1.5.2;
 
+# CMake 4, which the manylinux images now ship, rejects projects that declare a minimum below 3.5
+# unless CMAKE_POLICY_VERSION_MINIMUM is set. VRS needs fmt and libjpeg-turbo, so stop here if
+# either fails, rather than at pyvrs's configure step with "Could NOT find JPEG".
 cd /tmp && git clone https://github.com/fmtlib/fmt.git -b 8.1.1 \
     && cd fmt \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DFMT_TEST=OFF .;make -j4 install; rm -rf /tmp/fmt;
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DFMT_TEST=OFF \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 . \
+    && make -j4 install \
+    && rm -rf /tmp/fmt \
+    || { echo "install-manylinux-deps.sh: building fmt failed" >&2; exit 1; }
 
 cd /tmp && git clone https://github.com/libjpeg-turbo/libjpeg-turbo.git -b 2.1.4 \
     && cd libjpeg-turbo \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DWITH_JPEG8=1 -DCMAKE_INSTALL_DEFAULT_PREFIX=/usr .;make -j4 install; rm -rf /tmp/libjpeg-turbo;
+    && cmake -DCMAKE_BUILD_TYPE=Release -DWITH_JPEG8=1 -DCMAKE_INSTALL_DEFAULT_PREFIX=/usr \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 . \
+    && make -j4 install \
+    && rm -rf /tmp/libjpeg-turbo \
+    || { echo "install-manylinux-deps.sh: building libjpeg-turbo failed" >&2; exit 1; }
 
 cd /tmp && git clone --recursive https://github.com/boostorg/boost.git -b boost-1.81.0 \
     && cd boost \
