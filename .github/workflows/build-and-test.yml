@@ -14,8 +14,10 @@ jobs:
       matrix:
         # Keep the macOS runner equal to MACOSX_DEPLOYMENT_TARGET: Homebrew's
         # dylibs target the runner's OS, and delocate-wheel rejects any newer
-        # than the wheel's target.
-        os: [ubuntu-latest, macos-14]
+        # than the wheel's target. ubuntu-24.04 is pinned so a moved
+        # ubuntu-latest label cannot change the host the editable install and
+        # tests run on.
+        os: [ubuntu-24.04, macos-14]
       fail-fast: false
 
     steps:
@@ -84,36 +86,21 @@ jobs:
           done
           exit 1
 
-      # manylinux_image is pinned rather than left to the cibuildwheel default,
-      # which moved to manylinux_2_28 in 3.0. 3.9-3.12 keep manylinux2014's
-      # glibc 2.17 floor; 3.13 and 3.14 are not available on that EOL image.
-      - name: Build wheels for CPython 3.9-3.12
+      # One cibuildwheel run builds every version. cibuildwheel.toml picks the
+      # manylinux image per version, and before-all builds the dependencies once
+      # per container (once per manylinux image on Linux) rather than per wheel.
+      - name: Build wheels for CPython 3.9-3.14
         run: |
-          ${{ steps.cibw_python.outputs.python-path }} -m cibuildwheel --output-dir dist
+          ${{ steps.cibw_python.outputs.python-path }} -m cibuildwheel --config-file cibuildwheel.toml --output-dir dist
         env:
           CIBW_ARCHS_LINUX: x86_64
           # macos-14 runners are Apple Silicon.
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0 CMAKE_ARGS=-DFETCHCONTENT_SOURCE_DIR_EIGEN=$GITHUB_WORKSPACE/.eigen-src"
           CIBW_ENVIRONMENT_LINUX: "CMAKE_ARGS=-DFETCHCONTENT_SOURCE_DIR_EIGEN=/project/.eigen-src"
-          CIBW_BUILD: "cp39-*64 cp310-*64 cp311-*64 cp312-*64"
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
-          CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
-          CIBW_SKIP: "*-manylinux_i686 *musllinux*"
-      - name: Build wheels for CPython 3.13-3.14
-        run: |
-          ${{ steps.cibw_python.outputs.python-path }} -m cibuildwheel --output-dir dist
-        env:
-          CIBW_ARCHS_LINUX: x86_64
-          # macos-14 runners are Apple Silicon.
-          CIBW_ARCHS_MACOS: "arm64"
-          CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0 CMAKE_ARGS=-DFETCHCONTENT_SOURCE_DIR_EIGEN=$GITHUB_WORKSPACE/.eigen-src"
-          CIBW_ENVIRONMENT_LINUX: "CMAKE_ARGS=-DFETCHCONTENT_SOURCE_DIR_EIGEN=/project/.eigen-src"
-          CIBW_BUILD: "cp313-*64 cp314-*64"
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
-          CIBW_BEFORE_BUILD_LINUX: bash scripts/install-manylinux-deps.sh
-          CIBW_BEFORE_BUILD_MACOS: bash scripts/install-macos-deps.sh
+          CIBW_BUILD: "cp39-*64 cp310-*64 cp311-*64 cp312-*64 cp313-*64 cp314-*64"
+          CIBW_BEFORE_ALL_LINUX: bash scripts/install-manylinux-deps.sh
+          CIBW_BEFORE_ALL_MACOS: bash scripts/install-macos-deps.sh
           CIBW_SKIP: "*-manylinux_i686 *musllinux*"
 
       - name: Build and Test Python
