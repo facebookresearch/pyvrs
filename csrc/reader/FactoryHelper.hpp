@@ -62,7 +62,7 @@ class PyObjectorStringRegistry : public map<string, PyObjectorString> {
 template <class T>
 void DataPieceValuePyObjector(PyObject* dic, const DataPiece* piece) {
   if (piece->isAvailable()) {
-    string label = piece->getLabel();
+    const string& label = piece->getLabel();
     string type = typeName(piece);
     T v = reinterpret_cast<const DataPieceValue<T>*>(piece)->get();
     pyDict_SetItemWithDecRef(dic, Py_BuildValue("(s,s)", label.c_str(), type.c_str()), pyObject(v));
@@ -85,7 +85,7 @@ struct DataPieceValuePyObjectorRegistrerer {
 template <class T>
 void DataPieceArrayPyObjector(PyObject* dic, const DataPiece* piece) {
   if (piece->isAvailable()) {
-    string label = piece->getLabel();
+    const string& label = piece->getLabel();
     string type = typeName(piece, "_array");
     vector<T> values;
     reinterpret_cast<const DataPieceArray<T>*>(piece)->get(values);
@@ -113,7 +113,7 @@ struct DataPieceArrayPyObjectorRegistrerer {
 template <class T>
 void DataPieceVectorPyObjector(PyObject* dic, const DataPiece* piece) {
   if (piece->isAvailable()) {
-    string label = piece->getLabel();
+    const string& label = piece->getLabel();
     string type = typeName(piece, "_vector");
     vector<T> values;
     reinterpret_cast<const DataPieceVector<T>*>(piece)->get(values);
@@ -141,7 +141,7 @@ struct DataPieceVectorPyObjectorRegistrerer {
 template <class T>
 void DataPieceStringMapPyObjector(PyObject* dic, const DataPiece* piece, const string& encoding) {
   if (piece->isAvailable()) {
-    string label = piece->getLabel();
+    const string& label = piece->getLabel();
     string type = typeName(piece, "_string_map");
     map<string, T> values;
     reinterpret_cast<const DataPieceStringMap<T>*>(piece)->get(values);
