@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator, Mapping, Sequence
+from collections.abc import AsyncIterator, Iterable, Mapping, Sequence
 from pathlib import Path
 from types import TracebackType
 from typing import Any, overload, TYPE_CHECKING
@@ -58,7 +58,7 @@ from .utils import (
 
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
+    from typing import Literal, Self, TypeAlias
 
     # Type-checker only: pyvrs supports 3.9+, where a runtime `X | Y` union raises TypeError.
     PathType: TypeAlias = (
@@ -206,7 +206,7 @@ class VRSReader(BaseVRSReader, ABC):
         self._reader = reader_cls(auto_read_configuration_records)
         self._open_files(multi_path, file_spec)
 
-    def __enter__(self) -> "VRSReader":
+    def __enter__(self) -> Self:
         """Context manager entry point."""
         return self
 
@@ -218,6 +218,21 @@ class VRSReader(BaseVRSReader, ABC):
     ) -> None:
         """Context manager exit point."""
         self.close()
+
+    @overload
+    def _path_to_file_spec(
+        self, path: PathType, multi_path: Literal[False]
+    ) -> FileSpec: ...
+
+    @overload
+    def _path_to_file_spec(
+        self, path: PathType, multi_path: Literal[True]
+    ) -> list[FileSpec]: ...
+
+    @overload
+    def _path_to_file_spec(
+        self, path: PathType, multi_path: bool
+    ) -> FileSpec | list[FileSpec]: ...
 
     def _path_to_file_spec(
         self, path: PathType, multi_path: bool
@@ -776,8 +791,8 @@ class VRSReader(BaseVRSReader, ABC):
     def filtered_by_fields(
         self,
         *,
-        stream_ids: set[str] | str | None = None,
-        record_types: set[str] | str | None = None,
+        stream_ids: Iterable[str] | str | None = None,
+        record_types: Iterable[str] | str | None = None,
         min_timestamp: float | None = None,
         max_timestamp: float | None = None,
     ) -> "FilteredVRSReader":
@@ -819,8 +834,8 @@ class SyncVRSReader(VRSReader):
     def filtered_by_fields(
         self,
         *,
-        stream_ids: set[str] | str | None = None,
-        record_types: set[str] | str | None = None,
+        stream_ids: Iterable[str] | str | None = None,
+        record_types: Iterable[str] | str | None = None,
         min_timestamp: float | None = None,
         max_timestamp: float | None = None,
     ) -> SyncFilteredVRSReader:
@@ -885,8 +900,8 @@ class AsyncVRSReader(VRSReader, AsyncIterator[VRSRecord]):
 
     def filtered_by_fields(
         self,
-        stream_ids: set[str] | str | None = None,
-        record_types: set[str] | str | None = None,
+        stream_ids: Iterable[str] | str | None = None,
+        record_types: Iterable[str] | str | None = None,
         min_timestamp: float | None = None,
         max_timestamp: float | None = None,
     ) -> AsyncFilteredVRSReader:

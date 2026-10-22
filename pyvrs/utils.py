@@ -42,6 +42,7 @@ def _filter_set_on_condition(
     that is returned. Note that this does not mutate the original set, it returns a filtered copy.
     """
     filtered = set()
+    items = tuple(items)
     for a in s:
         for b in items:
             if cond_func(a, b):
