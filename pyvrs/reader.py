@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Iterable, Mapping, Sequence
 from pathlib import Path
 from types import TracebackType
-from typing import Any, overload, TYPE_CHECKING
+from typing import overload, TYPE_CHECKING
 
 from . import (
     AsyncMultiReader,
@@ -334,7 +334,7 @@ class VRSReader(BaseVRSReader, ABC):
         return self._reader.get_tags()
 
     @property
-    def stream_tags(self) -> Mapping[str, Mapping[str, Any]]:
+    def stream_tags(self) -> dict[str, dict[str, str]]:
         """
         Return a dict of all per-stream tags present in this VRS file.
 
