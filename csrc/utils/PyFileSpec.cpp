@@ -29,7 +29,7 @@ namespace py = pybind11;
 void pybind_filespec(py::module& m) {
   py::class_<PyFileSpec>(m, "FileSpec")
       .def(py::init<>())
-      .def(py::init<const std::string&>())
+      .def(py::init<const std::string&>(), py::call_guard<py::gil_scoped_release>())
       .def("get_easy_path", &PyFileSpec::getEasyPath)
       .def("get_filehandler_name", &PyFileSpec::getFileHandlerName)
       .def("get_chunks", &PyFileSpec::getChunks)

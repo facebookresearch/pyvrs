@@ -1027,10 +1027,22 @@ void pybind_multivrsreader(py::module& m) {
   // WARNING: Do not use `MultiReader` for production code yet as the behavior/APIs might change.
   py::class_<PyMultiVRSReader>(m, "MultiReader")
       .def(py::init<bool>())
-      .def("open", py::overload_cast<const std::string&>(&PyMultiVRSReader::open))
-      .def("open", py::overload_cast<const PyFileSpec&>(&PyMultiVRSReader::open))
-      .def("open", py::overload_cast<const std::vector<std::string>&>(&PyMultiVRSReader::open))
-      .def("open", py::overload_cast<const std::vector<PyFileSpec>&>(&PyMultiVRSReader::open))
+      .def(
+          "open",
+          py::overload_cast<const std::string&>(&PyMultiVRSReader::open),
+          py::call_guard<py::gil_scoped_release>())
+      .def(
+          "open",
+          py::overload_cast<const PyFileSpec&>(&PyMultiVRSReader::open),
+          py::call_guard<py::gil_scoped_release>())
+      .def(
+          "open",
+          py::overload_cast<const std::vector<std::string>&>(&PyMultiVRSReader::open),
+          py::call_guard<py::gil_scoped_release>())
+      .def(
+          "open",
+          py::overload_cast<const std::vector<PyFileSpec>&>(&PyMultiVRSReader::open),
+          py::call_guard<py::gil_scoped_release>())
       .def("close", &PyMultiVRSReader::close)
       .def("set_related_file_tags", &PyMultiVRSReader::setRelatedFileTags)
       .def("set_encoding", &PyMultiVRSReader::setEncoding)

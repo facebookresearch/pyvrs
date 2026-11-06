@@ -54,12 +54,13 @@ vrs::utils::FilteredFileReader& FilteredFileReader::getFilteredReader() {
 }
 
 void pybind_filtered_filereader(py::module& m) {
-  auto filteredReader = py::class_<pyvrs::FilteredFileReader, std::shared_ptr<FilteredFileReader>>(
-                            m, "FilteredFileReader")
-                            .def(py::init<const std::string&>())
-                            .def("after", &pyvrs::FilteredFileReader::after)
-                            .def("before", &pyvrs::FilteredFileReader::before)
-                            .def("range", &pyvrs::FilteredFileReader::range);
+  auto filteredReader =
+      py::class_<pyvrs::FilteredFileReader, std::shared_ptr<FilteredFileReader>>(
+          m, "FilteredFileReader")
+          .def(py::init<const std::string&>(), py::call_guard<py::gil_scoped_release>())
+          .def("after", &pyvrs::FilteredFileReader::after)
+          .def("before", &pyvrs::FilteredFileReader::before)
+          .def("range", &pyvrs::FilteredFileReader::range);
 
 #if IS_VRS_FB_INTERNAL()
   pybind_fbfiltered_filereader(filteredReader);
