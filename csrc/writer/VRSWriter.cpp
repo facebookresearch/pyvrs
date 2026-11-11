@@ -23,7 +23,6 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <thread>
 #include <vector>
 
 // Includes needed for bindings (including marshalling STL containers)
@@ -34,6 +33,8 @@
 
 #define DEFAULT_LOG_CHANNEL "VRSWriter"
 #include <logging/Log.h>
+
+#include <vrs/os/System.h>
 
 #include "../VrsBindings.h"
 #include "../utils/PyUtils.h"
@@ -58,7 +59,7 @@ VRSWriter::~VRSWriter() {
 
 void VRSWriter::init() {
   initVrsBindings();
-  writer_.setCompressionThreadPoolSize(std::thread::hardware_concurrency());
+  writer_.setCompressionThreadPoolSize(vrs::os::getAvailableConcurrency());
   writer_.trackBackgroundThreadQueueByteSize();
 
   /// Register open source stream writers (begin)
