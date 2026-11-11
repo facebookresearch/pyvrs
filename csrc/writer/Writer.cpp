@@ -149,6 +149,11 @@ Args:
 )doc")
       .def("writeRecords", &pyvrs::VRSWriter::writeRecords)
       .def("getBackgroundThreadQueueByteSize", &pyvrs::VRSWriter::getBackgroundThreadQueueByteSize)
+      .def_static(
+          "getDefaultMaxQueueByteSize",
+          &vrs::RecordFileWriter::getDefaultMaxQueueByteSize,
+          "Default limit for getBackgroundThreadQueueByteSize(): 1/8 of the memory the process may "
+          "use, between 128 MiB and 800 MiB.")
       .def("close", &pyvrs::VRSWriter::close)
 #if IS_VRS_FB_INTERNAL()
 #include "Writer_fb.hpp"

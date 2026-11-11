@@ -38,8 +38,6 @@ RECORD_TYPE_TO_STR: dict[RecordType, str] = {
     RecordType.STATE: "State",
 }
 
-MAX_QUEUE_BYTE_SIZE: int = 600 * 1024 * 1024  # 600MB
-
 
 class TimestampOrderWriteException(Exception):
     def __init__(
@@ -105,7 +103,8 @@ class VRSWriter:
         # Block write while the queue size is greater than certain size
         waiting_str = "."
         cnt = 1
-        while self._writer.getBackgroundThreadQueueByteSize() > MAX_QUEUE_BYTE_SIZE:
+        max_queue_byte_size = self._writer.getDefaultMaxQueueByteSize()
+        while self._writer.getBackgroundThreadQueueByteSize() > max_queue_byte_size:
             if cnt % 10 == 0:
                 print(f"\rWaiting {waiting_str}")
                 waiting_str += "."
