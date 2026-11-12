@@ -41,6 +41,7 @@
 #include "StreamFactory.h"
 
 // Open source DataLayout definitions
+#include "datalayouts/AriaGen2ImageDataLayout.h"
 #include "datalayouts/SampleDataLayout.h"
 
 namespace py = pybind11;
@@ -75,6 +76,16 @@ void VRSWriter::init() {
       "sample_with_image", createSampleStreamWithImage);
   StreamFactory::getInstance().registerStreamCreationFunction(
       "sample_with_multiple_data_layout", createSampleStreamWithMultipleDataLayout);
+  // Aria Gen2 camera streams with correct RecordableTypeId + H.265 content block
+  StreamFactory::getInstance().registerFlavoredStreamCreationFunction(
+      "aria_gen2_rgb_camera", [](const string& flavor) {
+        return createAriaGen2ImageStream(
+            flavor, RecordableTypeId::RgbCameraRecordableClass, "H.265");
+      });
+  StreamFactory::getInstance().registerFlavoredStreamCreationFunction(
+      "aria_gen2_slam_camera", [](const string& flavor) {
+        return createAriaGen2ImageStream(flavor, RecordableTypeId::SlamCameraData, "H.265");
+      });
   /// Register open source stream writers (end)
 
 #if IS_VRS_FB_INTERNAL()
