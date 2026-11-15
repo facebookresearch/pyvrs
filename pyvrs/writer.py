@@ -210,6 +210,7 @@ class VRSStream:
         self.writer.assert_timestamp(timestamp)
         data_srcs = self.parse_create_record_params(RecordType.CONFIGURATION, srcs)
 
+        # pyrefly: ignore [no-matching-overload]
         self.stream.createRecord(
             timestamp, self.record_formats[RecordType.CONFIGURATION].get(), *data_srcs
         )
@@ -224,6 +225,7 @@ class VRSStream:
             raise Exception("Configuration record is not created yet.")
         data_srcs = self.parse_create_record_params(RecordType.DATA, srcs)
 
+        # pyrefly: ignore [no-matching-overload]
         self.stream.createRecord(
             timestamp, self.record_formats[RecordType.DATA].get(), *data_srcs
         )
@@ -235,6 +237,7 @@ class VRSStream:
 
         data_srcs = self.parse_create_record_params(RecordType.STATE, srcs)
 
+        # pyrefly: ignore [no-matching-overload]
         self.stream.createRecord(
             timestamp, self.record_formats[RecordType.STATE].get(), *data_srcs
         )
