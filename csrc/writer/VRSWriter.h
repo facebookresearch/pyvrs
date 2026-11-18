@@ -86,6 +86,13 @@ class VRSWriter {
 
   uint64_t getBackgroundThreadQueueByteSize();
 
+  /// Block until the background thread's queue holds at most maxQueueByteSize bytes, or until
+  /// the timeout expires, without holding the GIL.
+  /// @param maxQueueByteSize: Queue byte size at or below which to return.
+  /// @param timeoutSec: Maximum number of seconds to wait.
+  /// @return True if the queue byte size is at most maxQueueByteSize, false on timeout.
+  bool waitForBackgroundThreadQueueByteSize(uint64_t maxQueueByteSize, double timeoutSec);
+
   int close();
 
 #if IS_VRS_FB_INTERNAL()

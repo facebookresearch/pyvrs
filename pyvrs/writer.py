@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import time
 from collections.abc import Sequence
 
 import numpy as np
@@ -102,14 +101,12 @@ class VRSWriter:
 
         # Block write while the queue size is greater than certain size
         waiting_str = "."
-        cnt = 1
         max_queue_byte_size = self._writer.getDefaultMaxQueueByteSize()
-        while self._writer.getBackgroundThreadQueueByteSize() > max_queue_byte_size:
-            if cnt % 10 == 0:
-                print(f"\rWaiting {waiting_str}")
-                waiting_str += "."
-            cnt += 1
-            time.sleep(0.1)
+        while not self._writer.waitForBackgroundThreadQueueByteSize(
+            max_queue_byte_size, 1.0
+        ):
+            print(f"\rWaiting {waiting_str}")
+            waiting_str += "."
         return self._writer.writeRecords(timestamp)
 
     def _create(self) -> None:

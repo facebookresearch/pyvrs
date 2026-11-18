@@ -149,6 +149,20 @@ Args:
 )doc")
       .def("writeRecords", &pyvrs::VRSWriter::writeRecords)
       .def("getBackgroundThreadQueueByteSize", &pyvrs::VRSWriter::getBackgroundThreadQueueByteSize)
+      .def(
+          "waitForBackgroundThreadQueueByteSize",
+          &pyvrs::VRSWriter::waitForBackgroundThreadQueueByteSize,
+          py::arg("max_queue_byte_size"),
+          py::arg("timeout_sec"),
+          R"doc(Wait until getBackgroundThreadQueueByteSize() is at most max_queue_byte_size.
+
+Args:
+    max_queue_byte_size: Queue byte size at or below which to return.
+    timeout_sec: Maximum number of seconds to wait.
+
+Returns:
+    True if the queue byte size is at most max_queue_byte_size, False on timeout.
+)doc")
       .def_static(
           "getDefaultMaxQueueByteSize",
           &vrs::RecordFileWriter::getDefaultMaxQueueByteSize,

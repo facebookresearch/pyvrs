@@ -128,6 +128,11 @@ uint64_t VRSWriter::getBackgroundThreadQueueByteSize() {
   return writer_.getBackgroundThreadQueueByteSize();
 }
 
+bool VRSWriter::waitForBackgroundThreadQueueByteSize(uint64_t maxQueueByteSize, double timeoutSec) {
+  py::gil_scoped_release release;
+  return writer_.waitForBackgroundThreadQueueByteSize(maxQueueByteSize, timeoutSec);
+}
+
 int VRSWriter::close() {
   return writer_.waitForFileClosed();
 }
