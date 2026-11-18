@@ -1043,7 +1043,7 @@ void pybind_multivrsreader(py::module& m) {
           "open",
           py::overload_cast<const std::vector<PyFileSpec>&>(&PyMultiVRSReader::open),
           py::call_guard<py::gil_scoped_release>())
-      .def("close", &PyMultiVRSReader::close)
+      .def("close", &PyMultiVRSReader::close, py::call_guard<py::gil_scoped_release>())
       .def("set_related_file_tags", &PyMultiVRSReader::setRelatedFileTags)
       .def("set_encoding", &PyMultiVRSReader::setEncoding)
       .def("get_encoding", &PyMultiVRSReader::getEncoding)

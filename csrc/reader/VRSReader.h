@@ -34,6 +34,7 @@
 #include "../utils/PyBuffer.h"
 #include "../utils/PyFileSpec.h"
 #include "../utils/PyRecord.h"
+#include "../utils/PyUtils.h"
 
 namespace pyvrs {
 
@@ -158,7 +159,7 @@ class OssVRSReader : public VRSReaderBase {
   }
 
   ~OssVRSReader() override {
-    close();
+    callWithoutGil([this] { close(); });
   }
 
   OssVRSReader(const OssVRSReader&) = delete;

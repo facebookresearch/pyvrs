@@ -89,7 +89,7 @@ class OssMultiVRSReader : public VRSReaderBase {
   }
 
   ~OssMultiVRSReader() override {
-    close();
+    callWithoutGil([this] { close(); });
   }
 
   OssMultiVRSReader(const OssMultiVRSReader&) = delete;

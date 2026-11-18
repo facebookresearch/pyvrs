@@ -31,6 +31,10 @@ FilteredFileReader::FilteredFileReader(const std::string& filePath) {
   filteredReader_.openFile();
 }
 
+FilteredFileReader::~FilteredFileReader() {
+  callWithoutGil([this] { filteredReader_.reader.closeFile(); });
+}
+
 void FilteredFileReader::after(double minTime, bool isRelativeMinTime) {
   filteredReader_.setMinTime(minTime, isRelativeMinTime);
 }

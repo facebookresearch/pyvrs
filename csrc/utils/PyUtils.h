@@ -51,6 +51,19 @@ inline py::object pyWrap(PyObject* object) {
   return py::reinterpret_steal<py::object>(object);
 }
 
+/// Call `f` with the GIL released, if the calling thread holds it.
+/// For blocking work that doesn't touch Python objects, such as closing a file, in code that may
+/// run with or without the GIL, such as destructors.
+template <class F>
+inline void callWithoutGil(F&& f) {
+  if (PyGILState_Check() != 0) {
+    py::gil_scoped_release release;
+    f();
+  } else {
+    f();
+  }
+}
+
 /// pyObject converts C++ object into PyObject.
 template <class T>
 PyObject* pyObject(const T&);

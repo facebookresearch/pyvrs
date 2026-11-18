@@ -101,8 +101,10 @@ AwaitableRecord OssAsyncVRSReader::asyncReadRecord(int index) {
 }
 
 OssAsyncVRSReader::~OssAsyncVRSReader() {
-  readHandler_.cleanup();
-  reader_.closeFile();
+  callWithoutGil([this] {
+    readHandler_.cleanup();
+    reader_.closeFile();
+  });
 }
 
 AwaitableRecord OssAsyncMultiVRSReader::asyncReadRecord(
@@ -139,8 +141,10 @@ AwaitableRecord OssAsyncMultiVRSReader::asyncReadRecord(int index) {
 }
 
 OssAsyncMultiVRSReader::~OssAsyncMultiVRSReader() {
-  readHandler_.cleanup();
-  reader_.close();
+  callWithoutGil([this] {
+    readHandler_.cleanup();
+    reader_.close();
+  });
 }
 
 #if IS_VRS_OSS_CODE()

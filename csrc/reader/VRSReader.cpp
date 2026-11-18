@@ -1161,7 +1161,7 @@ void pybind_vrsreader(py::module& m) {
           "open",
           py::overload_cast<const PyFileSpec&>(&PyVRSReader::open),
           py::call_guard<py::gil_scoped_release>())
-      .def("close", &PyVRSReader::close)
+      .def("close", &PyVRSReader::close, py::call_guard<py::gil_scoped_release>())
       .def("set_encoding", &PyVRSReader::setEncoding)
       .def("get_encoding", &PyVRSReader::getEncoding)
       .def(
@@ -1257,7 +1257,8 @@ void pybind_vrsreader(py::module& m) {
       .def(
           "__exit__",
           [](PyVRSReader& r, const py::args&) { r.close(); },
-          "Exit the runtime context related to this VRSReader");
+          "Exit the runtime context related to this VRSReader",
+          py::call_guard<py::gil_scoped_release>());
 }
 #endif
 } // namespace pyvrs

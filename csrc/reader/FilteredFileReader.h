@@ -39,6 +39,7 @@ namespace py = pybind11;
 class FilteredFileReader {
  public:
   explicit FilteredFileReader(const std::string& filePath);
+  ~FilteredFileReader();
 
   void after(double minTime, bool isRelativeMinTime = false);
   void before(double maxTime, bool isRelativeMaxTime = false);
