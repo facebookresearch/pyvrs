@@ -291,6 +291,7 @@ py::buffer_info convertContentBlockBuffer(ContentBlockBuffer& block) {
         stridesInBytes); // Strides (in bytes)
   }
   if (block.structuredArray && block.spec.getContentType() == vrs::ContentType::AUDIO &&
+      block.spec.audio().getAudioFormat() == vrs::AudioFormat::PCM &&
       XR_VERIFY(
           block.bytes.size() ==
           static_cast<size_t>(block.spec.audio().getSampleFrameStride()) *
